@@ -1,0 +1,5 @@
+variable,smd_raw,smd_weighted
+elevation,-0.0825,-0.0825
+area_sqm,0.1146,0.1146
+centroid_x,0.1381,0.1381
+centroid_y,0.1141,0.1141

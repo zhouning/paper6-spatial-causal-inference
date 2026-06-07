@@ -1,0 +1,115 @@
+# Reproducibility Guide
+
+This guide describes how to reproduce the Paper6 code, figures, and main experiment outputs from a clean checkout.
+
+## 1. Environment
+
+Recommended platform: Windows 10/11 or Linux with Python 3.11+.
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -U pip
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+```
+
+For Linux/macOS, replace `.\.venv\Scripts\python.exe` with `./.venv/bin/python`.
+
+## 2. Included Data and Weights
+
+Local raw data are stored in:
+
+- `data/raw/01数据样例/01重庆市DEM数据2020年/`
+- `data/raw/01数据样例/03重庆市遥感影像解译数据2020年/`
+- `data/raw/01数据样例/04重庆市中心城区建筑物轮廓数据2021年/`
+
+World-model weights are stored in:
+
+- `data_agent/weights/latent_dynamics_v1.pt`
+- `data_agent/weights/latent_dynamics_val.pt`
+- `data_agent/weights/lulc_decoder_v1.pkl`
+- `data_agent/weights/local_alphaearth_encoder.pth`
+- `data_agent/weights/alphaearth_local_*.pt`
+
+Runtime-generated AlphaEarth caches under `data_agent/weights/raw_data/` are intentionally not tracked.
+
+## 3. Test Suite
+
+Run the focused Paper6 tests:
+
+```powershell
+.\.venv\Scripts\python.exe -m pytest data_agent/test_causal_inference.py
+.\.venv\Scripts\python.exe -m pytest data_agent/test_causal_world_model.py
+.\.venv\Scripts\python.exe -m pytest data_agent/test_llm_causal.py
+.\.venv\Scripts\python.exe -m pytest data_agent/test_world_model.py
+```
+
+The LLM causal tests use mocks for Gemini calls. The world-model tests mock remote Earth Engine-dependent calls where needed.
+
+## 4. Synthetic Experiments
+
+Run the six synthetic causal-validation scenarios:
+
+```powershell
+.\.venv\Scripts\python.exe -m data_agent.experiments.run_causal --synthetic-only
+```
+
+Expected output:
+
+- `data_agent/experiments/output/synthetic_results.json`
+- diagnostic files under `data_agent/uploads/anonymous/`
+
+Note: the GCCM synthetic scenario is included to exercise the spatial-geometry pipeline. The compact grid example can show bidirectional convergence because rainfall and NDVI share a strong spatial gradient; use the dedicated tests and the review-required multi-seed benchmark for directional claims.
+
+## 5. Real Chongqing Experiments
+
+Run high-rise building to UHI:
+
+```powershell
+.\.venv\Scripts\python.exe -m data_agent.experiments.run_causal --uhi
+```
+
+Run built-up land to LST:
+
+```powershell
+.\.venv\Scripts\python.exe -m data_agent.experiments.run_causal --lulc
+```
+
+These experiments use the included Chongqing building, DEM, and CLCD sample files. If Google Earth Engine is authenticated, MODIS LST is sampled remotely. If GEE is unavailable, the current scripts generate synthetic LST values so the pipeline remains executable as a smoke reproduction. For final IJGIS submission, the GEE-authenticated real-data run should be reported.
+
+## 6. Figure Generation
+
+Regenerate manuscript figures:
+
+```powershell
+.\.venv\Scripts\python.exe -m data_agent.experiments.fig_causal
+```
+
+Expected outputs are PNG and PDF files under `data_agent/experiments/output/`.
+
+## 7. Manuscript Build
+
+The compiled PDF is already included:
+
+`paper/ijgis_submission_20260605/06_build/01_manuscript_ijgis.pdf`
+
+To rebuild the LaTeX manuscript from source:
+
+```powershell
+cd paper\ijgis_submission_20260605\01_manuscript
+pdflatex -interaction=nonstopmode -output-directory=..\06_build 01_manuscript_ijgis.tex
+```
+
+The local build may require a TeX distribution with common packages such as `natbib`, `graphicx`, `amsmath`, `booktabs`, and `hyperref`.
+
+## 8. Known Review-Critical Experiments
+
+The current IJGIS readiness notes identify additional experiments that should be completed before formal submission:
+
+- synthetic multi-seed benchmark
+- Chongqing UHI ablation
+- spatial robustness and sensitivity
+- direct GeoFM/AlphaEarth ablation
+- LLM DAG validation
+- world-model holdout validation
+
+See `paper/ijgis_submission_20260605/05_internal_review/ijgis_required_experiments.md`.
