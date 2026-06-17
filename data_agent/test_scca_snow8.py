@@ -1,5 +1,7 @@
 from pathlib import Path
+import hashlib
 import json
+import subprocess
 
 import pandas as pd
 
@@ -281,11 +283,33 @@ def test_write_report_creates_markdown_and_manifest(tmp_path):
     paths = SCCAPaths(output_dir=tmp_path)
     paths.ensure()
     credibility = {"decision": "moderate_support", "reasons": ["diagnostic warning"]}
-    write_report(spec, paths, credibility)
+    metadata = {"source_csv": "fixture.csv", "input_rows": 3, "input_columns": 8}
+    write_report(spec, paths, credibility, metadata=metadata)
     text = paths.analysis_report.read_text(encoding="utf-8")
     assert "# SCCA Analysis Report" in text
     assert "moderate_support" in text
     assert paths.manifest.exists()
+    manifest = json.loads(paths.manifest.read_text(encoding="utf-8"))
+    expected_files = {
+        "data_profile": paths.data_profile.name,
+        "variable_candidates": paths.variable_candidates.name,
+        "context_features": paths.context_features.name,
+        "context_manifest": paths.context_manifest.name,
+        "design_plan": paths.design_plan.name,
+        "effect_estimates": paths.effect_estimates.name,
+        "erf_curve": paths.erf_curve.name,
+        "model_diagnostics": paths.model_diagnostics.name,
+        "balance_summary": paths.balance_summary.name,
+        "overlap_summary": paths.overlap_summary.name,
+        "spatial_robustness": paths.spatial_robustness.name,
+        "credibility_report": paths.credibility_report.name,
+        "analysis_report": paths.analysis_report.name,
+        "manifest": paths.manifest.name,
+    }
+    assert manifest["metadata"] == metadata
+    assert manifest["files"] == expected_files
+    for file_name in expected_files.values():
+        assert f"`{file_name}`" in text
 
 
 from data_agent.experiments.run_scca_snow8 import run_snow8_scca
@@ -293,10 +317,66 @@ from data_agent.experiments.run_scca_snow8 import run_snow8_scca
 
 def test_run_snow8_scca_end_to_end_on_fixture(tmp_path):
     csv_path = tmp_path / "snow8_fixture.csv"
-    _snow8_like_frame().to_csv(csv_path, index=False)
+    fixture = _snow8_like_frame()
+    fixture.to_csv(csv_path, index=False)
     output_dir = tmp_path / "outputs"
     manifest = run_snow8_scca(csv_path=csv_path, output_dir=output_dir)
     assert manifest["decision"] in {"strong_support", "moderate_support", "weak_or_failed_support"}
-    assert (output_dir / "analysis_report.md").exists()
-    assert (output_dir / "effect_estimates.csv").exists()
-    assert (output_dir / "credibility_report.json").exists()
+    metadata = manifest["metadata"]
+    assert metadata["source_csv"] == str(csv_path)
+    assert metadata["source_sha256"] == hashlib.sha256(csv_path.read_bytes()).hexdigest()
+    assert metadata["input_rows"] == len(fixture)
+    assert metadata["input_columns"] == len(fixture.columns)
+    assert metadata["code_commit"]
+    assert metadata["generated_at_utc"].endswith("Z")
+    assert "run_snow8_scca" in metadata["command"]
+    expected_file_keys = {
+        "data_profile",
+        "variable_candidates",
+        "context_features",
+        "context_manifest",
+        "design_plan",
+        "effect_estimates",
+        "erf_curve",
+        "model_diagnostics",
+        "balance_summary",
+        "overlap_summary",
+        "spatial_robustness",
+        "credibility_report",
+        "analysis_report",
+        "manifest",
+    }
+    assert set(manifest["files"]) == expected_file_keys
+    for file_name in manifest["files"].values():
+        assert (output_dir / file_name).exists()
+    for key in {"design_plan", "model_diagnostics", "erf_curve", "manifest"}:
+        assert (output_dir / manifest["files"][key]).exists()
+
+
+def test_run_snow8_scca_cli_prints_manifest_json(tmp_path):
+    csv_path = tmp_path / "snow8_fixture.csv"
+    fixture = _snow8_like_frame()
+    fixture.to_csv(csv_path, index=False)
+    output_dir = tmp_path / "cli_outputs"
+
+    result = subprocess.run(
+        [
+            r"D:\adk\.venv\Scripts\python.exe",
+            "-m",
+            "data_agent.experiments.run_scca_snow8",
+            "--csv-path",
+            str(csv_path),
+            "--output-dir",
+            str(output_dir),
+        ],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    manifest = json.loads(result.stdout)
+    assert manifest["metadata"]["source_sha256"] == hashlib.sha256(csv_path.read_bytes()).hexdigest()
+    assert manifest["metadata"]["input_rows"] == len(fixture)
+    assert manifest["metadata"]["input_columns"] == len(fixture.columns)
+    assert manifest["files"]["manifest"] == "manifest.json"
+    assert (output_dir / manifest["files"]["manifest"]).exists()
