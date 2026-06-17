@@ -1,0 +1,31 @@
+{
+  "study": "south_london_cholera_supplier",
+  "n_rows": 32,
+  "n_features": 23,
+  "source_columns": [
+    "perc_sou",
+    "rate1854",
+    "rate1849",
+    "pop_house",
+    "pop1851",
+    "d_sou",
+    "d_lam",
+    "d_pump",
+    "d_thames",
+    "d_unasc",
+    "pop1854",
+    "district"
+  ],
+  "generated_columns": [
+    "outcome_change",
+    "rate1849_centered",
+    "pop_house_centered",
+    "pop1851_centered",
+    "d_sou_centered",
+    "d_lam_centered",
+    "d_pump_centered",
+    "d_thames_centered",
+    "d_unasc_centered",
+    "log_population"
+  ]
+}

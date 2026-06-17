@@ -1,0 +1,315 @@
+{
+  "study": "south_london_cholera_supplier",
+  "n_rows": 32,
+  "n_columns": 32,
+  "columns": {
+    "dis_ID": {
+      "role": "available",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 32,
+      "unique": 10,
+      "min": 1.0,
+      "max": 10.0,
+      "mean": 4.84375
+    },
+    "district": {
+      "role": "subgroup",
+      "dtype": "object",
+      "missing": 0,
+      "non_null": 32,
+      "unique": 10
+    },
+    "sub_ID": {
+      "role": "unit_id",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 32,
+      "unique": 32,
+      "min": 1.0,
+      "max": 32.0,
+      "mean": 16.5
+    },
+    "subdist": {
+      "role": "available",
+      "dtype": "object",
+      "missing": 0,
+      "non_null": 32,
+      "unique": 32
+    },
+    "pop1851": {
+      "role": "confounder",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 32,
+      "unique": 32,
+      "min": 1632.0,
+      "max": 29861.0,
+      "mean": 15216.75
+    },
+    "pop_house": {
+      "role": "confounder",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 32,
+      "unique": 19,
+      "min": 5.6,
+      "max": 9.1,
+      "mean": 6.753125
+    },
+    "supplier": {
+      "role": "available",
+      "dtype": "object",
+      "missing": 0,
+      "non_null": 32,
+      "unique": 3
+    },
+    "supplierID": {
+      "role": "available",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 32,
+      "unique": 3,
+      "min": 1.0,
+      "max": 3.0,
+      "mean": 1.75
+    },
+    "perc_sou": {
+      "role": "exposure",
+      "dtype": "float64",
+      "missing": 1,
+      "non_null": 31,
+      "unique": 27,
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.4558046128140306
+    },
+    "perc_lam": {
+      "role": "available",
+      "dtype": "float64",
+      "missing": 1,
+      "non_null": 31,
+      "unique": 20,
+      "min": 0.0,
+      "max": 0.830246873704884,
+      "mean": 0.2810124792948601
+    },
+    "perc_other": {
+      "role": "available",
+      "dtype": "float64",
+      "missing": 1,
+      "non_null": 31,
+      "unique": 23,
+      "min": 0.0,
+      "max": 0.982244377673305,
+      "mean": 0.26318290789110926
+    },
+    "lam_degree": {
+      "role": "available",
+      "dtype": "object",
+      "missing": 0,
+      "non_null": 32,
+      "unique": 4
+    },
+    "d_overall": {
+      "role": "available",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 32,
+      "unique": 30,
+      "min": 0.0,
+      "max": 125.0,
+      "mean": 47.3125
+    },
+    "d_sou": {
+      "role": "context",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 32,
+      "unique": 25,
+      "min": 0.0,
+      "max": 115.0,
+      "mean": 39.46875
+    },
+    "d_lam": {
+      "role": "context",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 32,
+      "unique": 11,
+      "min": 0.0,
+      "max": 13.0,
+      "mean": 3.0625
+    },
+    "d_pump": {
+      "role": "context",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 32,
+      "unique": 6,
+      "min": 0.0,
+      "max": 5.0,
+      "mean": 0.90625
+    },
+    "d_thames": {
+      "role": "context",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 32,
+      "unique": 10,
+      "min": 0.0,
+      "max": 35.0,
+      "mean": 3.1875
+    },
+    "d_unasc": {
+      "role": "context",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 32,
+      "unique": 5,
+      "min": 0.0,
+      "max": 5.0,
+      "mean": 0.6875
+    },
+    "rate_sou7w": {
+      "role": "available",
+      "dtype": "float64",
+      "missing": 4,
+      "non_null": 28,
+      "unique": 28,
+      "min": 0.0,
+      "max": 87.23296612767889,
+      "mean": 45.390096971083736
+    },
+    "rate_lam7w": {
+      "role": "available",
+      "dtype": "float64",
+      "missing": 13,
+      "non_null": 19,
+      "unique": 18,
+      "min": 0.0,
+      "max": 16.8218693841171,
+      "mean": 6.41921334820708
+    },
+    "rate_oth7w": {
+      "role": "available",
+      "dtype": "float64",
+      "missing": 10,
+      "non_null": 22,
+      "unique": 15,
+      "min": 0.0,
+      "max": 82.93838862559238,
+      "mean": 10.491090277994916
+    },
+    "deaths1849": {
+      "role": "available",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 32,
+      "unique": 32,
+      "min": 1.0,
+      "max": 544.0,
+      "mean": 197.75
+    },
+    "deaths1854": {
+      "role": "available",
+      "dtype": "float64",
+      "missing": 1,
+      "non_null": 31,
+      "unique": 30,
+      "min": 0.0,
+      "max": 388.0,
+      "mean": 162.25806451612902
+    },
+    "rate1849": {
+      "role": "baseline_outcome",
+      "dtype": "float64",
+      "missing": 1,
+      "non_null": 31,
+      "unique": 31,
+      "min": 5.33475593491598,
+      "max": 209.51280569998096,
+      "mean": 126.82731460851626
+    },
+    "rate1854": {
+      "role": "outcome",
+      "dtype": "float64",
+      "missing": 1,
+      "non_null": 31,
+      "unique": 31,
+      "min": 0.0,
+      "max": 200.873362445415,
+      "mean": 92.30954117744749
+    },
+    "pop1849": {
+      "role": "available",
+      "dtype": "float64",
+      "missing": 1,
+      "non_null": 31,
+      "unique": 31,
+      "min": 1632.0,
+      "max": 28392.0,
+      "mean": 14935.741935483871
+    },
+    "pop1854": {
+      "role": "population",
+      "dtype": "float64",
+      "missing": 1,
+      "non_null": 31,
+      "unique": 31,
+      "min": 1632.0,
+      "max": 30080.0,
+      "mean": 16387.870967741936
+    },
+    "rAvSupR_49": {
+      "role": "available",
+      "dtype": "float64",
+      "missing": 4,
+      "non_null": 28,
+      "unique": 2,
+      "min": 130.102049315507,
+      "max": 134.861082944636,
+      "mean": 132.14163515656227
+    },
+    "rAvSupR_54": {
+      "role": "available",
+      "dtype": "float64",
+      "missing": 4,
+      "non_null": 28,
+      "unique": 2,
+      "min": 84.8578539325468,
+      "max": 146.611473630215,
+      "mean": 111.32369094583318
+    },
+    "pred_Snow": {
+      "role": "available",
+      "dtype": "float64",
+      "missing": 1,
+      "non_null": 31,
+      "unique": 22,
+      "min": 27.0,
+      "max": 160.0,
+      "mean": 108.19354838709677
+    },
+    "pred_DiD49": {
+      "role": "available",
+      "dtype": "float64",
+      "missing": 4,
+      "non_null": 28,
+      "unique": 26,
+      "min": 42.715596345403,
+      "max": 199.38936651422696,
+      "mean": 134.8747119817119
+    },
+    "pred_DiD54": {
+      "role": "available",
+      "dtype": "float64",
+      "missing": 4,
+      "non_null": 28,
+      "unique": 26,
+      "min": 43.2278579635531,
+      "max": 201.78051935467,
+      "mean": 101.29144872657496
+    }
+  }
+}

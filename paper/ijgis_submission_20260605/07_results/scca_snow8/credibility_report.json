@@ -1,0 +1,14 @@
+{
+  "decision": "moderate_support",
+  "reasons": [
+    "Maximum exposure-balance correlation is high (0.828)."
+  ],
+  "max_balance_corr": 0.8282298232481067,
+  "overlap_boundary_mass": 0.0967741935483871,
+  "leave_group_sign_stable": true,
+  "estimator_statuses": {
+    "baseline_adjusted_ols": "ok",
+    "difference_outcome_ols": "ok",
+    "generalized_propensity_erf": "ok"
+  }
+}

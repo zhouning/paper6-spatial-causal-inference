@@ -1,0 +1,10 @@
+{
+  "n": 31,
+  "exposure_min": 0.0,
+  "exposure_max": 1.0,
+  "exposure_unique": 27,
+  "exposure_analyzable": true,
+  "share_at_min": 0.0967741935483871,
+  "share_at_max": 0.0967741935483871,
+  "boundary_mass": 0.0967741935483871
+}

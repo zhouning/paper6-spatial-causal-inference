@@ -1,0 +1,19 @@
+{
+  "study": "south_london_cholera_supplier",
+  "decision": "moderate_support",
+  "files": {
+    "data_profile": "data_profile.json",
+    "variable_candidates": "variable_candidates.csv",
+    "context_features": "context_features.csv",
+    "context_manifest": "context_feature_manifest.json",
+    "design_plan": "design_plan.json",
+    "effect_estimates": "effect_estimates.csv",
+    "erf_curve": "erf_curve.csv",
+    "model_diagnostics": "model_diagnostics.json",
+    "balance_summary": "balance_summary.csv",
+    "overlap_summary": "overlap_summary.json",
+    "spatial_robustness": "spatial_robustness.csv",
+    "credibility_report": "credibility_report.json",
+    "analysis_report": "analysis_report.md"
+  }
+}

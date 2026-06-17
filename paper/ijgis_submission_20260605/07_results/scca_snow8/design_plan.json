@@ -1,0 +1,17 @@
+{
+  "study": "south_london_cholera_supplier",
+  "design": "continuous_exposure_baseline_adjusted",
+  "n_rows": 32,
+  "unique_exposure_values": 27,
+  "exposure": "perc_sou",
+  "outcome": "rate1854",
+  "baseline_outcome": "rate1849",
+  "estimators": [
+    "baseline_adjusted_ols",
+    "generalized_propensity_erf",
+    "difference_outcome_ols"
+  ],
+  "warnings": [
+    "Small sample: n=32. Keep models low-dimensional and interpret uncertainty cautiously."
+  ]
+}

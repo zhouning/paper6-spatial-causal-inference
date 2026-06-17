@@ -1,0 +1,50 @@
+{
+  "original_n": 32,
+  "covariates": [
+    "rate1849",
+    "pop_house",
+    "pop1851",
+    "d_sou",
+    "d_lam",
+    "d_pump",
+    "d_thames",
+    "d_unasc"
+  ],
+  "context_columns": [
+    "d_sou",
+    "d_lam",
+    "d_pump",
+    "d_thames",
+    "d_unasc"
+  ],
+  "gps_weight_min": 0.6165829837883214,
+  "gps_weight_max": 2.2292505140595726,
+  "gps_weight_mean": 1.0000000000000002,
+  "gps_fit_n": 31,
+  "gps_fallback_reason": null,
+  "erf_n": 31,
+  "erf_grid_n": 50,
+  "estimators": {
+    "baseline_adjusted_ols": {
+      "status": "ok",
+      "n": 31,
+      "complete_n": 31,
+      "dropped_n": 1,
+      "warnings": []
+    },
+    "difference_outcome_ols": {
+      "status": "ok",
+      "n": 31,
+      "complete_n": 31,
+      "dropped_n": 1,
+      "warnings": []
+    },
+    "generalized_propensity_erf": {
+      "status": "ok",
+      "n": 31,
+      "complete_n": 31,
+      "dropped_n": 1,
+      "warnings": []
+    }
+  }
+}
