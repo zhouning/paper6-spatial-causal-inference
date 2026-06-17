@@ -1,0 +1,21 @@
+{
+  "study": "soho_broad_street_pump_mechanism",
+  "n_rows": 1852,
+  "n_features": 13,
+  "source_columns": [
+    "bspump_proximity",
+    "deaths",
+    "dis_pestf",
+    "dis_sewers",
+    "pestfield",
+    "COORD_X",
+    "COORD_Y"
+  ],
+  "generated_columns": [
+    "dis_pestf_centered",
+    "dis_sewers_centered",
+    "pestfield_centered",
+    "COORD_X_centered",
+    "COORD_Y_centered"
+  ]
+}

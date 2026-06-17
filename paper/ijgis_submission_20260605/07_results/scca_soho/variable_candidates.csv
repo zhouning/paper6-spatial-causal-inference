@@ -1,0 +1,13 @@
+column,role,dtype,missing,unique
+ID,unit_id,int64,0,1852
+deaths_r,available,int64,0,9
+deaths_nr,available,int64,0,6
+deaths,outcome,int64,0,11
+pestfield,confounder,int64,0,2
+dis_pestf,confounder,float64,0,1798
+dis_sewers,confounder,float64,0,1416
+dis_bspump,available,float64,0,1799
+death_dum,available,int64,0,2
+COORD_X,context,float64,0,1851
+COORD_Y,context,float64,0,1851
+bspump_proximity,exposure,float64,0,1799

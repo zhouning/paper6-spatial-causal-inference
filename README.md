@@ -50,6 +50,14 @@ D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_snow8 --csv-p
 
 The outputs are written to `paper/ijgis_submission_20260605/07_results/scca_snow8/`.
 
+Run the Soho Broad Street pump SCCA mechanism experiment:
+
+```powershell
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_soho --csv-path "D:\北大MEM\01-课程学习\02-技术核心课\数据可视化技术及应用\snow\snow1\deaths_nd_by_house.csv"
+```
+
+The outputs are written to `paper/ijgis_submission_20260605/07_results/scca_soho/`.
+
 ## Paper Entry Points
 
 - Main IJGIS TeX: `paper/ijgis_submission_20260605/01_manuscript/01_manuscript_ijgis.tex`

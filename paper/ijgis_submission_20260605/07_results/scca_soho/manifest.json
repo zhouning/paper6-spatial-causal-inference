@@ -1,0 +1,32 @@
+{
+  "study": "soho_broad_street_pump_mechanism",
+  "decision": "moderate_support",
+  "metadata": {
+    "source_csv": "D:\\北大MEM\\01-课程学习\\02-技术核心课\\数据可视化技术及应用\\snow\\snow1\\deaths_nd_by_house.csv",
+    "source_sha256": "1767706cd333276e9530eec7a8454203470a5a3aa13b9e812410727e10a38b86",
+    "command": "run_soho_scca(csv_path=D:\\北大MEM\\01-课程学习\\02-技术核心课\\数据可视化技术及应用\\snow\\snow1\\deaths_nd_by_house.csv, output_dir=D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-soho-mechanism\\paper\\ijgis_submission_20260605\\07_results\\scca_soho)",
+    "code_commit": "ee78fecff21b6df8db2d93b248483ced55da0a5a",
+    "code_commit_role": "source_commit_used_to_generate_outputs",
+    "git_dirty": false,
+    "artifact_commit_note": "The final artifact commit is represented by repository history and is not self-recorded in this manifest because doing so would be self-referential.",
+    "input_rows": 1852,
+    "input_columns": 11,
+    "generated_at_utc": "2026-06-17T15:46:10.432453Z"
+  },
+  "files": {
+    "data_profile": "data_profile.json",
+    "variable_candidates": "variable_candidates.csv",
+    "context_features": "context_features.csv",
+    "context_manifest": "context_feature_manifest.json",
+    "design_plan": "design_plan.json",
+    "effect_estimates": "effect_estimates.csv",
+    "erf_curve": "erf_curve.csv",
+    "model_diagnostics": "model_diagnostics.json",
+    "balance_summary": "balance_summary.csv",
+    "overlap_summary": "overlap_summary.json",
+    "spatial_robustness": "spatial_robustness.csv",
+    "credibility_report": "credibility_report.json",
+    "analysis_report": "analysis_report.md",
+    "manifest": "manifest.json"
+  }
+}

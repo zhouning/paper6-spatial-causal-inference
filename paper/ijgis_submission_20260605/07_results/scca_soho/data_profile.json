@@ -1,0 +1,127 @@
+{
+  "study": "soho_broad_street_pump_mechanism",
+  "n_rows": 1852,
+  "n_columns": 12,
+  "columns": {
+    "ID": {
+      "role": "unit_id",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 1852,
+      "unique": 1852,
+      "min": 1.0,
+      "max": 1852.0,
+      "mean": 926.5
+    },
+    "deaths_r": {
+      "role": "available",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 1852,
+      "unique": 9,
+      "min": 0.0,
+      "max": 12.0,
+      "mean": 0.3569114470842333
+    },
+    "deaths_nr": {
+      "role": "available",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 1852,
+      "unique": 6,
+      "min": 0.0,
+      "max": 18.0,
+      "mean": 0.02429805615550756
+    },
+    "deaths": {
+      "role": "outcome",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 1852,
+      "unique": 11,
+      "min": 0.0,
+      "max": 18.0,
+      "mean": 0.38120950323974084
+    },
+    "pestfield": {
+      "role": "confounder",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 1852,
+      "unique": 2,
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.04913606911447084
+    },
+    "dis_pestf": {
+      "role": "confounder",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 1852,
+      "unique": 1798,
+      "min": 7.56,
+      "max": 441.34,
+      "mean": 173.73411447084234
+    },
+    "dis_sewers": {
+      "role": "confounder",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 1852,
+      "unique": 1416,
+      "min": 2.85,
+      "max": 92.4,
+      "mean": 19.393536717062634
+    },
+    "dis_bspump": {
+      "role": "available",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 1852,
+      "unique": 1799,
+      "min": 7.26,
+      "max": 442.99,
+      "mean": 206.20832613390928
+    },
+    "death_dum": {
+      "role": "available",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 1852,
+      "unique": 2,
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.199244060475162
+    },
+    "COORD_X": {
+      "role": "context",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 1852,
+      "unique": 1851,
+      "min": 528996.1404633644,
+      "max": 529696.1695033883,
+      "mean": 529370.9884523887
+    },
+    "COORD_Y": {
+      "role": "context",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 1852,
+      "unique": 1851,
+      "min": 180646.88917557496,
+      "max": 181319.85232281376,
+      "mean": 181004.47369429207
+    },
+    "bspump_proximity": {
+      "role": "exposure",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 1852,
+      "unique": 1799,
+      "min": -6.095802039656067,
+      "max": -2.1114245875328868,
+      "mean": -5.23377252318862
+    }
+  }
+}

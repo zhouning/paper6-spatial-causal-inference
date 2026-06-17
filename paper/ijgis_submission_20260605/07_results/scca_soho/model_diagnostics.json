@@ -1,0 +1,37 @@
+{
+  "original_n": 1852,
+  "covariates": [
+    "dis_pestf",
+    "dis_sewers",
+    "pestfield",
+    "COORD_X",
+    "COORD_Y"
+  ],
+  "context_columns": [
+    "COORD_X",
+    "COORD_Y"
+  ],
+  "gps_weight_min": 0.14151589476572518,
+  "gps_weight_max": 88.90431360273556,
+  "gps_weight_mean": 1.0,
+  "gps_fit_n": 1852,
+  "gps_fallback_reason": null,
+  "erf_n": 1852,
+  "erf_grid_n": 50,
+  "estimators": {
+    "baseline_adjusted_ols": {
+      "status": "ok",
+      "n": 1852,
+      "complete_n": 1852,
+      "dropped_n": 0,
+      "warnings": []
+    },
+    "generalized_propensity_erf": {
+      "status": "ok",
+      "n": 1852,
+      "complete_n": 1852,
+      "dropped_n": 0,
+      "warnings": []
+    }
+  }
+}
