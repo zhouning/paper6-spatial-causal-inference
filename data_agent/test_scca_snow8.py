@@ -120,3 +120,18 @@ def test_select_design_continuous_exposure_with_small_sample_warning(tmp_path):
     assert "baseline_adjusted_ols" in plan["estimators"]
     assert any("small sample" in warning.lower() for warning in plan["warnings"])
     assert paths.design_plan.exists()
+
+
+def test_select_design_does_not_advertise_unimplemented_binary_or_missing_baseline(tmp_path):
+    df = _snow8_like_frame().drop(columns=["rate1849"])
+    df["perc_sou"] = [1.0, 1.0, 0.0]
+    paths = SCCAPaths(output_dir=tmp_path)
+    paths.ensure()
+    plan = select_design(df, StudySpec.snow8_default(), paths)
+    assert plan["design"] == "binary_exposure_adjusted_regression"
+    assert "propensity_weighted_ols" not in plan["estimators"]
+    assert "difference_outcome_ols" not in plan["estimators"]
+    assert "baseline_adjusted_ols" in plan["estimators"]
+    assert any("baseline outcome column" in warning.lower() for warning in plan["warnings"])
+    saved = json.loads(paths.design_plan.read_text(encoding="utf-8"))
+    assert saved == plan
