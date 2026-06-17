@@ -34,7 +34,7 @@ def _current_git_commit() -> str:
     return result.stdout.strip() or "unknown"
 
 
-def _git_dirty() -> bool:
+def _git_dirty() -> bool | None:
     try:
         result = subprocess.run(
             ["git", "status", "--short"],
@@ -44,7 +44,7 @@ def _git_dirty() -> bool:
             text=True,
         )
     except (OSError, subprocess.CalledProcessError):
-        return False
+        return None
     return bool(result.stdout.strip())
 
 

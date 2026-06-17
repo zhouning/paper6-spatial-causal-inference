@@ -2,6 +2,7 @@ from pathlib import Path
 import hashlib
 import json
 import subprocess
+import sys
 
 import pandas as pd
 
@@ -363,7 +364,7 @@ def test_run_snow8_scca_cli_prints_manifest_json(tmp_path):
 
     result = subprocess.run(
         [
-            r"D:\adk\.venv\Scripts\python.exe",
+            sys.executable,
             "-m",
             "data_agent.experiments.run_scca_snow8",
             "--csv-path",
