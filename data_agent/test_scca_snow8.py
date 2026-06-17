@@ -156,3 +156,42 @@ def test_estimate_effects_writes_effect_tables(tmp_path):
     assert paths.model_diagnostics.exists()
     estimates = pd.read_csv(paths.effect_estimates)
     assert set(estimates["estimator"]) >= {"baseline_adjusted_ols", "difference_outcome_ols"}
+
+
+def test_estimate_effects_records_skipped_models_when_core_rows_sparse(tmp_path):
+    df = _snow8_like_frame()
+    df.loc[:, "perc_sou"] = [1.0, float("nan"), float("nan")]
+    df.loc[:, "rate1854"] = [180.0, float("nan"), float("nan")]
+    df.loc[:, "rate1849"] = [130.0, float("nan"), float("nan")]
+    spec = StudySpec.snow8_default()
+    paths = SCCAPaths(output_dir=tmp_path)
+    paths.ensure()
+    features, _ = build_context_features(df, spec, paths)
+    results = estimate_effects(features, spec, paths)
+    assert paths.effect_estimates.exists()
+    assert paths.erf_curve.exists()
+    assert paths.model_diagnostics.exists()
+    assert results["baseline_adjusted_ols"]["status"] == "skipped"
+    diagnostics = json.loads(paths.model_diagnostics.read_text(encoding="utf-8"))
+    assert diagnostics["original_n"] == 3
+    assert diagnostics["estimators"]["baseline_adjusted_ols"]["dropped_n"] >= 2
+
+
+def test_estimate_effects_handles_non_default_index_and_reports_erf_effect(tmp_path):
+    df = _snow8_like_frame()
+    spec = StudySpec.snow8_default()
+    paths = SCCAPaths(output_dir=tmp_path)
+    paths.ensure()
+    features, _ = build_context_features(df, spec, paths)
+    features.index = [10, 20, 30]
+    results = estimate_effects(features, spec, paths)
+    gps = results["generalized_propensity_erf"]
+    assert "range_effect" in gps
+    assert "response_min_exposure" in gps
+    assert "response_max_exposure" in gps
+    diagnostics = json.loads(paths.model_diagnostics.read_text(encoding="utf-8"))
+    assert diagnostics["gps_weight_mean"] > 0
+    assert diagnostics["erf_n"] >= 1
+    estimates = pd.read_csv(paths.effect_estimates)
+    erf_row = estimates.loc[estimates["estimator"] == "generalized_propensity_erf"].iloc[0]
+    assert pd.notna(erf_row["coef"])
