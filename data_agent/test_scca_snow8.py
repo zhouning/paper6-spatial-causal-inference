@@ -197,3 +197,22 @@ def test_estimate_effects_handles_non_default_index_and_reports_erf_effect(tmp_p
     estimates = pd.read_csv(paths.effect_estimates)
     erf_row = estimates.loc[estimates["estimator"] == "generalized_propensity_erf"].iloc[0]
     assert pd.notna(erf_row["coef"])
+
+
+from data_agent.scca.diagnostics import audit_effects
+
+
+def test_audit_effects_writes_balance_overlap_and_credibility(tmp_path):
+    df = _snow8_like_frame()
+    spec = StudySpec.snow8_default()
+    paths = SCCAPaths(output_dir=tmp_path)
+    paths.ensure()
+    features, _ = build_context_features(df, spec, paths)
+    estimate_effects(features, spec, paths)
+    report = audit_effects(features, spec, paths)
+    assert report["decision"] in {"strong_support", "moderate_support", "weak_or_failed_support"}
+    assert "reasons" in report
+    assert paths.balance_summary.exists()
+    assert paths.overlap_summary.exists()
+    assert paths.spatial_robustness.exists()
+    assert paths.credibility_report.exists()
