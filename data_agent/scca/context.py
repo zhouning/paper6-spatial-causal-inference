@@ -71,7 +71,11 @@ def build_context_features(
 
     numeric_cols = features.select_dtypes(include=[np.number]).columns
     features[numeric_cols] = features[numeric_cols].replace([np.inf, -np.inf], np.nan)
-    features[numeric_cols] = features[numeric_cols].fillna(features[numeric_cols].median())
+    protected_cols = {spec.exposure, spec.outcome, "outcome_change"}
+    if spec.baseline_outcome:
+        protected_cols.add(spec.baseline_outcome)
+    fill_cols = [col for col in numeric_cols if col not in protected_cols]
+    features[fill_cols] = features[fill_cols].fillna(features[fill_cols].median())
 
     manifest = {
         "study": spec.name,

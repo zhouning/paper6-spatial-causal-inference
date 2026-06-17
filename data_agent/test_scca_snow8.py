@@ -88,3 +88,20 @@ def test_build_context_features_skips_missing_baseline_column(tmp_path):
     assert "perc_sou" in features.columns
     assert manifest["n_rows"] == 3
     assert paths.context_features.exists()
+
+
+def test_build_context_features_preserves_missing_core_values(tmp_path):
+    df = _snow8_like_frame()
+    df.loc[1, "perc_sou"] = None
+    df.loc[2, "rate1854"] = None
+    df.loc[0, "rate1849"] = None
+    df.loc[1, "pop_house"] = None
+    paths = SCCAPaths(output_dir=tmp_path)
+    paths.ensure()
+    features, _ = build_context_features(df, StudySpec.snow8_default(), paths)
+    assert pd.isna(features.loc[1, "perc_sou"])
+    assert pd.isna(features.loc[2, "rate1854"])
+    assert pd.isna(features.loc[0, "rate1849"])
+    assert pd.isna(features.loc[0, "outcome_change"])
+    assert not pd.isna(features.loc[1, "pop_house"])
+    assert not pd.isna(features.loc[1, "pop_house_centered"])
