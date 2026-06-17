@@ -228,9 +228,16 @@ def audit_effects(
         and "coef" in robustness.columns
     ):
         coefs = pd.to_numeric(robustness["coef"], errors="coerce")
-        if coefs.isna().all():
+        finite_count = int(np.isfinite(coefs).sum())
+        nan_count = int(coefs.isna().sum())
+        if nan_count > 0 and finite_count == 0:
             decision = _downgrade(decision, "weak_or_failed_support")
             reasons.append("Leave-one-subgroup-out spatial robustness is not estimable.")
+        elif nan_count > 0:
+            decision = _downgrade(decision, "moderate_support")
+            reasons.append(
+                "Leave-one-subgroup-out spatial robustness is incomplete because some folds are not estimable."
+            )
 
     unstable = sorted(name for name, status in statuses.items() if status == "unstable")
     if unstable:

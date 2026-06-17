@@ -245,3 +245,29 @@ def test_audit_effects_downgrades_when_leave_group_out_unestimable(tmp_path):
         "leave" in reason.lower() or "spatial" in reason.lower()
         for reason in report["reasons"]
     )
+
+
+def test_audit_effects_downgrades_when_some_leave_group_out_folds_unestimable(tmp_path):
+    spec = StudySpec.snow8_default()
+    paths = SCCAPaths(output_dir=tmp_path)
+    paths.ensure()
+    features = pd.DataFrame(
+        {
+            "sub_ID": ["1", "2", "3", "4", "5"],
+            "district": ["A", "A", "A", "B", "C"],
+            "perc_sou": [0.0, 0.2, 0.4, 0.6, 0.8],
+            "rate1854": [10.0, 14.0, 18.0, 22.0, 26.0],
+        }
+    )
+
+    report = audit_effects(features, spec, paths)
+
+    robustness = pd.read_csv(paths.spatial_robustness)
+    assert robustness["coef"].isna().sum() > 0
+    assert robustness["coef"].notna().sum() > 0
+    assert report["decision"] in {"moderate_support", "weak_or_failed_support"}
+    assert report["decision"] != "strong_support"
+    assert any(
+        "leave" in reason.lower() or "spatial" in reason.lower()
+        for reason in report["reasons"]
+    )
