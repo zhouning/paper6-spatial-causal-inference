@@ -5,6 +5,7 @@ import pandas as pd
 
 from data_agent.scca.specs import SCCAPaths, StudySpec
 from data_agent.scca.profiling import load_table, profile_table
+from data_agent.scca.context import build_context_features
 
 
 def test_study_spec_snow8_defaults():
@@ -60,3 +61,18 @@ def test_profile_table_writes_json_and_candidates(tmp_path):
     assert paths.variable_candidates.exists()
     saved = json.loads(paths.data_profile.read_text(encoding="utf-8"))
     assert saved["n_columns"] == 8
+
+
+def test_build_context_features_adds_baseline_difference_and_density(tmp_path):
+    df = _snow8_like_frame()
+    paths = SCCAPaths(output_dir=tmp_path)
+    paths.ensure()
+    features, manifest = build_context_features(df, StudySpec.snow8_default(), paths)
+    assert "outcome_change" in features.columns
+    assert "rate1849_centered" in features.columns
+    assert "pop_house_centered" in features.columns
+    assert "d_thames_centered" in features.columns
+    assert features.loc[0, "outcome_change"] == 50.0
+    assert manifest["n_features"] >= 4
+    assert paths.context_features.exists()
+    assert paths.context_manifest.exists()
