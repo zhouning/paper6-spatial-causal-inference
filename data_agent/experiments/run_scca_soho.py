@@ -43,32 +43,31 @@ def prepare_soho_table(df: pd.DataFrame) -> pd.DataFrame:
     return prepared
 
 
+def _run_git(*args: str) -> str:
+    result = subprocess.run(
+        ["git", "-c", f"safe.directory={PROJECT_ROOT.as_posix()}", *args],
+        cwd=PROJECT_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout.strip()
+
+
 def _current_git_commit() -> str:
     try:
-        result = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=PROJECT_ROOT,
-            check=True,
-            capture_output=True,
-            text=True,
-        )
+        commit = _run_git("rev-parse", "HEAD")
     except (OSError, subprocess.CalledProcessError):
         return "unknown"
-    return result.stdout.strip() or "unknown"
+    return commit or "unknown"
 
 
 def _git_dirty() -> bool | None:
     try:
-        result = subprocess.run(
-            ["git", "status", "--short"],
-            cwd=PROJECT_ROOT,
-            check=True,
-            capture_output=True,
-            text=True,
-        )
+        status = _run_git("status", "--short")
     except (OSError, subprocess.CalledProcessError):
         return None
-    return bool(result.stdout.strip())
+    return bool(status)
 
 
 def run_soho_scca(csv_path: str | Path, output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> dict[str, object]:

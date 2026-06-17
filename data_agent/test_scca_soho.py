@@ -1,6 +1,11 @@
 import pandas as pd
 
-from data_agent.experiments.run_scca_soho import prepare_soho_table, run_soho_scca
+from data_agent.experiments.run_scca_soho import (
+    PROJECT_ROOT,
+    _run_git,
+    prepare_soho_table,
+    run_soho_scca,
+)
 from data_agent.scca.specs import StudySpec
 
 
@@ -47,3 +52,28 @@ def test_run_soho_scca_end_to_end_on_fixture(tmp_path):
     assert manifest["metadata"]["source_sha256"]
     for file_name in manifest["files"].values():
         assert (output_dir / file_name).exists()
+
+
+def test_git_runner_marks_worktree_safe(monkeypatch):
+    captured = {}
+
+    def fake_run(args, **kwargs):
+        captured["args"] = args
+        captured["kwargs"] = kwargs
+
+        class Result:
+            stdout = "abc123\n"
+
+        return Result()
+
+    monkeypatch.setattr("data_agent.experiments.run_scca_soho.subprocess.run", fake_run)
+    result = _run_git("rev-parse", "HEAD")
+    assert result == "abc123"
+    assert captured["args"] == [
+        "git",
+        "-c",
+        f"safe.directory={PROJECT_ROOT.as_posix()}",
+        "rev-parse",
+        "HEAD",
+    ]
+    assert captured["kwargs"]["cwd"] == PROJECT_ROOT
