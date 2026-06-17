@@ -135,3 +135,24 @@ def test_select_design_does_not_advertise_unimplemented_binary_or_missing_baseli
     assert any("baseline outcome column" in warning.lower() for warning in plan["warnings"])
     saved = json.loads(paths.design_plan.read_text(encoding="utf-8"))
     assert saved == plan
+
+
+from data_agent.scca.context import build_context_features
+from data_agent.scca.estimators import estimate_effects
+
+
+def test_estimate_effects_writes_effect_tables(tmp_path):
+    df = _snow8_like_frame()
+    spec = StudySpec.snow8_default()
+    paths = SCCAPaths(output_dir=tmp_path)
+    paths.ensure()
+    features, _ = build_context_features(df, spec, paths)
+    results = estimate_effects(features, spec, paths)
+    assert "baseline_adjusted_ols" in results
+    assert "difference_outcome_ols" in results
+    assert "generalized_propensity_erf" in results
+    assert paths.effect_estimates.exists()
+    assert paths.erf_curve.exists()
+    assert paths.model_diagnostics.exists()
+    estimates = pd.read_csv(paths.effect_estimates)
+    assert set(estimates["estimator"]) >= {"baseline_adjusted_ols", "difference_outcome_ols"}
