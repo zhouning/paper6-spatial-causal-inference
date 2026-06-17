@@ -1,6 +1,15 @@
 {
   "study": "south_london_cholera_supplier",
   "decision": "moderate_support",
+  "metadata": {
+    "source_csv": "D:\\北大MEM\\01-课程学习\\02-技术核心课\\数据可视化技术及应用\\snow\\snow8\\subdistricts.csv",
+    "source_sha256": "6ff18b96dd9b48dcfe70873067dff0da2e479dd4172f75e64ce31ca0e9809c66",
+    "command": "run_snow8_scca(csv_path=D:\\北大MEM\\01-课程学习\\02-技术核心课\\数据可视化技术及应用\\snow\\snow8\\subdistricts.csv, output_dir=D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-snow8-implementation\\paper\\ijgis_submission_20260605\\07_results\\scca_snow8)",
+    "code_commit": "cbe131b5c2c700ddd86947c120c2f66821b3d246",
+    "generated_at_utc": "2026-06-17T13:36:47.001058Z",
+    "input_rows": 32,
+    "input_columns": 32
+  },
   "files": {
     "data_profile": "data_profile.json",
     "variable_candidates": "variable_candidates.csv",
@@ -14,6 +23,7 @@
     "overlap_summary": "overlap_summary.json",
     "spatial_robustness": "spatial_robustness.csv",
     "credibility_report": "credibility_report.json",
-    "analysis_report": "analysis_report.md"
+    "analysis_report": "analysis_report.md",
+    "manifest": "manifest.json"
   }
 }
