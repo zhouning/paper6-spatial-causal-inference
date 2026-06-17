@@ -216,3 +216,32 @@ def test_audit_effects_writes_balance_overlap_and_credibility(tmp_path):
     assert paths.overlap_summary.exists()
     assert paths.spatial_robustness.exists()
     assert paths.credibility_report.exists()
+
+
+def test_audit_effects_downgrades_when_exposure_not_analyzable(tmp_path):
+    df = _snow8_like_frame()
+    df["perc_sou"] = [None, None, None]
+    spec = StudySpec.snow8_default()
+    paths = SCCAPaths(output_dir=tmp_path)
+    paths.ensure()
+    features, _ = build_context_features(df, spec, paths)
+    report = audit_effects(features, spec, paths)
+    assert report["decision"] == "weak_or_failed_support"
+    assert any("exposure" in reason.lower() for reason in report["reasons"])
+
+
+def test_audit_effects_downgrades_when_leave_group_out_unestimable(tmp_path):
+    df = _snow8_like_frame()
+    spec = StudySpec.snow8_default()
+    paths = SCCAPaths(output_dir=tmp_path)
+    paths.ensure()
+    features, _ = build_context_features(df, spec, paths)
+    features["district"] = ["A", "B", "C"]
+    report = audit_effects(features, spec, paths)
+    robustness = pd.read_csv(paths.spatial_robustness)
+    assert robustness["coef"].isna().all()
+    assert report["decision"] == "weak_or_failed_support"
+    assert any(
+        "leave" in reason.lower() or "spatial" in reason.lower()
+        for reason in report["reasons"]
+    )

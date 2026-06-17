@@ -68,6 +68,7 @@ def _write_overlap_summary(features: pd.DataFrame, spec: StudySpec, paths: SCCAP
             "exposure_min": None,
             "exposure_max": None,
             "exposure_unique": 0,
+            "exposure_analyzable": False,
             "share_at_min": None,
             "share_at_max": None,
             "boundary_mass": None,
@@ -82,6 +83,7 @@ def _write_overlap_summary(features: pd.DataFrame, spec: StudySpec, paths: SCCAP
             "exposure_min": exposure_min,
             "exposure_max": exposure_max,
             "exposure_unique": int(exposure.nunique()),
+            "exposure_analyzable": bool(n >= 2 and exposure.nunique() >= 2),
             "share_at_min": share_at_min,
             "share_at_max": share_at_max,
             "boundary_mass": float(max(share_at_min, share_at_max)),
@@ -195,6 +197,18 @@ def audit_effects(
 
     decision = "strong_support"
     reasons: list[str] = []
+    exposure_n = overlap.get("n")
+    exposure_unique = overlap.get("exposure_unique")
+    exposure_analyzable = bool(
+        isinstance(exposure_n, (int, float))
+        and isinstance(exposure_unique, (int, float))
+        and exposure_n >= 2
+        and exposure_unique >= 2
+    )
+    if not exposure_analyzable:
+        decision = _downgrade(decision, "weak_or_failed_support")
+        reasons.append("No analyzable exposure support is available for credibility auditing.")
+
     boundary_mass = overlap.get("boundary_mass")
     if isinstance(boundary_mass, (int, float)) and np.isfinite(boundary_mass) and boundary_mass > 0.25:
         decision = _downgrade(decision, "moderate_support")
@@ -207,6 +221,16 @@ def audit_effects(
     if sign_stable is False:
         decision = _downgrade(decision, "weak_or_failed_support")
         reasons.append("Leave-one-subgroup-out coefficients do not have stable signs.")
+    if (
+        spec.subgroup_column
+        and spec.subgroup_column in features.columns
+        and not robustness.empty
+        and "coef" in robustness.columns
+    ):
+        coefs = pd.to_numeric(robustness["coef"], errors="coerce")
+        if coefs.isna().all():
+            decision = _downgrade(decision, "weak_or_failed_support")
+            reasons.append("Leave-one-subgroup-out spatial robustness is not estimable.")
 
     unstable = sorted(name for name, status in statuses.items() if status == "unstable")
     if unstable:
