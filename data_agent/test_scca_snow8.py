@@ -105,3 +105,18 @@ def test_build_context_features_preserves_missing_core_values(tmp_path):
     assert pd.isna(features.loc[0, "outcome_change"])
     assert not pd.isna(features.loc[1, "pop_house"])
     assert not pd.isna(features.loc[1, "pop_house_centered"])
+
+
+from data_agent.scca.design import select_design
+
+
+def test_select_design_continuous_exposure_with_small_sample_warning(tmp_path):
+    df = _snow8_like_frame()
+    paths = SCCAPaths(output_dir=tmp_path)
+    paths.ensure()
+    plan = select_design(df, StudySpec.snow8_default(), paths)
+    assert plan["design"] == "continuous_exposure_baseline_adjusted"
+    assert "generalized_propensity_erf" in plan["estimators"]
+    assert "baseline_adjusted_ols" in plan["estimators"]
+    assert any("small sample" in warning.lower() for warning in plan["warnings"])
+    assert paths.design_plan.exists()
