@@ -328,6 +328,8 @@ def test_run_snow8_scca_end_to_end_on_fixture(tmp_path):
     assert metadata["input_rows"] == len(fixture)
     assert metadata["input_columns"] == len(fixture.columns)
     assert metadata["code_commit"]
+    assert metadata["code_commit_role"] == "source_commit_used_to_generate_outputs"
+    assert isinstance(metadata["git_dirty"], bool)
     assert metadata["generated_at_utc"].endswith("Z")
     assert "run_snow8_scca" in metadata["command"]
     expected_file_keys = {
@@ -378,5 +380,7 @@ def test_run_snow8_scca_cli_prints_manifest_json(tmp_path):
     assert manifest["metadata"]["source_sha256"] == hashlib.sha256(csv_path.read_bytes()).hexdigest()
     assert manifest["metadata"]["input_rows"] == len(fixture)
     assert manifest["metadata"]["input_columns"] == len(fixture.columns)
+    assert manifest["metadata"]["code_commit_role"] == "source_commit_used_to_generate_outputs"
+    assert isinstance(manifest["metadata"]["git_dirty"], bool)
     assert manifest["files"]["manifest"] == "manifest.json"
     assert (output_dir / manifest["files"]["manifest"]).exists()

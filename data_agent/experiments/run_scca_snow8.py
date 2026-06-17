@@ -34,6 +34,20 @@ def _current_git_commit() -> str:
     return result.stdout.strip() or "unknown"
 
 
+def _git_dirty() -> bool:
+    try:
+        result = subprocess.run(
+            ["git", "status", "--short"],
+            cwd=PROJECT_ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return False
+    return bool(result.stdout.strip())
+
+
 def run_snow8_scca(csv_path: str | Path, output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> dict[str, object]:
     """Run the SCCA snow8 workflow and return the output manifest."""
 
@@ -52,6 +66,12 @@ def run_snow8_scca(csv_path: str | Path, output_dir: str | Path = DEFAULT_OUTPUT
         "source_sha256": hashlib.sha256(source_path.read_bytes()).hexdigest(),
         "command": f"run_snow8_scca(csv_path={source_path}, output_dir={paths.output_dir})",
         "code_commit": _current_git_commit(),
+        "code_commit_role": "source_commit_used_to_generate_outputs",
+        "git_dirty": _git_dirty(),
+        "artifact_commit_note": (
+            "The final artifact commit is represented by repository history and is not "
+            "self-recorded in this manifest because doing so would be self-referential."
+        ),
         "generated_at_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "input_rows": int(df.shape[0]),
         "input_columns": int(df.shape[1]),
