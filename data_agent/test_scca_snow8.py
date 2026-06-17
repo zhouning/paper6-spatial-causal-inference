@@ -271,3 +271,18 @@ def test_audit_effects_downgrades_when_some_leave_group_out_folds_unestimable(tm
         "leave" in reason.lower() or "spatial" in reason.lower()
         for reason in report["reasons"]
     )
+
+
+from data_agent.scca.reporting import write_report
+
+
+def test_write_report_creates_markdown_and_manifest(tmp_path):
+    spec = StudySpec.snow8_default()
+    paths = SCCAPaths(output_dir=tmp_path)
+    paths.ensure()
+    credibility = {"decision": "moderate_support", "reasons": ["diagnostic warning"]}
+    write_report(spec, paths, credibility)
+    text = paths.analysis_report.read_text(encoding="utf-8")
+    assert "# SCCA Analysis Report" in text
+    assert "moderate_support" in text
+    assert paths.manifest.exists()
