@@ -286,3 +286,17 @@ def test_write_report_creates_markdown_and_manifest(tmp_path):
     assert "# SCCA Analysis Report" in text
     assert "moderate_support" in text
     assert paths.manifest.exists()
+
+
+from data_agent.experiments.run_scca_snow8 import run_snow8_scca
+
+
+def test_run_snow8_scca_end_to_end_on_fixture(tmp_path):
+    csv_path = tmp_path / "snow8_fixture.csv"
+    _snow8_like_frame().to_csv(csv_path, index=False)
+    output_dir = tmp_path / "outputs"
+    manifest = run_snow8_scca(csv_path=csv_path, output_dir=output_dir)
+    assert manifest["decision"] in {"strong_support", "moderate_support", "weak_or_failed_support"}
+    assert (output_dir / "analysis_report.md").exists()
+    assert (output_dir / "effect_estimates.csv").exists()
+    assert (output_dir / "credibility_report.json").exists()
