@@ -5,8 +5,11 @@
     "source_csv": "D:\\北大MEM\\01-课程学习\\02-技术核心课\\数据可视化技术及应用\\snow\\snow8\\subdistricts.csv",
     "source_sha256": "6ff18b96dd9b48dcfe70873067dff0da2e479dd4172f75e64ce31ca0e9809c66",
     "command": "run_snow8_scca(csv_path=D:\\北大MEM\\01-课程学习\\02-技术核心课\\数据可视化技术及应用\\snow\\snow8\\subdistricts.csv, output_dir=D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-snow8-implementation\\paper\\ijgis_submission_20260605\\07_results\\scca_snow8)",
-    "code_commit": "cbe131b5c2c700ddd86947c120c2f66821b3d246",
-    "generated_at_utc": "2026-06-17T13:36:47.001058Z",
+    "code_commit": "6bf3274a6399f1405d182aaff0b66080b28bcf01",
+    "code_commit_role": "source_commit_used_to_generate_outputs",
+    "git_dirty": false,
+    "artifact_commit_note": "The final artifact commit is represented by repository history and is not self-recorded in this manifest because doing so would be self-referential.",
+    "generated_at_utc": "2026-06-17T13:49:41.418716Z",
     "input_rows": 32,
     "input_columns": 32
   },
