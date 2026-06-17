@@ -6,6 +6,7 @@ import json
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Iterable
 
 import numpy as np
 import pandas as pd
@@ -62,12 +63,35 @@ def _current_git_commit() -> str:
     return commit or "unknown"
 
 
-def _git_dirty() -> bool | None:
+def _git_status_path(status_line: str) -> str:
+    path = status_line[3:].strip()
+    if " -> " in path:
+        path = path.split(" -> ", 1)[1].strip()
+    return path.replace("\\", "/")
+
+
+def _relative_git_path(path: Path) -> str | None:
+    try:
+        relative = path.resolve().relative_to(PROJECT_ROOT.resolve())
+    except ValueError:
+        return None
+    return relative.as_posix().rstrip("/") + "/"
+
+
+def _git_dirty(ignored_paths: Iterable[Path] = ()) -> bool | None:
     try:
         status = _run_git("status", "--short")
     except (OSError, subprocess.CalledProcessError):
         return None
-    return bool(status)
+    ignored_prefixes = tuple(
+        prefix for path in ignored_paths if (prefix := _relative_git_path(path)) is not None
+    )
+    for line in status.splitlines():
+        git_path = _git_status_path(line)
+        if ignored_prefixes and any(git_path.startswith(prefix) for prefix in ignored_prefixes):
+            continue
+        return True
+    return False
 
 
 def run_soho_scca(csv_path: str | Path, output_dir: str | Path = DEFAULT_OUTPUT_DIR) -> dict[str, object]:
@@ -90,7 +114,7 @@ def run_soho_scca(csv_path: str | Path, output_dir: str | Path = DEFAULT_OUTPUT_
         "command": f"run_soho_scca(csv_path={source_path}, output_dir={paths.output_dir})",
         "code_commit": _current_git_commit(),
         "code_commit_role": "source_commit_used_to_generate_outputs",
-        "git_dirty": _git_dirty(),
+        "git_dirty": _git_dirty(ignored_paths=(paths.output_dir,)),
         "artifact_commit_note": (
             "The final artifact commit is represented by repository history and is not "
             "self-recorded in this manifest because doing so would be self-referential."

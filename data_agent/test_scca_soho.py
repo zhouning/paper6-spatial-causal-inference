@@ -1,7 +1,9 @@
 import pandas as pd
 
 from data_agent.experiments.run_scca_soho import (
+    DEFAULT_OUTPUT_DIR,
     PROJECT_ROOT,
+    _git_dirty,
     _run_git,
     prepare_soho_table,
     run_soho_scca,
@@ -77,3 +79,29 @@ def test_git_runner_marks_worktree_safe(monkeypatch):
         "HEAD",
     ]
     assert captured["kwargs"]["cwd"] == PROJECT_ROOT
+
+
+def test_git_dirty_can_ignore_generated_output_dir(monkeypatch):
+    monkeypatch.setattr(
+        "data_agent.experiments.run_scca_soho._run_git",
+        lambda *args: "\n".join(
+            [
+                "?? paper/ijgis_submission_20260605/07_results/scca_soho/manifest.json",
+                "?? paper/ijgis_submission_20260605/07_results/scca_soho/effect_estimates.csv",
+            ]
+        ),
+    )
+    assert _git_dirty(ignored_paths=(DEFAULT_OUTPUT_DIR,)) is False
+
+
+def test_git_dirty_reports_source_changes_outside_generated_output_dir(monkeypatch):
+    monkeypatch.setattr(
+        "data_agent.experiments.run_scca_soho._run_git",
+        lambda *args: "\n".join(
+            [
+                " M data_agent/experiments/run_scca_soho.py",
+                "?? paper/ijgis_submission_20260605/07_results/scca_soho/manifest.json",
+            ]
+        ),
+    )
+    assert _git_dirty(ignored_paths=(DEFAULT_OUTPUT_DIR,)) is True
