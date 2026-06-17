@@ -33,6 +33,21 @@ class StudySpec:
             subgroup_column="district",
         )
 
+    @classmethod
+    def soho_default(cls) -> "StudySpec":
+        return cls(
+            name="soho_broad_street_pump_mechanism",
+            unit_id="ID",
+            exposure="bspump_proximity",
+            outcome="deaths",
+            baseline_outcome=None,
+            population=None,
+            confounders=("dis_pestf", "dis_sewers", "pestfield"),
+            context_columns=("COORD_X", "COORD_Y"),
+            coordinate_columns=("COORD_X", "COORD_Y"),
+            subgroup_column=None,
+        )
+
 
 @dataclass(frozen=True)
 class SCCAPaths:
