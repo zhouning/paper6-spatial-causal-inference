@@ -189,6 +189,8 @@ def test_estimate_effects_handles_non_default_index_and_reports_erf_effect(tmp_p
     assert "range_effect" in gps
     assert "response_min_exposure" in gps
     assert "response_max_exposure" in gps
+    erf_curve = pd.read_csv(paths.erf_curve)
+    assert gps["n_grid"] == len(erf_curve)
     diagnostics = json.loads(paths.model_diagnostics.read_text(encoding="utf-8"))
     assert diagnostics["gps_weight_mean"] > 0
     assert diagnostics["erf_n"] >= 1

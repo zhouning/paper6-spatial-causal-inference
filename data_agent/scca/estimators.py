@@ -318,6 +318,7 @@ def estimate_effects(
         "ci_upper": np.nan,
         "r_squared": np.nan,
         "n": int(erf_result["erf_n"]),
+        "n_grid": int(len(erf)),
         "complete_n": int(erf_result["erf_n"]),
         "dropped_n": int(erf_result["dropped_n"]),
         "warnings": erf_result["warnings"],
@@ -362,6 +363,7 @@ def estimate_effects(
         "gps_fit_n": gps_result["gps_fit_n"],
         "gps_fallback_reason": gps_result["gps_fallback_reason"],
         "erf_n": gps_result["n"],
+        "erf_grid_n": gps_result["n_grid"],
         "estimators": {
             name: {
                 "status": value["status"],
