@@ -1,6 +1,6 @@
 import pandas as pd
 
-from data_agent.experiments.run_scca_soho import prepare_soho_table
+from data_agent.experiments.run_scca_soho import prepare_soho_table, run_soho_scca
 from data_agent.scca.specs import StudySpec
 
 
@@ -35,3 +35,15 @@ def test_prepare_soho_table_creates_bspump_proximity():
     assert "bspump_proximity" in prepared.columns
     assert prepared.loc[2, "bspump_proximity"] > prepared.loc[0, "bspump_proximity"]
     assert prepared["deaths"].dtype.kind in {"f", "i"}
+
+
+def test_run_soho_scca_end_to_end_on_fixture(tmp_path):
+    csv_path = tmp_path / "soho_fixture.csv"
+    _soho_fixture().to_csv(csv_path, index=False)
+    output_dir = tmp_path / "outputs"
+    manifest = run_soho_scca(csv_path=csv_path, output_dir=output_dir)
+    assert manifest["decision"] in {"strong_support", "moderate_support", "weak_or_failed_support"}
+    assert manifest["metadata"]["input_rows"] == 4
+    assert manifest["metadata"]["source_sha256"]
+    for file_name in manifest["files"].values():
+        assert (output_dir / file_name).exists()
