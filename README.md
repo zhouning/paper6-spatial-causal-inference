@@ -42,6 +42,14 @@ The real-data UHI and LULC/LST experiments can be run with:
 
 Those commands use local Chongqing sample data and will try Google Earth Engine for MODIS LST. If Earth Engine is not authenticated, the scripts fall back to synthetic LST for a runnable smoke reproduction; see `REPRODUCIBILITY.md` for details.
 
+Run the first Spatial Context Causal Adjustment (SCCA) redesign experiment on the South London Snow cholera data:
+
+```powershell
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_snow8 --csv-path "D:\北大MEM\01-课程学习\02-技术核心课\数据可视化技术及应用\snow\snow8\subdistricts.csv"
+```
+
+The outputs are written to `paper/ijgis_submission_20260605/07_results/scca_snow8/`.
+
 ## Paper Entry Points
 
 - Main IJGIS TeX: `paper/ijgis_submission_20260605/01_manuscript/01_manuscript_ijgis.tex`
