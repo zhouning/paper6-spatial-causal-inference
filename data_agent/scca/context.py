@@ -33,7 +33,7 @@ def build_context_features(
     used_columns: list[str] = [spec.exposure, spec.outcome]
     generated: list[str] = []
 
-    if spec.baseline_outcome:
+    if spec.baseline_outcome and spec.baseline_outcome in df.columns:
         features[spec.baseline_outcome] = _numeric(df, spec.baseline_outcome)
         features["outcome_change"] = features[spec.outcome] - features[spec.baseline_outcome]
         features[f"{spec.baseline_outcome}_centered"] = _center(df[spec.baseline_outcome])

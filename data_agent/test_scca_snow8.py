@@ -76,3 +76,15 @@ def test_build_context_features_adds_baseline_difference_and_density(tmp_path):
     assert manifest["n_features"] >= 4
     assert paths.context_features.exists()
     assert paths.context_manifest.exists()
+
+
+def test_build_context_features_skips_missing_baseline_column(tmp_path):
+    df = _snow8_like_frame().drop(columns=["rate1849"])
+    paths = SCCAPaths(output_dir=tmp_path)
+    paths.ensure()
+    features, manifest = build_context_features(df, StudySpec.snow8_default(), paths)
+    assert "outcome_change" not in features.columns
+    assert "rate1849_centered" not in features.columns
+    assert "perc_sou" in features.columns
+    assert manifest["n_rows"] == 3
+    assert paths.context_features.exists()
