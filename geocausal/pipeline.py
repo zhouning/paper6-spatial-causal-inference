@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -106,6 +107,47 @@ def _bootstrap_group(
         grouped[x_col] = loaded_frame.loc[grouped.index, x_col]
         grouped[y_col] = loaded_frame.loc[grouped.index, y_col]
         grouped["_gc_grid_group"] = make_quantile_grid_groups(grouped, x_col, y_col, bins=4)
+        return grouped, "_gc_grid_group"
+
+    geometry_series = None
+    if hasattr(loaded_frame, "geometry"):
+        geometry_series = getattr(loaded_frame, "geometry")
+    elif "geometry" in loaded_frame.columns:
+        geometry_series = loaded_frame["geometry"]
+
+    if geometry_series is not None:
+        grouped = features.copy()
+        x_values: list[float] = []
+        y_values: list[float] = []
+        valid_points = 0
+        for geometry in geometry_series.loc[grouped.index]:
+            point = None
+            if geometry is not None and not getattr(geometry, "is_empty", True):
+                representative = getattr(geometry, "representative_point", None)
+                if callable(representative):
+                    point = representative()
+                else:
+                    centroid = getattr(geometry, "centroid", None)
+                    if centroid is not None:
+                        point = centroid
+            x = getattr(point, "x", float("nan")) if point is not None else float("nan")
+            y = getattr(point, "y", float("nan")) if point is not None else float("nan")
+            if math.isfinite(x) and math.isfinite(y):
+                valid_points += 1
+            x_values.append(x)
+            y_values.append(y)
+
+        if valid_points == 0:
+            raise GeoCausalConfigError(
+                "robustness.bootstrap.group_column is required when coordinate columns are unavailable "
+                "and geometry does not yield finite representative coordinates."
+            )
+
+        grouped["_gc_geometry_x"] = x_values
+        grouped["_gc_geometry_y"] = y_values
+        grouped["_gc_grid_group"] = make_quantile_grid_groups(
+            grouped, "_gc_geometry_x", "_gc_geometry_y", bins=4
+        )
         return grouped, "_gc_grid_group"
 
     raise GeoCausalConfigError(

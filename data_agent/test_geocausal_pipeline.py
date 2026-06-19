@@ -38,16 +38,17 @@ def _write_fixture_config(
     csv_name: str = "fixture.csv",
     *,
     include_bootstrap_group: bool = True,
+    include_coordinates: bool = True,
 ) -> Path:
     config_path = tmp_path / "analysis.yaml"
     bootstrap_group = "    group_column: group\n" if include_bootstrap_group else ""
+    coordinate_lines = "  x: x\n  y: y\n" if include_coordinates else ""
     config_path.write_text(
         f"""
 case_name: geocausal_fixture
 input:
   path: {csv_name}
-  x: x
-  y: y
+{coordinate_lines.rstrip()}
 variables:
   unit_id: unit_id
   exposure: exposure
@@ -138,6 +139,38 @@ def test_run_analysis_bootstrap_falls_back_to_input_coordinates(tmp_path):
     assert manifest == saved_manifest
     for relative_path in manifest["files"].values():
         assert (output_dir / relative_path).exists(), relative_path
+    bootstrap_rows = pd.read_csv(output_dir / "bootstrap_robustness.csv")
+    assert not bootstrap_rows.empty
+
+
+def test_run_analysis_bootstrap_falls_back_to_geojson_geometry(tmp_path):
+    geopandas = pytest.importorskip("geopandas")
+    shapely_geometry = pytest.importorskip("shapely.geometry")
+
+    frame = _fixture_frame().drop(columns=["x", "y"])
+    geo_frame = geopandas.GeoDataFrame(
+        frame,
+        geometry=[
+            shapely_geometry.Point(-120.0 + offset, 35.0 + offset * 0.25)
+            for offset in range(len(frame))
+        ],
+        crs="EPSG:4326",
+    )
+    geo_frame.to_file(tmp_path / "fixture.geojson", driver="GeoJSON")
+    config = load_config(
+        _write_fixture_config(
+            tmp_path,
+            csv_name="fixture.geojson",
+            include_bootstrap_group=False,
+            include_coordinates=False,
+        )
+    )
+
+    manifest = run_analysis(config)
+
+    output_dir = config.resolve_output_dir()
+    saved_manifest = json.loads((output_dir / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest == saved_manifest
     bootstrap_rows = pd.read_csv(output_dir / "bootstrap_robustness.csv")
     assert not bootstrap_rows.empty
 
