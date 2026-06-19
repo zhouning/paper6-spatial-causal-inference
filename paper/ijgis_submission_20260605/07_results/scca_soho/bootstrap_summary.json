@@ -1,0 +1,13 @@
+{
+  "case": "soho",
+  "bootstrap_type": "grid_block",
+  "n_replicates_requested": 200,
+  "n_replicates_valid": 200,
+  "coef_mean": 1.1108534424733256,
+  "coef_median": 1.0992447723558123,
+  "coef_std": 0.30348267285347624,
+  "ci_lower_2_5": 0.49118231223771613,
+  "ci_upper_97_5": 1.7764849120548805,
+  "sign_stability": 1.0,
+  "failure_count": 0
+}

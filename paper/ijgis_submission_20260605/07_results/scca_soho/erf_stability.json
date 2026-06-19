@@ -1,0 +1,13 @@
+{
+  "case": "soho",
+  "n_grid": 50,
+  "response_at_min_exposure": -0.4275194893607024,
+  "response_at_median_exposure": 1.4478972908437568,
+  "response_at_max_exposure": 3.248297399840037,
+  "range_effect": 3.6758168892007395,
+  "median_split_effect": 1.8004001089962802,
+  "monotonic_direction": "increasing",
+  "monotonic_fraction": 1.0,
+  "max_adjacent_response_jump": 0.07501667120817951,
+  "interpretation": "ERF is mostly increasing with monotonic fraction 1.000."
+}

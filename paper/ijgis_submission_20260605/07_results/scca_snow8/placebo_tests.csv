@@ -1,0 +1,2 @@
+case,test_name,exposure,role,expected_relation,estimator,coef,se,p_value,ci_lower,ci_upper,n,status,interpretation
+snow8,lambeth_supplier_share,perc_lam,competing_supplier,weaker_or_opposite_than_perc_sou,baseline_adjusted_ols,-20.095948696104323,28.849164634200783,0.4937005316974957,-80.0910708782159,39.899173486007264,31,ok,estimated

@@ -1,0 +1,11 @@
+{
+  "cases": [
+    "snow8",
+    "soho",
+    "county_social_capital"
+  ],
+  "files": {
+    "case_robustness_summary": "case_robustness_summary.csv",
+    "case_robustness_report": "case_robustness_report.md"
+  }
+}

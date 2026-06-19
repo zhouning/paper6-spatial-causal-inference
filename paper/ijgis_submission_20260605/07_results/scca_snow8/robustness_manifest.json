@@ -1,0 +1,23 @@
+{
+  "case": "snow8",
+  "original_decision": "moderate_support",
+  "main_coef": 83.17184030435816,
+  "robustness_interpretation": "bounded_support",
+  "ablation_direction_stable": true,
+  "placebo_weaker_than_main": true,
+  "bootstrap_sign_stability": 0.985,
+  "erf_monotonic_direction": "increasing",
+  "main_limitation": "Maximum exposure-balance correlation is high (0.828).",
+  "reasons": [
+    "Ablation, placebo, bootstrap, and ERF checks support the current interpretation."
+  ],
+  "files": {
+    "context_ablation": "context_ablation.csv",
+    "placebo_tests": "placebo_tests.csv",
+    "bootstrap_robustness": "bootstrap_robustness.csv",
+    "bootstrap_summary": "bootstrap_summary.json",
+    "erf_stability": "erf_stability.json",
+    "robustness_report": "robustness_report.md",
+    "robustness_manifest": "robustness_manifest.json"
+  }
+}

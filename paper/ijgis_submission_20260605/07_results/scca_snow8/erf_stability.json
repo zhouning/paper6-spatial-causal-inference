@@ -1,0 +1,13 @@
+{
+  "case": "snow8",
+  "n_grid": 50,
+  "response_at_min_exposure": 19.769375761362152,
+  "response_at_median_exposure": 98.19961669474412,
+  "response_at_max_exposure": 173.49264799079077,
+  "range_effect": 153.72327222942863,
+  "median_split_effect": 75.29303129604665,
+  "monotonic_direction": "increasing",
+  "monotonic_fraction": 1.0,
+  "max_adjacent_response_jump": 3.137209637335303,
+  "interpretation": "ERF is mostly increasing with monotonic fraction 1.000."
+}

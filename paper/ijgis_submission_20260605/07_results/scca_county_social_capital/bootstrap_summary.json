@@ -1,0 +1,13 @@
+{
+  "case": "county_social_capital",
+  "bootstrap_type": "STATE_NAME",
+  "n_replicates_requested": 200,
+  "n_replicates_valid": 200,
+  "coef_mean": 0.14746134609301895,
+  "coef_median": 0.14729182057580453,
+  "coef_std": 0.013367713398969635,
+  "ci_lower_2_5": 0.12283146691974567,
+  "ci_upper_97_5": 0.1755114331174086,
+  "sign_stability": 1.0,
+  "failure_count": 0
+}

@@ -1,0 +1,3 @@
+case,test_name,exposure,role,expected_relation,estimator,coef,se,p_value,ci_lower,ci_upper,n,status,interpretation
+county_social_capital,shape_length,Shape_Length,shape_placebo,weaker_than_social_assoc,baseline_adjusted_ols,-6.263751682096542e-06,8.841775173765071e-07,1.7232570675346261e-12,-7.997385960754255e-06,-4.530117403438829e-06,3108,ok,estimated
+county_social_capital,shape_area,Shape_Area,shape_placebo,weaker_than_social_assoc,baseline_adjusted_ols,1.0332717823510252e-10,2.7351636407197915e-11,0.0001612427569618344,4.9697976495618765e-11,1.5695637997458627e-10,3108,ok,estimated

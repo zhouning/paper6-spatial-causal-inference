@@ -66,6 +66,17 @@ D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_county_social
 
 The outputs are written to `paper/ijgis_submission_20260605/07_results/scca_county_social_capital/`. This case is an external continuous-exposure validation with state-level robustness, not a full county-adjacency spatial diagnostic.
 
+Run the SCCA robustness suite after the three case-study runs:
+
+```powershell
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_snow8_robustness --csv-path "D:\鍖楀ぇMEM\01-璇剧▼瀛︿範\02-鎶€鏈牳蹇冭\鏁版嵁鍙鍖栨妧鏈強搴旂敤\snow\snow8\subdistricts.csv"
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_soho_robustness --csv-path "D:\鍖楀ぇMEM\01-璇剧▼瀛︿範\02-鎶€鏈牳蹇冭\鏁版嵁鍙鍖栨妧鏈強搴旂敤\snow\snow1\deaths_nd_by_house.csv"
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_county_social_capital_robustness --workbook-path "D:\鍖楀ぇMEM\01-璇剧▼瀛︿範\02-鎶€鏈牳蹇冭\鏁版嵁鍙鍖栨妧鏈強搴旂敤\CausalInferAnalysis\CausalInferAnalysis\CountyData_TableToExcel.xlsx"
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_robustness_summary
+```
+
+The robustness outputs are written beside each SCCA case directory and summarized under `paper/ijgis_submission_20260605/07_results/scca_robustness_summary/`.
+
 ## Paper Entry Points
 
 - Main IJGIS TeX: `paper/ijgis_submission_20260605/01_manuscript/01_manuscript_ijgis.tex`

@@ -1,0 +1,13 @@
+{
+  "case": "county_social_capital",
+  "n_grid": 50,
+  "response_at_min_exposure": 76.92353000950911,
+  "response_at_median_exposure": 80.3599303744198,
+  "response_at_max_exposure": 83.65887472473408,
+  "range_effect": 6.735344715224969,
+  "median_split_effect": 3.2989443503142724,
+  "monotonic_direction": "increasing",
+  "monotonic_fraction": 1.0,
+  "max_adjacent_response_jump": 0.13745601459643808,
+  "interpretation": "ERF is mostly increasing with monotonic fraction 1.000."
+}

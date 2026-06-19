@@ -1,0 +1,4 @@
+case,original_decision,robustness_interpretation,main_coef,ablation_direction_stable,placebo_weaker_than_main,bootstrap_sign_stability,erf_monotonic_direction,main_limitation
+snow8,moderate_support,bounded_support,83.17184030435816,True,True,0.985,increasing,Maximum exposure-balance correlation is high (0.828).
+soho,moderate_support,bounded_support,1.0873063923785589,True,True,1.0,increasing,Maximum exposure-balance correlation is high (0.543).
+county_social_capital,strong_support,robust_support,0.1465206143525702,True,True,1.0,increasing,No credibility downgrade warnings were triggered.

@@ -1,0 +1,13 @@
+{
+  "case": "snow8",
+  "bootstrap_type": "district",
+  "n_replicates_requested": 200,
+  "n_replicates_valid": 200,
+  "coef_mean": 79.4729219111226,
+  "coef_median": 83.52010727791858,
+  "coef_std": 36.95210089929084,
+  "ci_lower_2_5": 8.217844515825448,
+  "ci_upper_97_5": 153.05329052310614,
+  "sign_stability": 0.985,
+  "failure_count": 0
+}
