@@ -48,6 +48,33 @@ class StudySpec:
             subgroup_column=None,
         )
 
+    @classmethod
+    def county_social_capital_default(cls) -> "StudySpec":
+        return cls(
+            name="county_social_capital_longevity_validation",
+            unit_id="FIPS",
+            exposure="SocialAssoc",
+            outcome="AveAgeDeath",
+            baseline_outcome=None,
+            population=None,
+            confounders=(
+                "UnemployRate",
+                "pHHinPoverty",
+                "pNoHealthInsur",
+                "MentalHealth",
+                "pAdultSmoking",
+                "pAdultObesity",
+                "FastFood",
+                "pInsufficientSleep",
+                "pAlcohol",
+                "pSuicideDeaths",
+                "AirPollution",
+            ),
+            context_columns=("Shape_Length", "Shape_Area"),
+            coordinate_columns=None,
+            subgroup_column="STATE_NAME",
+        )
+
 
 @dataclass(frozen=True)
 class SCCAPaths:
