@@ -1,0 +1,3 @@
+estimator,status,coef,se,p_value,ci_lower,ci_upper,r_squared,n,complete_n,dropped_n,warnings
+baseline_adjusted_ols,ok,0.1465206143525702,0.006709198474718134,1.8919630150876344e-98,0.13336567917138162,0.15967554953375876,0.6923183536193191,3108,3108.0,0,[]
+generalized_propensity_erf,ok,6.735344715224969,,,,,,3108,,0,

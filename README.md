@@ -58,6 +58,14 @@ D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_soho --csv-pa
 
 The outputs are written to `paper/ijgis_submission_20260605/07_results/scca_soho/`.
 
+Run the county social-capital SCCA external validation experiment:
+
+```powershell
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_county_social_capital --workbook-path "D:\鍖楀ぇMEM\01-璇剧▼瀛︿範\02-鎶€鏈牳蹇冭\鏁版嵁鍙鍖栨妧鏈強搴旂敤\CausalInferAnalysis\CausalInferAnalysis\CountyData_TableToExcel.xlsx"
+```
+
+The outputs are written to `paper/ijgis_submission_20260605/07_results/scca_county_social_capital/`. This case is an external continuous-exposure validation with state-level robustness, not a full county-adjacency spatial diagnostic.
+
 ## Paper Entry Points
 
 - Main IJGIS TeX: `paper/ijgis_submission_20260605/01_manuscript/01_manuscript_ijgis.tex`
