@@ -2,6 +2,11 @@ import json
 
 import pandas as pd
 
+from data_agent.experiments.run_scca_county_social_capital_robustness import (
+    run_county_social_capital_robustness,
+)
+from data_agent.experiments.run_scca_snow8_robustness import run_snow8_robustness
+from data_agent.experiments.run_scca_soho_robustness import run_soho_robustness
 from data_agent.scca.robustness import (
     classify_robustness,
     run_context_ablation,
@@ -193,3 +198,86 @@ def test_classify_robustness_marks_placebo_stronger_as_fragile():
         "main limitation",
     )
     assert classification["robustness_interpretation"] == "fragile_support"
+
+
+def test_run_snow8_robustness_writes_manifest_on_fixture(tmp_path):
+    frame = pd.DataFrame(
+        {
+            "sub_ID": [f"s{i}" for i in range(1, 9)],
+            "district": ["A", "A", "B", "B", "C", "C", "D", "D"],
+            "perc_sou": [0.1, 0.2, 0.4, 0.5, 0.7, 0.8, 0.9, 1.0],
+            "perc_lam": [0.9, 0.8, 0.6, 0.5, 0.3, 0.2, 0.1, 0.0],
+            "rate1854": [80, 85, 100, 110, 130, 140, 155, 165],
+            "rate1849": [60, 62, 70, 72, 80, 82, 90, 92],
+            "pop_house": [5.1, 5.3, 5.8, 6.0, 6.4, 6.6, 7.0, 7.1],
+            "pop1851": [1000, 1050, 1100, 1150, 1200, 1250, 1300, 1350],
+            "pop1854": [1010, 1060, 1110, 1160, 1210, 1260, 1310, 1360],
+            "d_sou": [1, 2, 3, 4, 5, 6, 7, 8],
+            "d_lam": [8, 7, 6, 5, 4, 3, 2, 1],
+            "d_pump": [2, 2, 3, 3, 4, 4, 5, 5],
+            "d_thames": [10, 9, 8, 7, 6, 5, 4, 3],
+            "d_unasc": [0.1, 0.2, 0.1, 0.2, 0.3, 0.2, 0.3, 0.4],
+        }
+    )
+    csv_path = tmp_path / "snow8.csv"
+    frame.to_csv(csv_path, index=False)
+    manifest = run_snow8_robustness(csv_path=csv_path, output_dir=tmp_path / "out", n_replicates=5)
+    assert manifest["case"] == "snow8"
+    assert (tmp_path / "out" / "robustness_manifest.json").exists()
+
+
+def test_run_soho_robustness_writes_manifest_on_fixture(tmp_path):
+    frame = pd.DataFrame(
+        {
+            "ID": [str(i) for i in range(1, 9)],
+            "deaths": [0, 1, 1, 2, 2, 3, 3, 4],
+            "death_dum": [0, 1, 1, 1, 1, 1, 1, 1],
+            "dis_bspump": [200, 160, 120, 90, 70, 50, 30, 10],
+            "dis_pestf": [20, 30, 35, 45, 60, 80, 90, 110],
+            "dis_sewers": [25, 35, 40, 55, 70, 85, 100, 115],
+            "pestfield": [1, 1, 1, 0, 0, 0, 0, 0],
+            "COORD_X": [529200, 529220, 529240, 529260, 529280, 529300, 529320, 529340],
+            "COORD_Y": [181000, 181020, 181040, 181060, 181080, 181100, 181120, 181140],
+        }
+    )
+    csv_path = tmp_path / "soho.csv"
+    frame.to_csv(csv_path, index=False)
+    manifest = run_soho_robustness(csv_path=csv_path, output_dir=tmp_path / "out", n_replicates=5)
+    assert manifest["case"] == "soho"
+    assert (tmp_path / "out" / "robustness_manifest.json").exists()
+
+
+def test_run_county_social_capital_robustness_writes_manifest_on_fixture(tmp_path):
+    frame = pd.DataFrame(
+        {
+            "OBJECTID": list(range(1, 9)),
+            "STATE_NAME": ["A", "A", "B", "B", "C", "C", "D", "D"],
+            "CountyCode": [1001, 1003, 2001, 2003, 3001, 3003, 4001, 4003],
+            "County": [f"County {i}" for i in range(1, 9)],
+            "FIPS": [1001, 1003, 2001, 2003, 3001, 3003, 4001, 4003],
+            "AveAgeDeath": [70, 71, 72, 73, 74, 75, 76, 77],
+            "SocialAssoc": [5, 6, 7, 8, 9, 10, 11, 12],
+            "UnemployRate": [6, 5, 5, 4, 4, 3, 3, 2],
+            "pHHinPoverty": [20, 18, 16, 14, 12, 10, 8, 6],
+            "pNoHealthInsur": [12, 11, 10, 9, 8, 7, 6, 5],
+            "MentalHealth": [5, 5, 4, 4, 3, 3, 2, 2],
+            "pAdultSmoking": [25, 23, 21, 19, 17, 15, 13, 11],
+            "pAdultObesity": [35, 34, 33, 32, 31, 30, 29, 28],
+            "FastFood": [2, 2, 3, 3, 4, 4, 5, 5],
+            "pInsufficientSleep": [40, 38, 36, 34, 32, 30, 28, 26],
+            "pAlcohol": [4, 5, 6, 7, 8, 9, 10, 11],
+            "pSuicideDeaths": [20, 19, 18, 17, 16, 15, 14, 13],
+            "AirPollution": [12, 11, 10, 9, 8, 7, 6, 5],
+            "Shape_Length": [100, 120, 130, 140, 150, 160, 170, 180],
+            "Shape_Area": [1000, 1100, 1200, 1300, 1400, 1500, 1600, 1700],
+        }
+    )
+    workbook = tmp_path / "county.xlsx"
+    frame.to_excel(workbook, sheet_name="CountyData", index=False)
+    manifest = run_county_social_capital_robustness(
+        workbook_path=workbook,
+        output_dir=tmp_path / "out",
+        n_replicates=5,
+    )
+    assert manifest["case"] == "county_social_capital"
+    assert (tmp_path / "out" / "robustness_manifest.json").exists()
