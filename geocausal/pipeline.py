@@ -89,6 +89,7 @@ def _main_effect(effect_estimates_path: Path) -> float:
 def _bootstrap_group(
     config: GeoCausalConfig,
     features: pd.DataFrame,
+    loaded_frame: pd.DataFrame,
 ) -> tuple[pd.DataFrame, str]:
     group_column = config.robustness.bootstrap.group_column
     if group_column:
@@ -99,9 +100,11 @@ def _bootstrap_group(
         return features, group_column
 
     spec = config.to_study_spec()
-    if spec.coordinate_columns and all(column in features.columns for column in spec.coordinate_columns):
+    if spec.coordinate_columns and all(column in loaded_frame.columns for column in spec.coordinate_columns):
         x_col, y_col = spec.coordinate_columns
         grouped = features.copy()
+        grouped[x_col] = loaded_frame.loc[grouped.index, x_col]
+        grouped[y_col] = loaded_frame.loc[grouped.index, y_col]
         grouped["_gc_grid_group"] = make_quantile_grid_groups(grouped, x_col, y_col, bins=4)
         return grouped, "_gc_grid_group"
 
@@ -172,9 +175,8 @@ def _write_geocausal_manifest(
 def run_analysis(config: GeoCausalConfig) -> dict[str, Any]:
     try:
         diagnosis = diagnose_config(config)
-        warnings = list(diagnosis["warnings"])
+        warnings = list(dict.fromkeys(diagnosis["warnings"]))
         loaded = load_dataset(config)
-        warnings.extend(loaded.warnings)
         spec = config.to_study_spec()
         paths = SCCAPaths(output_dir=config.resolve_output_dir())
         paths.ensure()
@@ -202,7 +204,7 @@ def run_analysis(config: GeoCausalConfig) -> dict[str, Any]:
             config.case_name,
             [item.to_robustness_test() for item in config.robustness.placebo_exposures],
         )
-        bootstrap_features, group_column = _bootstrap_group(config, features)
+        bootstrap_features, group_column = _bootstrap_group(config, features, loaded.frame)
         bootstrap_rows, bootstrap_summary = run_group_bootstrap(
             bootstrap_features,
             spec,

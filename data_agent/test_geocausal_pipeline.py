@@ -28,8 +28,14 @@ def _fixture_frame() -> pd.DataFrame:
     )
 
 
-def _write_fixture_config(tmp_path: Path, csv_name: str = "fixture.csv") -> Path:
+def _write_fixture_config(
+    tmp_path: Path,
+    csv_name: str = "fixture.csv",
+    *,
+    include_bootstrap_group: bool = True,
+) -> Path:
     config_path = tmp_path / "analysis.yaml"
+    bootstrap_group = "    group_column: group\n" if include_bootstrap_group else ""
     config_path.write_text(
         f"""
 case_name: geocausal_fixture
@@ -55,8 +61,7 @@ robustness:
       role: negative_control
       expected_relation: weaker_than_main
   bootstrap:
-    group_column: group
-    n_replicates: 5
+{bootstrap_group}    n_replicates: 5
 output:
   directory: results/geocausal_fixture
 """,
@@ -106,11 +111,30 @@ def test_run_analysis_writes_complete_output_package(tmp_path):
     assert manifest["row_count"] == 8
     assert manifest["files"]["manifest"] == "manifest.json"
     saved_manifest = json.loads((output_dir / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest == saved_manifest
+    assert len(manifest["warnings"]) == len(set(manifest["warnings"]))
+    for relative_path in manifest["files"].values():
+        assert (output_dir / relative_path).exists(), relative_path
     assert saved_manifest["robustness_interpretation"] in {
         "robust_support",
         "bounded_support",
         "fragile_support",
     }
+
+
+def test_run_analysis_bootstrap_falls_back_to_input_coordinates(tmp_path):
+    _fixture_frame().to_csv(tmp_path / "fixture.csv", index=False)
+    config = load_config(_write_fixture_config(tmp_path, include_bootstrap_group=False))
+
+    manifest = run_analysis(config)
+
+    output_dir = config.resolve_output_dir()
+    saved_manifest = json.loads((output_dir / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest == saved_manifest
+    for relative_path in manifest["files"].values():
+        assert (output_dir / relative_path).exists(), relative_path
+    bootstrap_rows = pd.read_csv(output_dir / "bootstrap_robustness.csv")
+    assert not bootstrap_rows.empty
 
 
 def test_rebuild_report_uses_existing_manifest(tmp_path):
