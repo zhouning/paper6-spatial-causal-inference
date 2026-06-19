@@ -1,0 +1,132 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pandas as pd
+import pytest
+
+from geocausal.config import load_config
+from geocausal.errors import GeoCausalConfigError
+from geocausal.pipeline import diagnose_config, rebuild_report, run_analysis
+
+
+def _fixture_frame() -> pd.DataFrame:
+    return pd.DataFrame(
+        {
+            "unit_id": [f"u{i}" for i in range(1, 9)],
+            "group": ["A", "A", "B", "B", "C", "C", "D", "D"],
+            "x": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0],
+            "y": [0.0, 1.0, 0.5, 1.5, 2.0, 2.5, 3.0, 3.5],
+            "exposure": [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0],
+            "outcome": [2.0, 2.6, 3.5, 4.1, 5.2, 5.9, 6.8, 7.5],
+            "baseline": [1.5, 1.7, 2.0, 2.2, 2.4, 2.5, 2.8, 3.0],
+            "confounder": [1.0, 1.1, 1.6, 1.8, 2.3, 2.6, 3.0, 3.3],
+            "context": [8.0, 7.5, 7.0, 6.4, 5.9, 5.3, 4.8, 4.2],
+            "placebo": [7.0, 6.9, 6.7, 6.6, 6.5, 6.4, 6.2, 6.1],
+        }
+    )
+
+
+def _write_fixture_config(tmp_path: Path, csv_name: str = "fixture.csv") -> Path:
+    config_path = tmp_path / "analysis.yaml"
+    config_path.write_text(
+        f"""
+case_name: geocausal_fixture
+input:
+  path: {csv_name}
+  x: x
+  y: y
+variables:
+  unit_id: unit_id
+  exposure: exposure
+  outcome: outcome
+  baseline_outcome: baseline
+  confounders:
+    - baseline
+    - confounder
+context:
+  columns:
+    - context
+robustness:
+  placebo_exposures:
+    - name: placebo_check
+      column: placebo
+      role: negative_control
+      expected_relation: weaker_than_main
+  bootstrap:
+    group_column: group
+    n_replicates: 5
+output:
+  directory: results/geocausal_fixture
+""",
+        encoding="utf-8",
+    )
+    return config_path
+
+
+def test_diagnose_config_returns_rows_columns_and_warnings(tmp_path):
+    _fixture_frame().to_csv(tmp_path / "fixture.csv", index=False)
+    config = load_config(_write_fixture_config(tmp_path))
+    diagnosis = diagnose_config(config)
+    assert diagnosis["case_name"] == "geocausal_fixture"
+    assert diagnosis["input_rows"] == 8
+    assert diagnosis["input_columns"] >= 9
+    assert diagnosis["output_writable"] is True
+    assert diagnosis["errors"] == []
+
+
+def test_diagnose_config_raises_for_missing_columns(tmp_path):
+    _fixture_frame().drop(columns=["placebo"]).to_csv(tmp_path / "fixture.csv", index=False)
+    config = load_config(_write_fixture_config(tmp_path))
+    with pytest.raises(GeoCausalConfigError, match="placebo"):
+        diagnose_config(config)
+
+
+def test_run_analysis_writes_complete_output_package(tmp_path):
+    _fixture_frame().to_csv(tmp_path / "fixture.csv", index=False)
+    config = load_config(_write_fixture_config(tmp_path))
+    manifest = run_analysis(config)
+    output_dir = config.resolve_output_dir()
+    expected_files = {
+        "effect_estimates.csv",
+        "erf_curve.csv",
+        "context_ablation.csv",
+        "placebo_tests.csv",
+        "bootstrap_robustness.csv",
+        "bootstrap_summary.json",
+        "erf_stability.json",
+        "robustness_report.md",
+        "manifest.json",
+    }
+    assert expected_files.issubset({path.name for path in output_dir.iterdir()})
+    assert manifest["case_name"] == "geocausal_fixture"
+    assert manifest["exposure"] == "exposure"
+    assert manifest["outcome"] == "outcome"
+    assert manifest["row_count"] == 8
+    assert manifest["files"]["manifest"] == "manifest.json"
+    saved_manifest = json.loads((output_dir / "manifest.json").read_text(encoding="utf-8"))
+    assert saved_manifest["robustness_interpretation"] in {
+        "robust_support",
+        "bounded_support",
+        "fragile_support",
+    }
+
+
+def test_rebuild_report_uses_existing_manifest(tmp_path):
+    output_dir = tmp_path / "results"
+    output_dir.mkdir()
+    (output_dir / "manifest.json").write_text(
+        json.dumps(
+            {
+                "case_name": "reported_case",
+                "robustness_interpretation": "bounded_support",
+                "files": {"manifest": "manifest.json"},
+            }
+        ),
+        encoding="utf-8",
+    )
+    report = rebuild_report(output_dir)
+    assert report["case_name"] == "reported_case"
+    assert (output_dir / "geocausal_report.md").exists()
+    assert "reported_case" in (output_dir / "geocausal_report.md").read_text(encoding="utf-8")
