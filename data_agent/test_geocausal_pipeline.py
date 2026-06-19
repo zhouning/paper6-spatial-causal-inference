@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -9,6 +11,9 @@ import pytest
 from geocausal.config import load_config
 from geocausal.errors import GeoCausalConfigError
 from geocausal.pipeline import diagnose_config, rebuild_report, run_analysis
+
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
 
 
 def _fixture_frame() -> pd.DataFrame:
@@ -154,3 +159,72 @@ def test_rebuild_report_uses_existing_manifest(tmp_path):
     assert report["case_name"] == "reported_case"
     assert (output_dir / "geocausal_report.md").exists()
     assert "reported_case" in (output_dir / "geocausal_report.md").read_text(encoding="utf-8")
+
+
+def test_cli_init_writes_template(tmp_path):
+    output = tmp_path / "analysis.yaml"
+
+    result = subprocess.run(
+        [sys.executable, "-m", "geocausal.cli", "init", "--template", "scca", "--output", str(output)],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert output.exists()
+    assert "case_name:" in output.read_text(encoding="utf-8")
+    assert json.loads(result.stdout)["path"] == str(output)
+
+
+def test_cli_diagnose_and_run(tmp_path):
+    _fixture_frame().to_csv(tmp_path / "fixture.csv", index=False)
+    config_path = _write_fixture_config(tmp_path)
+
+    diagnose_result = subprocess.run(
+        [sys.executable, "-m", "geocausal.cli", "diagnose", str(config_path)],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    run_result = subprocess.run(
+        [sys.executable, "-m", "geocausal.cli", "run", str(config_path)],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "geocausal_fixture" in diagnose_result.stdout
+    assert any(
+        support in run_result.stdout
+        for support in ("bounded_support", "robust_support", "fragile_support")
+    )
+    assert (tmp_path / "results" / "geocausal_fixture" / "manifest.json").exists()
+
+
+def test_cli_report_rebuilds_markdown(tmp_path):
+    output_dir = tmp_path / "results"
+    output_dir.mkdir()
+    (output_dir / "manifest.json").write_text(
+        json.dumps(
+            {
+                "case_name": "reported_case",
+                "robustness_interpretation": "bounded_support",
+                "files": {"manifest": "manifest.json"},
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [sys.executable, "-m", "geocausal.cli", "report", str(output_dir)],
+        cwd=REPO_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    assert "reported_case" in result.stdout
+    assert (output_dir / "geocausal_report.md").exists()
