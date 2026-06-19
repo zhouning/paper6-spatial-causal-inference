@@ -5,6 +5,7 @@ import pandas as pd
 from data_agent.experiments.run_scca_county_social_capital_robustness import (
     run_county_social_capital_robustness,
 )
+from data_agent.experiments.run_scca_robustness_summary import run_robustness_summary
 from data_agent.experiments.run_scca_snow8_robustness import run_snow8_robustness
 from data_agent.experiments.run_scca_soho_robustness import run_soho_robustness
 from data_agent.scca.robustness import (
@@ -281,3 +282,32 @@ def test_run_county_social_capital_robustness_writes_manifest_on_fixture(tmp_pat
     )
     assert manifest["case"] == "county_social_capital"
     assert (tmp_path / "out" / "robustness_manifest.json").exists()
+
+
+def test_run_robustness_summary_creates_csv_and_markdown(tmp_path):
+    manifests = []
+    for case_name, interpretation in [
+        ("snow8", "bounded_support"),
+        ("soho", "bounded_support"),
+        ("county_social_capital", "robust_support"),
+    ]:
+        case_dir = tmp_path / case_name
+        case_dir.mkdir()
+        manifest = {
+            "case": case_name,
+            "original_decision": "moderate_support",
+            "robustness_interpretation": interpretation,
+            "main_coef": 1.0,
+            "ablation_direction_stable": True,
+            "placebo_weaker_than_main": True,
+            "bootstrap_sign_stability": 1.0,
+            "erf_monotonic_direction": "increasing",
+            "main_limitation": "fixture limitation",
+        }
+        path = case_dir / "robustness_manifest.json"
+        path.write_text(json.dumps(manifest), encoding="utf-8")
+        manifests.append(path)
+    result = run_robustness_summary(manifest_paths=manifests, output_dir=tmp_path / "summary")
+    assert result["cases"] == ["snow8", "soho", "county_social_capital"]
+    assert (tmp_path / "summary" / "case_robustness_summary.csv").exists()
+    assert (tmp_path / "summary" / "case_robustness_report.md").exists()
