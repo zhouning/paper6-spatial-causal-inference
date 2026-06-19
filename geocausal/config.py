@@ -150,6 +150,8 @@ def _text_tuple(value: Any, owner: str) -> tuple[str, ...]:
 def _infer_format(path: Path, explicit: str | None) -> str:
     if explicit:
         normalized = explicit.lower().lstrip(".")
+        if normalized == "json":
+            return "geojson"
         if normalized in {"csv", "gpkg", "geojson", "shp"}:
             return normalized
         raise GeoCausalConfigError(f"Unsupported input format: {explicit}")
@@ -163,6 +165,8 @@ def load_config(path: str | Path) -> GeoCausalConfig:
     config_path = Path(path).resolve()
     try:
         raw = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    except yaml.YAMLError as exc:
+        raise GeoCausalConfigError(f"Invalid YAML in config file: {config_path}") from exc
     except OSError as exc:
         raise GeoCausalConfigError(f"Cannot read config file: {config_path}") from exc
     if raw is None:
@@ -185,6 +189,18 @@ def load_config(path: str | Path) -> GeoCausalConfig:
         lon=_optional_text(input_raw, "lon"),
         lat=_optional_text(input_raw, "lat"),
     )
+    coordinate_keys = {
+        key
+        for key, value in {
+            "x": input_config.x,
+            "y": input_config.y,
+            "lon": input_config.lon,
+            "lat": input_config.lat,
+        }.items()
+        if value
+    }
+    if coordinate_keys not in (set(), {"x", "y"}, {"lon", "lat"}):
+        raise GeoCausalConfigError("coordinate columns must be provided as x/y or lon/lat pairs.")
 
     variables = VariablesConfig(
         exposure=_require_text(variables_raw, "exposure", "variables"),
@@ -213,7 +229,7 @@ def load_config(path: str | Path) -> GeoCausalConfig:
 
     bootstrap_raw = _require_mapping(robustness_raw.get("bootstrap", {}), "robustness.bootstrap")
     n_replicates = bootstrap_raw.get("n_replicates", 200)
-    if not isinstance(n_replicates, int) or n_replicates <= 0:
+    if isinstance(n_replicates, bool) or not isinstance(n_replicates, int) or n_replicates <= 0:
         raise GeoCausalConfigError("robustness.bootstrap.n_replicates must be a positive integer.")
 
     return GeoCausalConfig(

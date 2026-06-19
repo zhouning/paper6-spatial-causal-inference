@@ -120,6 +120,125 @@ output:
         load_config(config_path)
 
 
+def test_load_config_rejects_malformed_yaml(tmp_path):
+    config_path = _write_yaml(
+        tmp_path / "bad.yaml",
+        """
+case_name: bad_case
+input:
+  path: fixture.csv
+  x: x
+  y: y
+variables
+  exposure: exposure
+  outcome: outcome
+output:
+  directory: results/bad
+""",
+    )
+    with pytest.raises(GeoCausalConfigError, match="Invalid YAML|cannot parse"):
+        load_config(config_path)
+
+
+def test_load_config_rejects_incomplete_coordinate_pairs(tmp_path):
+    only_x = _write_yaml(
+        tmp_path / "only_x.yaml",
+        """
+case_name: only_x_case
+input:
+  path: fixture.csv
+  x: x
+variables:
+  exposure: exposure
+  outcome: outcome
+output:
+  directory: results/only_x
+""",
+    )
+    mixed = _write_yaml(
+        tmp_path / "mixed.yaml",
+        """
+case_name: mixed_case
+input:
+  path: fixture.csv
+  x: x
+  lat: latitude
+variables:
+  exposure: exposure
+  outcome: outcome
+output:
+  directory: results/mixed
+""",
+    )
+    with pytest.raises(GeoCausalConfigError, match="coordinate columns.*x/y or lon/lat"):
+        load_config(only_x)
+    with pytest.raises(GeoCausalConfigError, match="coordinate columns.*x/y or lon/lat"):
+        load_config(mixed)
+
+
+def test_load_config_rejects_extra_partial_coordinate_pair(tmp_path):
+    config_path = _write_yaml(
+        tmp_path / "extra_partial.yaml",
+        """
+case_name: extra_partial_case
+input:
+  path: fixture.csv
+  x: x
+  y: y
+  lat: latitude
+variables:
+  exposure: exposure
+  outcome: outcome
+output:
+  directory: results/extra_partial
+""",
+    )
+    with pytest.raises(GeoCausalConfigError, match="coordinate columns.*x/y or lon/lat"):
+        load_config(config_path)
+
+
+def test_load_config_accepts_explicit_json_geojson_alias(tmp_path):
+    config_path = _write_yaml(
+        tmp_path / "analysis.yaml",
+        """
+case_name: json_case
+input:
+  path: fixture.json
+  format: json
+variables:
+  exposure: exposure
+  outcome: outcome
+output:
+  directory: results/json
+""",
+    )
+    config = load_config(config_path)
+    assert config.input.format == "geojson"
+
+
+def test_validate_config_rejects_boolean_n_replicates(tmp_path):
+    config_path = _write_yaml(
+        tmp_path / "analysis.yaml",
+        """
+case_name: bool_case
+input:
+  path: fixture.csv
+  x: x
+  y: y
+variables:
+  exposure: exposure
+  outcome: outcome
+robustness:
+  bootstrap:
+    n_replicates: true
+output:
+  directory: results/bool
+""",
+    )
+    with pytest.raises(GeoCausalConfigError, match="n_replicates"):
+        load_config(config_path)
+
+
 def test_validate_config_reports_missing_dataframe_columns(tmp_path):
     config_path = _write_yaml(
         tmp_path / "analysis.yaml",
