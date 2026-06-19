@@ -1,7 +1,15 @@
+import json
+import subprocess
+
 import pandas as pd
 
 from data_agent.experiments.run_scca_county_social_capital import (
+    DEFAULT_OUTPUT_DIR,
+    PROJECT_ROOT,
+    _git_dirty,
+    _run_git,
     prepare_county_social_capital_table,
+    run_county_social_capital_scca,
 )
 from data_agent.scca.specs import StudySpec
 
@@ -64,3 +72,95 @@ def test_prepare_county_social_capital_table_coerces_numeric_and_preserves_text(
     assert prepared["FIPS"].dtype.kind in {"f", "i"}
     assert prepared["STATE_NAME"].dtype == object
     assert prepared.loc[0, "STATE_NAME"] == "Alpha"
+
+
+def test_run_county_social_capital_scca_end_to_end_on_fixture(tmp_path):
+    workbook_path = tmp_path / "county_fixture.xlsx"
+    _county_fixture().to_excel(workbook_path, sheet_name="CountyData", index=False)
+    output_dir = tmp_path / "outputs"
+    manifest = run_county_social_capital_scca(workbook_path=workbook_path, output_dir=output_dir)
+    assert manifest["study"] == "county_social_capital_longevity_validation"
+    assert manifest["decision"] in {"strong_support", "moderate_support", "weak_or_failed_support"}
+    assert manifest["metadata"]["sheet_name"] == "CountyData"
+    assert manifest["metadata"]["input_rows"] == 6
+    assert manifest["metadata"]["source_sha256"]
+    for file_name in manifest["files"].values():
+        assert (output_dir / file_name).exists()
+
+
+def test_county_social_capital_cli_prints_manifest_json(tmp_path):
+    workbook_path = tmp_path / "county_fixture.xlsx"
+    _county_fixture().to_excel(workbook_path, sheet_name="CountyData", index=False)
+    output_dir = tmp_path / "outputs"
+    result = subprocess.run(
+        [
+            "D:\\adk\\.venv\\Scripts\\python.exe",
+            "-m",
+            "data_agent.experiments.run_scca_county_social_capital",
+            "--workbook-path",
+            str(workbook_path),
+            "--output-dir",
+            str(output_dir),
+        ],
+        cwd=PROJECT_ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    manifest = json.loads(result.stdout)
+    assert manifest["study"] == "county_social_capital_longevity_validation"
+    assert manifest["metadata"]["input_rows"] == 6
+
+
+def test_county_git_runner_marks_worktree_safe(monkeypatch):
+    captured = {}
+
+    def fake_run(args, **kwargs):
+        captured["args"] = args
+        captured["kwargs"] = kwargs
+
+        class Result:
+            stdout = "abc123\n"
+
+        return Result()
+
+    monkeypatch.setattr(
+        "data_agent.experiments.run_scca_county_social_capital.subprocess.run",
+        fake_run,
+    )
+    result = _run_git("rev-parse", "HEAD")
+    assert result == "abc123"
+    assert captured["args"] == [
+        "git",
+        "-c",
+        f"safe.directory={PROJECT_ROOT.as_posix()}",
+        "rev-parse",
+        "HEAD",
+    ]
+    assert captured["kwargs"]["cwd"] == PROJECT_ROOT
+
+
+def test_county_git_dirty_can_ignore_generated_output_dir(monkeypatch):
+    monkeypatch.setattr(
+        "data_agent.experiments.run_scca_county_social_capital._run_git",
+        lambda *args: "\n".join(
+            [
+                "?? paper/ijgis_submission_20260605/07_results/scca_county_social_capital/manifest.json",
+                "?? paper/ijgis_submission_20260605/07_results/scca_county_social_capital/effect_estimates.csv",
+            ]
+        ),
+    )
+    assert _git_dirty(ignored_paths=(DEFAULT_OUTPUT_DIR,)) is False
+
+
+def test_county_git_dirty_reports_source_changes_outside_generated_output_dir(monkeypatch):
+    monkeypatch.setattr(
+        "data_agent.experiments.run_scca_county_social_capital._run_git",
+        lambda *args: "\n".join(
+            [
+                " M data_agent/experiments/run_scca_county_social_capital.py",
+                "?? paper/ijgis_submission_20260605/07_results/scca_county_social_capital/manifest.json",
+            ]
+        ),
+    )
+    assert _git_dirty(ignored_paths=(DEFAULT_OUTPUT_DIR,)) is True
