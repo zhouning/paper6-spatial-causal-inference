@@ -77,6 +77,19 @@ D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_robustness_su
 
 The robustness outputs are written beside each SCCA case directory and summarized under `paper/ijgis_submission_20260605/07_results/scca_robustness_summary/`.
 
+## GeoCausal SCCA MVP
+
+Paper6 exposes SCCA as the first open-source framework boundary under `geocausal/`. V1 is YAML-first: start from a template configuration, diagnose inputs, run the analysis, and render the report through the module CLI.
+
+```powershell
+D:\adk\.venv\Scripts\python.exe -m geocausal.cli init --template scca --output analysis.yaml
+D:\adk\.venv\Scripts\python.exe -m geocausal.cli diagnose analysis.yaml
+D:\adk\.venv\Scripts\python.exe -m geocausal.cli run analysis.yaml
+D:\adk\.venv\Scripts\python.exe -m geocausal.cli report results/example_case
+```
+
+The MVP input boundary supports CSV, GeoPackage, GeoJSON, and Shapefile datasets. A completed run writes `effect_estimates.csv`, `erf_curve.csv`, `context_ablation.csv`, `placebo_tests.csv`, `bootstrap_robustness.csv`, `bootstrap_summary.json`, `erf_stability.json`, `robustness_report.md`, and `manifest.json`.
+
 ## Paper Entry Points
 
 - Main IJGIS TeX: `paper/ijgis_submission_20260605/01_manuscript/01_manuscript_ijgis.tex`
