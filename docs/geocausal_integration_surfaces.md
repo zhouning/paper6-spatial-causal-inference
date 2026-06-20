@@ -79,6 +79,35 @@ build_analysis_joined_table(
 )
 ```
 
+For the committed county Shapefiles, the notebook path is:
+
+```python
+from geocausal.spatial_outputs import (
+    build_spatial_analysis_outputs,
+    prepare_county_analysis_table_from_shapefile,
+)
+
+analysis_input_csv = prepare_county_analysis_table_from_shapefile(
+    county_path=Path("data/CountyData.shp"),
+    output_csv=Path("results/county/county_analysis_input.csv"),
+)
+
+# Run AnalysisRequest on analysis_input_csv, then build analysis_joined.csv.
+
+spatial_manifest = build_spatial_analysis_outputs(
+    boundary_path=Path("data/CountyData.shp"),
+    analysis_joined_csv=Path("results/county/analysis_joined.csv"),
+    analysis_dir=Path("results/county"),
+    output_dir=Path("results/county/spatial_outputs"),
+    states_path=Path("data/States.shp"),
+)
+```
+
+This writes GeoPackage, GeoJSON, Shapefile, chart PNGs, a static choropleth PNG,
+and an interactive Folium HTML map. GeoPackage and GeoJSON preserve long analysis
+field names; Shapefile output is compatibility-only because DBF field names are
+limited to 10 characters.
+
 When target outcomes are configured, notebook users can also build a one-row-per-
 unit joined analysis table from the original input and `target_exposures.csv`:
 
@@ -112,24 +141,29 @@ the fields documented in `examples/data/README.md`.
 
 ## QGIS Path
 
-A future QGIS Processing provider should follow the same adapter pattern:
+The QGIS Processing provider follows the same adapter pattern:
 
 1. Read QGIS layer/table parameters.
-2. Export selected attributes and geometry-derived coordinates to CSV or
-   GeoPackage.
+2. Export selected attributes and optional geometry-derived coordinates to CSV.
 3. Construct `AnalysisRequest`.
 4. Call `run_scca_analysis`.
 5. Build `analysis_joined.csv` from `target_exposures.csv` when target outcomes
    are requested.
-6. Register generated CSV/JSON outputs as QGIS result layers or report files.
+6. Register generated CSV/JSON/Markdown paths as QGIS Processing outputs.
 
 No SCCA logic should be implemented directly in a QGIS plugin. The plugin should
 remain a thin adapter over `geocausal`.
 
-The current repository includes a runtime-light skeleton at:
+The repository includes the QGIS provider at:
 
 ```text
 qgis_provider/geocausal_scca_algorithm.py
+```
+
+On this macOS machine it is linked into the default QGIS profile at:
+
+```text
+/Users/zhouning/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/geocausal_scca
 ```
 
 ## Why This Matters

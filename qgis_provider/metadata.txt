@@ -1,0 +1,10 @@
+[general]
+name=GeoCausal SCCA
+qgisMinimumVersion=3.28
+description=QGIS Processing wrapper for the shared GeoCausal SCCA algorithm.
+version=0.1.0
+author=Ning Zhou
+email=zhouning@stu.pku.edu.cn
+about=Thin QGIS Processing provider over geocausal.adapters.AnalysisRequest.
+category=Analysis
+experimental=True

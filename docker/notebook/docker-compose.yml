@@ -1,0 +1,21 @@
+services:
+  geocausal-notebook:
+    build:
+      context: ../..
+      dockerfile: docker/notebook/Dockerfile
+    image: paper6-geocausal-notebook:latest
+    container_name: paper6-geocausal-notebook
+    working_dir: /workspace
+    ports:
+      - "8889:8888"
+    volumes:
+      - ../..:/workspace
+    environment:
+      JUPYTER_TOKEN: geocausal
+    command: >
+      start-notebook.py
+      --NotebookApp.token=geocausal
+      --NotebookApp.password=
+      --ServerApp.allow_origin=*
+      --ServerApp.root_dir=/workspace
+

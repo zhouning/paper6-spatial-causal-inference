@@ -8,6 +8,8 @@ cookies.txt
 *.key
 
 # Python caches and test artifacts
+.venv/
+.venv*/
 __pycache__/
 *.py[cod]
 .pytest_cache/
@@ -15,6 +17,7 @@ __pycache__/
 htmlcov/
 .mypy_cache/
 .ruff_cache/
+.ipynb_checkpoints/
 tmp_*_smoke/
 
 # Local isolated development worktrees
@@ -31,6 +34,8 @@ data_agent/weights/raw_data/
 *.aux.xml.tmp
 *.ovr.tmp
 *.gpkg-journal
+paper/ijgis_submission_20260605/07_results/examples/county_social_capital_notebook_demo/
+paper/ijgis_submission_20260605/07_results/examples/county_social_capital_notebook_demo_smoke/
 
 # LaTeX build intermediates
 *.aux

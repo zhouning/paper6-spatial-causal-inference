@@ -164,9 +164,14 @@ def build_analysis_joined_table(
     method: str = "erf_delta_anchor",
 ) -> Path:
     """Create a wide, one-row-per-unit analysis table for GIS joins and notebooks."""
-    source = pd.read_csv(input_csv, encoding="utf-8-sig")
+    source_dtype = {unit_id_field: "string"} if unit_id_field else None
+    source = pd.read_csv(input_csv, encoding="utf-8-sig", dtype=source_dtype)
     source, join_column = _ensure_join_unit_id(source, unit_id_field)
-    targets = pd.read_csv(target_exposures_csv, encoding="utf-8-sig")
+    targets = pd.read_csv(
+        target_exposures_csv,
+        encoding="utf-8-sig",
+        dtype={"unit_id": "string"},
+    )
     required = {"unit_id", "method", "target_name"}
     missing = required.difference(targets.columns)
     if missing:
