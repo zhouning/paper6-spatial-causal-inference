@@ -84,6 +84,23 @@ This writes:
 - `paper/ijgis_submission_20260605/07_results/synthetic_benchmark_audit/synthetic_benchmark_audit_report.md`
 - `paper/ijgis_submission_20260605/07_results/synthetic_benchmark_audit/scenario_fragility_summary.csv`
 
+Run the IJGIS-required world-model holdout and scenario-calibration validation:
+
+```powershell
+.\.venv\Scripts\python.exe -m data_agent.experiments.world_model_holdout_validation --output-dir paper\ijgis_submission_20260605\07_results
+```
+
+This writes:
+
+- `paper/ijgis_submission_20260605/07_results/world_model_holdout_metrics.csv`
+- `paper/ijgis_submission_20260605/07_results/world_model_scenario_calibration.csv`
+- `paper/ijgis_submission_20260605/07_results/world_model_holdout_validation_manifest.json`
+- `paper/ijgis_submission_20260605/07_results/world_model_holdout_validation_report.md`
+
+The default run is a deterministic offline proxy validation. If a real
+AlphaEarth temporal panel is available through local cache or Earth Engine, the
+module can be re-run with `--use-real-panel` to upgrade the evidence mode.
+
 Run the first Spatial Context Causal Adjustment (SCCA) redesign experiment on the South London Snow cholera data:
 
 ```powershell

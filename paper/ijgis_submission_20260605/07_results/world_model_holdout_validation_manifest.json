@@ -1,0 +1,30 @@
+{
+  "holdout_metrics_csv": "paper\\ijgis_submission_20260605\\07_results\\world_model_holdout_metrics.csv",
+  "scenario_calibration_csv": "paper\\ijgis_submission_20260605\\07_results\\world_model_scenario_calibration.csv",
+  "manifest_json": "paper\\ijgis_submission_20260605\\07_results\\world_model_holdout_validation_manifest.json",
+  "report_md": "paper\\ijgis_submission_20260605\\07_results\\world_model_holdout_validation_report.md",
+  "evaluation_mode": "offline_fixture_proxy",
+  "claim_guidance": "scenario_simulation_only",
+  "n_metric_rows": 10,
+  "n_calibration_rows": 15,
+  "panel_metadata": {
+    "status": "offline_fixture_proxy",
+    "years": [
+      2018,
+      2019,
+      2020,
+      2021,
+      2022
+    ],
+    "n_panel_rows": 800,
+    "n_train_pairs": 672,
+    "n_holdout_pairs": 128,
+    "holdout_years": [
+      2022
+    ],
+    "holdout_splits": [
+      "Test",
+      "OOD"
+    ]
+  }
+}
