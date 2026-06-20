@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import importlib.machinery
 import importlib.util
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pandas as pd
 
 from arcgis_toolbox.geocausal_arcgis_support import (
     build_analysis_joined_table,
     split_arcgis_output_table_path,
+    summarize_manifest_messages,
+    validate_requested_fields,
 )
 
 
@@ -100,3 +104,101 @@ def test_split_arcgis_output_table_path_supports_file_geodatabase_targets():
     )
     assert out_path == r"C:\analysis\outputs.gdb"
     assert out_name == "joined_results"
+
+
+def test_validate_requested_fields_reports_missing_fields_clearly():
+    available_fields = ("unit_id", "exposure", "outcome", "shape_x", "shape_y")
+
+    try:
+        validate_requested_fields(
+            requested_fields=("unit_id", "baseline", "outcome"),
+            available_fields=available_fields,
+            x_field="shape_x",
+            y_field="missing_y",
+        )
+    except ValueError as exc:
+        message = str(exc)
+    else:
+        raise AssertionError("Expected validate_requested_fields() to raise ValueError.")
+
+    assert "baseline" in message
+    assert "missing_y" in message
+    assert "Available fields" in message
+
+
+def test_summarize_manifest_messages_includes_spatial_diagnostics_and_result_summary():
+    manifest = {
+        "case_name": "county_demo",
+        "row_count": 3044,
+        "exposure": "SocialAssoc",
+        "outcome": "AveAgeDeath",
+        "credibility_decision": "moderate_support",
+        "robustness_interpretation": "bounded_support",
+        "preprocessing": {"exposure_trim": {"removed_n": 64}},
+        "files": {
+            "target_exposures": "target_exposures.csv",
+            "spatial_diagnostics": "spatial_diagnostics.json",
+            "result_summary_markdown": "result_summary.md",
+        },
+        "result_summary": {
+            "spatial_diagnostics": {
+                "graph_method": "coordinate_knn",
+                "edge_count": 7019,
+                "exposure_moran_i": 0.5173518878,
+                "residual_moran_i": 0.3127560212,
+            },
+            "spatial_slx_model": {
+                "status": "ok",
+                "total_effect": 0.2145094523,
+                "total_p_value": 1.8e-57,
+            },
+        },
+    }
+
+    messages = summarize_manifest_messages(manifest)
+
+    assert any("Spatial diagnostics:" in line for line in messages)
+    assert any("coordinate_knn" in line for line in messages)
+    assert any("SLX total effect:" in line for line in messages)
+    assert any("Result summary:" in line for line in messages)
+
+
+def test_export_input_dataset_preserves_manual_coordinate_fields(tmp_path, monkeypatch):
+    import arcgis_toolbox.geocausal_arcgis_support as support
+
+    class FakeSearchCursor:
+        def __init__(self, input_dataset, fields):
+            self.fields = list(fields)
+
+        def __enter__(self):
+            return iter([("a", 1.0, 10.0, -120.5, 35.2)])
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+    fake_arcpy = SimpleNamespace(
+        ListFields=lambda input_dataset: [
+            SimpleNamespace(name="unit_id"),
+            SimpleNamespace(name="exposure"),
+            SimpleNamespace(name="outcome"),
+            SimpleNamespace(name="x_coord"),
+            SimpleNamespace(name="y_coord"),
+        ],
+        Describe=lambda input_dataset: SimpleNamespace(shapeType="Polygon"),
+        da=SimpleNamespace(SearchCursor=FakeSearchCursor),
+    )
+    monkeypatch.setitem(sys.modules, "arcpy", fake_arcpy)
+
+    output_csv = tmp_path / "input.csv"
+    summary = support.export_input_dataset(
+        "fake_layer",
+        output_csv,
+        fields=("unit_id", "exposure", "outcome"),
+        x_field="x_coord",
+        y_field="y_coord",
+    )
+
+    exported = pd.read_csv(output_csv)
+    assert list(exported.columns) == ["unit_id", "exposure", "outcome", "x_coord", "y_coord"]
+    assert summary["coordinate_columns"] == ("x_coord", "y_coord")
+    assert summary["derived_coordinates"] is False

@@ -1,0 +1,127 @@
+{
+  "result_summary": {
+    "baseline_adjusted_ols": {
+      "status": "ok",
+      "coef": 0.1812445027232004,
+      "p_value": 2.3399586030110522e-110,
+      "ci_lower": 0.1659743677285852,
+      "ci_upper": 0.1965146377178156,
+      "n": 3044.0
+    },
+    "spatial_neighbor_adjusted_ols": {
+      "status": "ok",
+      "coef": 0.1463926156710202,
+      "neighbor_exposure_coef": 0.1053932832836375,
+      "neighbor_exposure_p_value": 2.0909259525274065e-13,
+      "coef_delta": -0.0348518870521802,
+      "relative_change": 0.1922921055730257,
+      "sign_stable": true,
+      "n": 3044.0
+    },
+    "spatial_lag_adjusted_ols": {
+      "status": "ok",
+      "coef": 0.1445547494456812,
+      "neighbor_exposure_coef": 0.0699547028688122,
+      "neighbor_exposure_p_value": 7.285115054790083e-06,
+      "coef_delta": -0.0366897532775191,
+      "relative_change": 0.202432364713165,
+      "sign_stable": true,
+      "lag_covariate_count": 13.0,
+      "lag_covariates_significant": 8.0,
+      "n": 3044.0
+    },
+    "spatial_slx_model": {
+      "status": "ok",
+      "model": "SLX",
+      "direct_effect": 0.14455474944568128,
+      "direct_p_value": 2.215576728545282e-42,
+      "indirect_effect": 0.06995470286881222,
+      "indirect_p_value": 7.285115054790083e-06,
+      "total_effect": 0.2145094523144935,
+      "total_se": 0.013424931540722086,
+      "total_p_value": 1.8061183258104677e-57,
+      "total_ci_lower": 0.18819658649467821,
+      "total_ci_upper": 0.2408223181343088,
+      "r_squared": 0.7218618203389622,
+      "lag_covariate_count": 13.0,
+      "lag_covariates_significant": 8.0,
+      "coefficient_count": 30.0,
+      "n": 3044.0,
+      "interpretation": "spatial_covariate_lag_sensitivity"
+    },
+    "spatial_diagnostics": {
+      "graph_method": "coordinate_knn",
+      "edge_count": 7019,
+      "exposure_moran_i": 0.5173518878157154,
+      "exposure_moran_p_value": 0.01,
+      "residual_moran_i": 0.3127560212403792,
+      "residual_moran_p_value": 0.01,
+      "interpretation": "spatial_caution"
+    },
+    "spatial_block_bootstrap": {
+      "status": "ok",
+      "n_replicates_requested": 50,
+      "n_replicates_valid": 50,
+      "failure_count": 0,
+      "coef_mean": 0.13836429642427203,
+      "coef_median": 0.13921293559828346,
+      "coef_std": 0.014603947520604352,
+      "ci_lower_2_5": 0.10845430372375438,
+      "ci_upper_97_5": 0.16184922078140174,
+      "sign_stability": 1.0
+    },
+    "spatial_graph_sensitivity": {
+      "status": "ok",
+      "n_graphs_requested": 4,
+      "n_graphs_valid": 4,
+      "graph_specs": [
+        "coordinate_knn_k2",
+        "coordinate_knn_k4",
+        "coordinate_knn_k6",
+        "coordinate_knn_k8"
+      ],
+      "neighbor_adjusted_coef_min": 0.14401130746716354,
+      "neighbor_adjusted_coef_max": 0.1537849805424495,
+      "neighbor_adjusted_coef_range": 0.009773673075285955,
+      "neighbor_adjusted_relative_change_max": 0.20543075622492138,
+      "neighbor_adjusted_sign_stability": true,
+      "spatial_lag_adjusted_coef_min": 0.14371244450822226,
+      "spatial_lag_adjusted_coef_max": 0.14916104722752632,
+      "spatial_lag_adjusted_coef_range": 0.005448602719304058,
+      "spatial_lag_relative_change_max": 0.20707970532103656,
+      "spatial_lag_sign_stability": true
+    }
+  },
+  "spatial_manifest": {
+    "row_count": 3108,
+    "matched_count": 3044,
+    "map_field": "gc_target_70_exposure_change",
+    "enriched_effect_fields": [
+      "gc_spatial_direct_effect",
+      "gc_spatial_indirect_effect",
+      "gc_spatial_total_effect",
+      "gc_spatial_out_neighbor_count",
+      "gc_spatial_incoming_weight_sum"
+    ],
+    "spatial_files": {
+      "gpkg": "spatial_outputs/county_social_capital_analysis.gpkg",
+      "geojson": "spatial_outputs/county_social_capital_analysis.geojson",
+      "shp": "spatial_outputs/county_social_capital_analysis_shp/county_social_capital_analysis.shp"
+    },
+    "visualizations": {
+      "erf_curve_png": "spatial_outputs/visualizations/erf_curve.png",
+      "effect_estimates_png": "spatial_outputs/visualizations/effect_estimates.png",
+      "spatial_slx_effects_png": "spatial_outputs/visualizations/spatial_slx_effects.png",
+      "target_exposure_change_histogram_png": "spatial_outputs/visualizations/target_exposure_change_histogram.png",
+      "target_exposure_change_map_png": "spatial_outputs/visualizations/target_exposure_change_map.png",
+      "target_exposure_change_map_html": "spatial_outputs/visualizations/target_exposure_change_map.html",
+      "spatial_indirect_effect_map_png": "spatial_outputs/visualizations/spatial_indirect_effect_map.png",
+      "spatial_indirect_effect_map_html": "spatial_outputs/visualizations/spatial_indirect_effect_map.html"
+    },
+    "qgis_styles": {
+      "target_exposure_change_qml": "spatial_outputs/qgis_styles/target_exposure_change.qml",
+      "spatial_indirect_effect_qml": "spatial_outputs/qgis_styles/spatial_indirect_effect.qml",
+      "spatial_total_effect_qml": "spatial_outputs/qgis_styles/spatial_total_effect.qml"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.4.25)  20 JUN 2026 15:37
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.4.25)  20 JUN 2026 17:45
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -656,8 +656,7 @@ File: tikzlibrarycalc.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 File: l3backend-pdftex.def 2026-02-18 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count344
 )
-(D:/adk/paper6-spatial-causal-inference/.worktrees/synthetic-benchmark-audit/pa
-per/ijgis_submission_20260605/06_build/01_manuscript_ijgis.aux)
+(../06_build/01_manuscript_ijgis.aux)
 \openout1 = `01_manuscript_ijgis.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 25.
@@ -707,10 +706,7 @@ Package caption Info: hyperref package is loaded.
 Package caption Info: End \AtBeginDocument code.
 Package hyperref Info: Link coloring OFF on input line 25.
 
-(D:/adk/paper6-spatial-causal-inference/.worktrees/synthetic-benchmark-audit/pa
-per/ijgis_submission_20260605/06_build/01_manuscript_ijgis.out)
-(D:/adk/paper6-spatial-causal-inference/.worktrees/synthetic-benchmark-audit/pa
-per/ijgis_submission_20260605/06_build/01_manuscript_ijgis.out)
+(../06_build/01_manuscript_ijgis.out) (../06_build/01_manuscript_ijgis.out)
 \@outlinefile=\write4
 \openout4 = `01_manuscript_ijgis.out'.
 
@@ -727,13 +723,25 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 34.
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 Overfull \hbox (97.48555pt too wide) in paragraph at lines 34--34
- [][] 
+ [][]
  []
 
 
 Overfull \hbox (5.0182pt too wide) in paragraph at lines 38--39
 \OT1/cmr/m/n/9 ducible work-flow for con-struct-ing, di-ag-nos-ing, and re-port
 -ing spatial-context
+ []
+
+
+Overfull \hbox (2.2356pt too wide) in paragraph at lines 38--39
+\OT1/cmr/m/n/9 se-lec-tion, common-support and covariate-balance di-ag-nos-tics
+, spa-tial block
+ []
+
+
+Overfull \hbox (8.10043pt too wide) in paragraph at lines 40--41
+[]\OT1/cmr/m/n/9 We eval-u-ate SCCA us-ing con-trolled multi-seed bench-marks,
+a Chongqing
  []
 
 [1
@@ -746,165 +754,208 @@ d di-ag-nos-ing spatial-
 
 [2]
 Overfull \hbox (3.7228pt too wide) in paragraph at lines 88--89
-\OT1/cmr/m/n/10 ef-fects, dis-tance mea-sures, ter-rain vari-ables, land-cover 
+\OT1/cmr/m/n/10 ef-fects, dis-tance mea-sures, ter-rain vari-ables, land-cover
 classes, built-environment
  []
 
-[3] [4] [5]
-Underfull \hbox (badness 10000) in paragraph at lines 183--183
+[3] [4] [5] [6]
+Underfull \hbox (badness 10000) in paragraph at lines 195--195
 []\OT1/cmr/m/n/7 Synthetic
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 183--183
+Underfull \hbox (badness 10000) in paragraph at lines 195--195
 \OT1/cmr/m/n/7 bench-mark
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 183--183
+Underfull \hbox (badness 10000) in paragraph at lines 195--195
 []\OT1/cmr/m/n/7 Controlled
  []
 
 
-Underfull \hbox (badness 1584) in paragraph at lines 183--183
-\OT1/cmr/m/n/7 ro-bust and 29 frag-ile
+Underfull \hbox (badness 10000) in paragraph at lines 195--195
+[]\OT1/cmr/m/n/7 Bounded
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 184--184
+Underfull \hbox (badness 2435) in paragraph at lines 196--196
 []\OT1/cmr/m/n/7 Chongqing ur-
  []
 
 
-Underfull \hbox (badness 4120) in paragraph at lines 184--184
+Underfull \hbox (badness 4120) in paragraph at lines 196--196
 []\OT1/cmr/m/n/7 Real build-ing
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 184--184
+Underfull \hbox (badness 10000) in paragraph at lines 196--196
 \OT1/cmr/m/n/7 and remote-
  []
 
 
-Underfull \hbox (badness 3281) in paragraph at lines 184--184
+Underfull \hbox (badness 10000) in paragraph at lines 196--196
 []\OT1/cmr/m/n/7 Full con-text ATT =
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 184--185
+Underfull \hbox (badness 4792) in paragraph at lines 196--196
+\OT1/cmr/m/n/7 0.244$[]$C; max SMD =
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 196--196
+[]\OT1/cmr/m/n/7 Core sup-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 196--197
 []\OT1/cmr/m/n/7 Main real-data
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 185--185
+Underfull \hbox (badness 10000) in paragraph at lines 197--197
 []\OT1/cmr/m/n/7 Snow cholera
  []
 
 
-Underfull \hbox (badness 6592) in paragraph at lines 185--185
+Underfull \hbox (badness 3492) in paragraph at lines 197--197
+[]\OT1/cmr/m/n/7 Sign sta-bil-ity = 0.985;
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 197--197
 \OT1/cmr/m/n/7 high exposure-balance
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 186--186
+Underfull \hbox (badness 10000) in paragraph at lines 197--197
+[]\OT1/cmr/m/n/7 Bounded
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 198--198
 []\OT1/cmr/m/n/7 Soho pump
  []
 
 
-Underfull \hbox (badness 6592) in paragraph at lines 186--186
+Underfull \hbox (badness 3492) in paragraph at lines 198--198
+[]\OT1/cmr/m/n/7 Sign sta-bil-ity = 1.000;
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 198--198
 \OT1/cmr/m/n/7 high exposure-balance
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 186--187
+Underfull \hbox (badness 10000) in paragraph at lines 198--198
+[]\OT1/cmr/m/n/7 Bounded
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 198--199
 []\OT1/cmr/m/n/7 Mechanism-focused
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 187--187
+Underfull \hbox (badness 10000) in paragraph at lines 199--199
 []\OT1/cmr/m/n/7 County so-cial
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 187--187
-[]\OT1/cmr/m/n/7 External
+Underfull \hbox (badness 4391) in paragraph at lines 199--199
+\OT1/cmr/m/n/7 cap-i-tal spa-tial
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 187--188
-[]\OT1/cmr/m/n/7 Strongest ex-ter-nal
+Underfull \hbox (badness 10000) in paragraph at lines 199--199
+[]\OT1/cmr/m/n/7 GIS out-put
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 188--188
+Underfull \hbox (badness 10000) in paragraph at lines 199--199
+[]\OT1/cmr/m/n/7 residual Moran's $\OML/cmm/m/it/7 I$ \OT1/cmr/m/n/7 =
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 199--199
+[]\OT1/cmr/m/n/7 Bounded
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 199--200
+[]\OT1/cmr/m/n/7 Spatial di-ag-nos-tics
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 199--200
+\OT1/cmr/m/n/7 and cross-interface
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 200--200
 []\OT1/cmr/m/n/7 Candidate
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 188--188
+Underfull \hbox (badness 10000) in paragraph at lines 200--200
 \OT1/cmr/m/n/7 em-bed-ding
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 188--188
-[]\OT1/cmr/m/n/7 RS/terrain SMD =
+Underfull \hbox (badness 10000) in paragraph at lines 200--200
+[]\OT1/cmr/m/n/7 Negative
  []
 
-
-Underfull \hbox (badness 3471) in paragraph at lines 188--188
-[]\OT1/cmr/m/n/7 Negative ab-
- []
-
-[6]
-Underfull \hbox (badness 10000) in paragraph at lines 218--218
+[7]
+Underfull \hbox (badness 10000) in paragraph at lines 230--230
 []\OT1/cmr/m/n/7 Difference-in-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 218--218
+Underfull \hbox (badness 10000) in paragraph at lines 230--230
 []\OT1/cmr/m/n/7 Direction ac-cu-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 218--218
+Underfull \hbox (badness 10000) in paragraph at lines 230--230
 []\OT1/cmr/m/n/7 Fragile generator-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 218--218
+Underfull \hbox (badness 10000) in paragraph at lines 230--230
 []\OT1/cmr/m/n/7 Direction ac-cu-
  []
 
 
-Overfull \hbox (2.08847pt too wide) in paragraph at lines 225--226
+Overfull \hbox (2.08847pt too wide) in paragraph at lines 237--238
 []\OT1/cmr/m/n/10 Table []3[] shows the ad-just-ment vari-ants. The raw mean di
 f-fer-ence was 0.238$[]$C.
  []
 
-[7] [8] [9]
-Overfull \hbox (2.29694pt too wide) in paragraph at lines 294--295
-[]\OT1/cmr/m/n/10 The main em-pir-i-cal re-sult is de-lib-er-ately bounded. In 
+[8] [9] [10] [11]
+Overfull \hbox (2.29694pt too wide) in paragraph at lines 322--323
+[]\OT1/cmr/m/n/10 The main em-pir-i-cal re-sult is de-lib-er-ately bounded. In
 Chongqing, full remote-
  []
 
-[10] [11]
-(D:/adk/paper6-spatial-causal-inference/.worktrees/synthetic-benchmark-audit/pa
-per/ijgis_submission_20260605/06_build/01_manuscript_ijgis.aux)
+[12] [13] [14] (../06_build/01_manuscript_ijgis.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-03-20>
  ***********
 Package rerunfilecheck Info: File `01_manuscript_ijgis.out' has not changed.
-(rerunfilecheck)             Checksum: 27B79D480AD804FBB18576FCCFC1CB67;3797.
- ) 
+(rerunfilecheck)             Checksum: 664572B568CC073FC46A2A2D9C508AE6;4395.
+ )
 Here is how much of TeX's memory you used:
- 23466 strings out of 468830
- 438290 string characters out of 5454207
- 841236 words of memory out of 5000000
- 51898 multiletter control sequences out of 15000+600000
+ 23477 strings out of 468830
+ 437274 string characters out of 5454207
+ 837237 words of memory out of 5000000
+ 51902 multiletter control sequences out of 15000+600000
  640222 words of font info for 88 fonts, out of 8000000 for 9000
  319 hyphenation exceptions out of 8191
- 84i,11n,104p,890b,866s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,11n,104p,1242b,866s stack positions out of 10000i,1000n,20000p,200000b,200000s
  <c:/Users/zn198/.texlive2026/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm0600.
 600pk> <c:/Users/zn198/.texlive2026/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm0
 800.600pk><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
@@ -914,24 +965,24 @@ exmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><d:/texlive/2026/texmf-dist
 /fonts/type1/public/amsfonts/cm/cmmi10.pfb><d:/texlive/2026/texmf-dist/fonts/ty
 pe1/public/amsfonts/cm/cmmi7.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public
 /amsfonts/cm/cmmi8.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/
-cm/cmr10.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.p
-fb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb><d:/tex
-live/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><d:/texlive/2026/t
-exmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><d:/texlive/2026/texmf-dist/f
-onts/type1/public/amsfonts/cm/cmr9.pfb><d:/texlive/2026/texmf-dist/fonts/type1/
-public/amsfonts/cm/cmsy10.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/am
-sfonts/cm/cmsy5.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/
-cmsy6.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb>
-<d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><d:/texliv
-e/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb><d:/texlive/2026/te
-xmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb><d:/texlive/2026/texmf-dist/
-fonts/type1/public/amsfonts/cm/cmtt10.pfb>
-Output written on D:/adk/paper6-spatial-causal-inference/.worktrees/synthetic-b
-enchmark-audit/paper/ijgis_submission_20260605/06_build/01_manuscript_ijgis.pdf
- (11 pages, 292926 bytes).
+cm/cmmi9.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.p
+fb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb><d:/tex
+live/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb><d:/texlive/2026/
+texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><d:/texlive/2026/texmf-dist/
+fonts/type1/public/amsfonts/cm/cmr8.pfb><d:/texlive/2026/texmf-dist/fonts/type1
+/public/amsfonts/cm/cmr9.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/ams
+fonts/cm/cmsy10.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/
+cmsy5.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb>
+<d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><d:/texliv
+e/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><d:/texlive/2026/tex
+mf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb><d:/texlive/2026/texmf-dist/f
+onts/type1/public/amsfonts/cm/cmti12.pfb><d:/texlive/2026/texmf-dist/fonts/type
+1/public/amsfonts/cm/cmtt10.pfb>
+Output written on ../06_build/01_manuscript_ijgis.pdf (14 pages, 314531 bytes).
+
 PDF statistics:
- 325 PDF objects out of 1000 (max. 8388607)
- 265 compressed objects within 3 object streams
- 60 named destinations out of 1000 (max. 500000)
- 197 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 358 PDF objects out of 1000 (max. 8388607)
+ 293 compressed objects within 3 object streams
+ 67 named destinations out of 1000 (max. 500000)
+ 221 words of extra memory for PDF output out of 10000 (max. 10000000)
 

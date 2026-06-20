@@ -46,15 +46,15 @@ treat `negative_ablation` rows as boundary findings, and keep `auxiliary_only` r
 - Limitation: Maximum exposure-balance correlation is high (0.543).
 - Manuscript use: Use as a bounded mechanism-focused SCCA case.
 
-### county_social_capital
+### county_social_capital_spatial_notebook
 
-- Grade: `core_support`
-- Best adjustment: SCCA robustness interpretation = robust_support
-- Effect/diagnostic: main coefficient = 0.147
-- Balance: ablation direction stable = True; placebo weaker = True
-- Robustness: bootstrap sign stability = 1.000; ERF direction = increasing
-- Limitation: No credibility downgrade warnings were triggered.
-- Manuscript use: Use as the strongest external SCCA validation row.
+- Grade: `bounded_support`
+- Best adjustment: SLX-style spatial lag sensitivity over coordinate-kNN graphs
+- Effect/diagnostic: baseline coef = 0.181; spatial-lag coef = 0.145; SLX total effect = 0.215
+- Balance: matched spatial layer rows = 3044/3108; enriched fields = gc_spatial_direct_effect, gc_spatial_indirect_effect, gc_spatial_total_effect, gc_spatial_out_neighbor_count, gc_spatial_incoming_weight_sum
+- Robustness: residual Moran I = 0.313; spatial bootstrap sign stability = 1.000; graph sensitivity sign stable = True
+- Limitation: Residual spatial autocorrelation and a significant neighboring-exposure term remain, so this is spatially cautioned external evidence rather than definitive identification.
+- Manuscript use: Use as the GIS/notebook spatial-output demonstration and as spatially bounded external SCCA evidence.
 
 ### geofm_alphaearth_ablation
 
@@ -89,6 +89,6 @@ treat `negative_ablation` rows as boundary findings, and keep `auxiliary_only` r
 ## Grade Counts
 
 - `auxiliary_only`: 2
-- `bounded_support`: 3
-- `core_support`: 2
+- `bounded_support`: 4
+- `core_support`: 1
 - `negative_ablation`: 1

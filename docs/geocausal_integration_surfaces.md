@@ -34,6 +34,13 @@ This is the integration point for notebooks, ArcGIS Pro, QGIS, and command-line
 automation. It accepts field names supplied by the user and does not contain
 case-study-specific defaults.
 
+The shared core writes the same SCCA evidence package for every interface:
+effect estimates, ERF tables, balance and overlap diagnostics, robustness
+tables, spatial diagnostics, spatial block bootstrap, graph-sensitivity
+summaries, SLX direct/indirect/total effect summaries, exposure-mapping
+summaries, `manifest.json`, and `result_summary.md` when those diagnostics are
+estimable from the supplied data.
+
 ## Notebook Use
 
 Notebook users can prepare a CSV or GeoPackage, construct `AnalysisRequest`, and
@@ -134,6 +141,14 @@ The toolbox only handles ArcGIS UI parameters, ArcPy data export, and optional
 copying of CSV outputs back to ArcGIS tables. It delegates algorithm execution to
 `geocausal.adapters.AnalysisRequest` and reuses the same
 `build_analysis_joined_table` helper to create an ArcGIS-ready analysis table.
+It also validates requested fields before opening the ArcPy cursor and reports
+the core spatial-diagnostic and SLX summaries in the geoprocessing messages.
+
+The ArcGIS toolbox deliberately does not duplicate the notebook spatial-output
+builder. If a user needs GeoPackage/GeoJSON/Shapefile layers, static maps,
+interactive HTML maps, or QGIS styles after an ArcGIS run, call
+`geocausal.spatial_outputs.build_spatial_analysis_outputs` on the exported
+`analysis_joined.csv` and the original boundary feature layer.
 
 For a reproducible toolbox smoke test, import
 `examples/data/county_social_capital.csv` into a file geodatabase table and use

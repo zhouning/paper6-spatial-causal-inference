@@ -214,7 +214,10 @@ def _scca_case_rows(results_dir: Path) -> list[dict[str, str]]:
             "exposure": "county social-association measure",
             "outcome": "average age at death",
             "context_source": "county socioeconomic and geometry context variables",
-            "use": "Use as the strongest external SCCA validation row.",
+            "use": (
+                "Use only as a non-spatial robustness baseline; supersede it with the "
+                "spatial notebook row when spatial diagnostics are available."
+            ),
         },
     }
     rows: list[dict[str, str]] = []
@@ -246,6 +249,73 @@ def _scca_case_rows(results_dir: Path) -> list[dict[str, str]]:
             )
         )
     return rows
+
+
+def _county_spatial_notebook_row(results_dir: Path) -> dict[str, str] | None:
+    summary_path = results_dir / "county_social_capital_spatial_notebook_summary.json"
+    if not summary_path.exists():
+        summary_path = (
+            results_dir
+            / "examples"
+            / "county_social_capital_notebook_demo"
+            / "notebook_demo_summary.json"
+        )
+    if not summary_path.exists():
+        return None
+    summary = _read_json(summary_path)
+    result_summary = summary.get("result_summary", {})
+    if not isinstance(result_summary, dict):
+        return None
+
+    baseline = result_summary.get("baseline_adjusted_ols", {})
+    spatial_lag = result_summary.get("spatial_lag_adjusted_ols", {})
+    slx = result_summary.get("spatial_slx_model", {})
+    diagnostics = result_summary.get("spatial_diagnostics", {})
+    bootstrap = result_summary.get("spatial_block_bootstrap", {})
+    graph = result_summary.get("spatial_graph_sensitivity", {})
+    spatial_manifest = summary.get("spatial_manifest", {})
+
+    if not isinstance(baseline, dict) or not isinstance(diagnostics, dict):
+        return None
+
+    matched_count = spatial_manifest.get("matched_count")
+    row_count = spatial_manifest.get("row_count")
+    enriched_fields = spatial_manifest.get("enriched_effect_fields", [])
+    if isinstance(enriched_fields, list) and enriched_fields:
+        enriched_text = ", ".join(map(str, enriched_fields))
+    else:
+        enriched_text = "no enriched spatial fields recorded"
+
+    return _row(
+        case="county_social_capital_spatial_notebook",
+        data_type="external county-level validation and GIS output case",
+        exposure="county social-association measure",
+        outcome="average age at death",
+        context_source="county socioeconomic, geometry, centroid-coordinate, and spatial-neighborhood context",
+        best_adjustment="SLX-style spatial lag sensitivity over coordinate-kNN graphs",
+        effect_estimate=(
+            f"baseline coef = {_fmt_num(baseline.get('coef'))}; "
+            f"spatial-lag coef = {_fmt_num(spatial_lag.get('coef'))}; "
+            f"SLX total effect = {_fmt_num(slx.get('total_effect'))}"
+        ),
+        balance_status=(
+            f"matched spatial layer rows = {matched_count}/{row_count}; "
+            f"enriched fields = {enriched_text}"
+        ),
+        robustness_status=(
+            f"residual Moran I = {_fmt_num(diagnostics.get('residual_moran_i'))}; "
+            f"spatial bootstrap sign stability = {_fmt_num(bootstrap.get('sign_stability'))}; "
+            f"graph sensitivity sign stable = {graph.get('neighbor_adjusted_sign_stability')}"
+        ),
+        evidence_grade="bounded_support",
+        limitation=(
+            "Residual spatial autocorrelation and a significant neighboring-exposure term remain, "
+            "so this is spatially cautioned external evidence rather than definitive identification."
+        ),
+        manuscript_use=(
+            "Use as the GIS/notebook spatial-output demonstration and as spatially bounded external SCCA evidence."
+        ),
+    )
 
 
 def _llm_row(results_dir: Path) -> dict[str, str] | None:
@@ -324,6 +394,10 @@ def build_scca_evidence_table(
         if optional_row is not None:
             rows.append(optional_row)
     rows.extend(_scca_case_rows(root))
+    county_spatial = _county_spatial_notebook_row(root)
+    if county_spatial is not None:
+        rows = [row for row in rows if row.get("case") != "county_social_capital"]
+        rows.append(county_spatial)
     table = pd.DataFrame(rows, columns=SYNTHESIS_COLUMNS)
     if table.empty:
         return table
@@ -333,9 +407,10 @@ def build_scca_evidence_table(
         "snow8": 2,
         "soho": 3,
         "county_social_capital": 4,
-        "geofm_alphaearth_ablation": 5,
-        "llm_dag_validation": 6,
-        "world_model_holdout_validation": 7,
+        "county_social_capital_spatial_notebook": 5,
+        "geofm_alphaearth_ablation": 6,
+        "llm_dag_validation": 7,
+        "world_model_holdout_validation": 8,
     }
     table["_order"] = table["case"].map(order).fillna(99)
     return table.sort_values(["_order", "case"]).drop(columns=["_order"]).reset_index(drop=True)

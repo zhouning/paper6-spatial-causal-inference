@@ -8,6 +8,14 @@ import pandas as pd
 from geocausal.adapters import build_analysis_joined_table
 
 
+def _format_float(value: Any, *, digits: int = 3) -> str:
+    try:
+        numeric = float(value)
+    except (TypeError, ValueError):
+        return "not available"
+    return f"{numeric:.{digits}f}"
+
+
 def parse_multivalue_text(parameter: Any) -> tuple[str, ...]:
     values = getattr(parameter, "values", None)
     if values:
@@ -28,6 +36,28 @@ def parse_multivalue_floats(parameter: Any) -> tuple[float, ...]:
     return tuple(float(part.strip()) for part in str(text).split(";") if part.strip())
 
 
+def validate_requested_fields(
+    *,
+    requested_fields: tuple[str, ...],
+    available_fields: tuple[str, ...],
+    x_field: str | None = None,
+    y_field: str | None = None,
+) -> None:
+    requested = []
+    for field in (*requested_fields, x_field, y_field):
+        if field and field not in requested:
+            requested.append(field)
+    available = set(available_fields)
+    missing = [field for field in requested if field not in available]
+    if missing:
+        available_text = ", ".join(available_fields) if available_fields else "none"
+        raise ValueError(
+            "ArcGIS input is missing requested fields: "
+            + ", ".join(missing)
+            + f". Available fields: {available_text}"
+        )
+
+
 def export_input_dataset(
     input_dataset: str,
     csv_path: Path,
@@ -44,9 +74,20 @@ def export_input_dataset(
         if field and field not in requested_fields:
             requested_fields.append(field)
 
+    available_fields = tuple(field.name for field in arcpy.ListFields(input_dataset))
+    validate_requested_fields(
+        requested_fields=tuple(requested_fields),
+        available_fields=available_fields,
+        x_field=x_field,
+        y_field=y_field,
+    )
+
     describe = arcpy.Describe(input_dataset)
     has_geometry = bool(getattr(describe, "shapeType", None))
     cursor_fields = list(requested_fields)
+    for coordinate_field in (x_field, y_field):
+        if coordinate_field and coordinate_field not in cursor_fields:
+            cursor_fields.append(coordinate_field)
     derive_coordinates = has_geometry and not (x_field and y_field)
     if derive_coordinates:
         cursor_fields.append("SHAPE@")
@@ -97,6 +138,27 @@ def summarize_manifest_messages(manifest: dict[str, Any]) -> list[str]:
     target_file = manifest.get("files", {}).get("target_exposures")
     if target_file:
         messages.append(f"Target exposure table: {target_file}")
+    result_summary = manifest.get("result_summary", {})
+    if isinstance(result_summary, dict):
+        spatial = result_summary.get("spatial_diagnostics")
+        if isinstance(spatial, dict):
+            messages.append(
+                "Spatial diagnostics: "
+                f"{spatial.get('graph_method', 'unknown graph')}, "
+                f"{spatial.get('edge_count', 'unknown')} edges, "
+                f"exposure Moran I={_format_float(spatial.get('exposure_moran_i'))}, "
+                f"residual Moran I={_format_float(spatial.get('residual_moran_i'))}."
+            )
+        slx = result_summary.get("spatial_slx_model")
+        if isinstance(slx, dict) and slx.get("status") == "ok":
+            messages.append(
+                "SLX total effect: "
+                f"{_format_float(slx.get('total_effect'))} "
+                f"(p={_format_float(slx.get('total_p_value'))})."
+            )
+    result_summary_file = manifest.get("files", {}).get("result_summary_markdown")
+    if result_summary_file:
+        messages.append(f"Result summary: {result_summary_file}")
     return messages
 
 

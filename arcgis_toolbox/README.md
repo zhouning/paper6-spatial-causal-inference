@@ -25,6 +25,12 @@ chosen output folder, writes a GeoCausal YAML configuration, runs the GeoCausal
 pipeline, and writes the output artifacts under the run subfolder
 `<Output Report Folder>\<Case Name>\`.
 
+When the input is a feature layer and X/Y fields are not supplied, the toolbox
+derives `_gc_x` and `_gc_y` from feature centroids so the shared SCCA core can
+run coordinate-based spatial diagnostics. When X/Y fields are supplied manually,
+the toolbox validates that both fields exist and preserves them in the exported
+CSV.
+
 ## Chinese Example Manuals
 
 Chinese step-by-step manuals for the county social-capital example:
@@ -66,6 +72,8 @@ directly from notebooks and QGIS-side smoke tests.
   `target_exposures.csv`.
 - `Output Effect Estimates Table`: Optional ArcGIS table copy of
   `effect_estimates.csv`.
+- `Output Analysis Joined Table`: Optional one-row-per-unit table with target
+  exposure fields when target outcomes are configured.
 
 ## Outputs
 
@@ -83,8 +91,34 @@ Each run writes the standard GeoCausal package:
 - `bootstrap_robustness.csv`
 - `bootstrap_summary.json`
 - `erf_stability.json`
+- `spatial_diagnostics.json`
+- `spatial_bootstrap_robustness.csv`
+- `spatial_bootstrap_summary.json`
+- `spatial_graph_sensitivity.csv`
+- `spatial_graph_sensitivity_summary.json`
+- `spatial_slx_estimates.csv`
+- `spatial_slx_summary.json`
+- `spatial_spillover_decomposition.csv`
+- `spatial_spillover_summary.json`
+- `spatial_exposure_mapping.csv`
+- `spatial_exposure_mapping_summary.json`
+- `result_summary.md`
 - `robustness_report.md`
 - `target_exposures.csv`, when target outcome values are provided
+
+The ArcGIS geoprocessing messages summarize the credibility decision,
+robustness interpretation, exposure trimming, target table, spatial Moran
+diagnostics, SLX total effect, and result-summary file when those outputs are
+available.
+
+## Spatial Output Boundary
+
+The ArcGIS toolbox is intentionally a thin ArcPy adapter. It writes analysis
+tables and the full GeoCausal output package, but it does not duplicate the
+notebook/QGIS spatial-output builder. To create GeoPackage, GeoJSON, Shapefile,
+PNG, HTML, and QGIS `.qml` outputs from a completed run, use
+`geocausal.spatial_outputs.build_spatial_analysis_outputs` with the original
+boundary layer and `analysis_joined.csv`.
 
 ## Integration Boundary
 

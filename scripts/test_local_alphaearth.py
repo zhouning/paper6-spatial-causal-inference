@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
+__test__ = False
 
 # --- 1. AlphaEarth 核心组件：STP (Space-Time-Precision) 编码器 ---
 class STPBlock(nn.Module):
@@ -58,7 +59,7 @@ class LocalAlphaEarthEncoder(nn.Module):
         z = F.normalize(z, p=2, dim=1) # 投影到 S^63 超球面
         return z
 
-def test_local_model(weights_path):
+def run_local_model_smoke(weights_path):
     print(f"正在加载本地 AlphaEarth 模型: {weights_path}")
     
     # 1. 检查权重文件是否存在
@@ -105,4 +106,4 @@ def test_local_model(weights_path):
 
 if __name__ == "__main__":
     MODEL_WEIGHTS_PATH = PROJECT_ROOT / "data_agent" / "weights" / "local_alphaearth_encoder.pth"
-    test_local_model(MODEL_WEIGHTS_PATH)
+    run_local_model_smoke(MODEL_WEIGHTS_PATH)
