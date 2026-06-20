@@ -52,7 +52,7 @@ def prepare_county_social_capital_table(df: pd.DataFrame) -> pd.DataFrame:
             prepared[column] = pd.to_numeric(prepared[column], errors="coerce")
     for column in ("STATE_NAME", "County"):
         if column in prepared.columns:
-            prepared[column] = prepared[column].astype(str)
+            prepared[column] = prepared[column].map(str).astype(object)
     return prepared
 
 

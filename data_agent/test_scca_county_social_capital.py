@@ -1,5 +1,6 @@
 import json
 import subprocess
+import sys
 
 import pandas as pd
 
@@ -94,7 +95,7 @@ def test_county_social_capital_cli_prints_manifest_json(tmp_path):
     output_dir = tmp_path / "outputs"
     result = subprocess.run(
         [
-            "D:\\adk\\.venv\\Scripts\\python.exe",
+            sys.executable,
             "-m",
             "data_agent.experiments.run_scca_county_social_capital",
             "--workbook-path",

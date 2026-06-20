@@ -130,12 +130,60 @@ class SCCAPaths:
         return self.output_dir / "spatial_robustness.csv"
 
     @property
+    def spatial_diagnostics(self) -> Path:
+        return self.output_dir / "spatial_diagnostics.json"
+
+    @property
+    def spatial_bootstrap_robustness(self) -> Path:
+        return self.output_dir / "spatial_bootstrap_robustness.csv"
+
+    @property
+    def spatial_bootstrap_summary(self) -> Path:
+        return self.output_dir / "spatial_bootstrap_summary.json"
+
+    @property
+    def spatial_graph_sensitivity(self) -> Path:
+        return self.output_dir / "spatial_graph_sensitivity.csv"
+
+    @property
+    def spatial_graph_sensitivity_summary(self) -> Path:
+        return self.output_dir / "spatial_graph_sensitivity_summary.json"
+
+    @property
+    def spatial_slx_estimates(self) -> Path:
+        return self.output_dir / "spatial_slx_estimates.csv"
+
+    @property
+    def spatial_slx_summary(self) -> Path:
+        return self.output_dir / "spatial_slx_summary.json"
+
+    @property
+    def spatial_spillover_decomposition(self) -> Path:
+        return self.output_dir / "spatial_spillover_decomposition.csv"
+
+    @property
+    def spatial_spillover_summary(self) -> Path:
+        return self.output_dir / "spatial_spillover_summary.json"
+
+    @property
+    def spatial_exposure_mapping(self) -> Path:
+        return self.output_dir / "spatial_exposure_mapping.csv"
+
+    @property
+    def spatial_exposure_mapping_summary(self) -> Path:
+        return self.output_dir / "spatial_exposure_mapping_summary.json"
+
+    @property
     def credibility_report(self) -> Path:
         return self.output_dir / "credibility_report.json"
 
     @property
     def analysis_report(self) -> Path:
         return self.output_dir / "analysis_report.md"
+
+    @property
+    def result_summary_markdown(self) -> Path:
+        return self.output_dir / "result_summary.md"
 
     @property
     def manifest(self) -> Path:

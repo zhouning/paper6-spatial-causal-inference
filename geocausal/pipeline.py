@@ -15,7 +15,12 @@ from data_agent.scca.design import select_design
 from data_agent.scca.diagnostics import audit_effects
 from data_agent.scca.estimators import estimate_effects
 from data_agent.scca.profiling import profile_table
-from data_agent.scca.reporting import write_report
+from data_agent.scca.reporting import (
+    collect_report_files,
+    collect_result_summary,
+    write_report,
+    write_result_summary_markdown,
+)
 from data_agent.scca.robustness import (
     ROBUSTNESS_FILES,
     make_quantile_grid_groups,
@@ -24,6 +29,13 @@ from data_agent.scca.robustness import (
     run_placebo_tests,
     summarize_erf_stability,
     write_robustness_outputs,
+)
+from data_agent.scca.spatial_diagnostics import (
+    append_spatial_adjusted_estimate,
+    append_spatial_lag_adjusted_estimate,
+    build_spatial_graph,
+    run_spatial_block_bootstrap,
+    run_spatial_diagnostics,
 )
 from data_agent.scca.specs import SCCAPaths
 
@@ -382,32 +394,22 @@ def _write_geocausal_manifest(
     robustness_manifest: dict[str, Any],
     warnings: list[str],
 ) -> dict[str, Any]:
-    files = {
-        "data_profile": paths.data_profile.name,
-        "variable_candidates": paths.variable_candidates.name,
-        "context_features": paths.context_features.name,
-        "context_manifest": paths.context_manifest.name,
-        "design_plan": paths.design_plan.name,
-        "effect_estimates": paths.effect_estimates.name,
-        "erf_curve": paths.erf_curve.name,
-        "model_diagnostics": paths.model_diagnostics.name,
-        "balance_summary": paths.balance_summary.name,
-        "overlap_summary": paths.overlap_summary.name,
-        "spatial_robustness": paths.spatial_robustness.name,
-        "credibility_report": paths.credibility_report.name,
-        "analysis_report": paths.analysis_report.name,
-        "context_ablation": ROBUSTNESS_FILES["context_ablation"],
-        "placebo_tests": ROBUSTNESS_FILES["placebo_tests"],
-        "bootstrap_robustness": ROBUSTNESS_FILES["bootstrap_robustness"],
-        "bootstrap_summary": ROBUSTNESS_FILES["bootstrap_summary"],
-        "erf_stability": ROBUSTNESS_FILES["erf_stability"],
-        "robustness_report": ROBUSTNESS_FILES["robustness_report"],
-        "robustness_manifest": ROBUSTNESS_FILES["robustness_manifest"],
-        "manifest": paths.manifest.name,
-    }
+    files = collect_report_files(paths)
+    files.update(
+        {
+            "context_ablation": ROBUSTNESS_FILES["context_ablation"],
+            "placebo_tests": ROBUSTNESS_FILES["placebo_tests"],
+            "bootstrap_robustness": ROBUSTNESS_FILES["bootstrap_robustness"],
+            "bootstrap_summary": ROBUSTNESS_FILES["bootstrap_summary"],
+            "erf_stability": ROBUSTNESS_FILES["erf_stability"],
+            "robustness_report": ROBUSTNESS_FILES["robustness_report"],
+            "robustness_manifest": ROBUSTNESS_FILES["robustness_manifest"],
+        }
+    )
     target_exposures = paths.output_dir / "target_exposures.csv"
     if target_exposures.exists():
         files["target_exposures"] = target_exposures.name
+    result_summary = collect_result_summary(paths)
     manifest = {
         "geocausal_version": __version__,
         "generated_at_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
@@ -433,9 +435,17 @@ def _write_geocausal_manifest(
         },
         "credibility_decision": credibility.get("decision"),
         "robustness_interpretation": robustness_manifest.get("robustness_interpretation"),
+        "result_summary": result_summary,
         "warnings": warnings,
         "files": files,
     }
+    write_result_summary_markdown(
+        paths,
+        title=str(config.case_name),
+        manifest=manifest,
+    )
+    files["result_summary_markdown"] = paths.result_summary_markdown.name
+    manifest["files"] = files
     paths.manifest.write_text(
         json.dumps(_json_ready(manifest), indent=2, ensure_ascii=False),
         encoding="utf-8",
@@ -455,7 +465,38 @@ def run_analysis(config: GeoCausalConfig) -> dict[str, Any]:
         profile_table(loaded.frame, spec, paths)
         features, _ = build_context_features(loaded.frame, spec, paths)
         select_design(features, spec, paths)
-        estimate_effects(features, spec, paths)
+        effects = estimate_effects(features, spec, paths)
+        baseline_effect = effects.get("baseline_adjusted_ols", {})
+        baseline_coef = (
+            baseline_effect.get("coef") if isinstance(baseline_effect, dict) else None
+        )
+        spatial_diagnostics = run_spatial_diagnostics(
+            features,
+            spec,
+            paths,
+            source_frame=loaded.frame,
+            baseline_exposure_coef=float(baseline_coef)
+            if isinstance(baseline_coef, (int, float)) and np.isfinite(float(baseline_coef))
+            else None,
+        )
+        append_spatial_adjusted_estimate(paths, spatial_diagnostics)
+        append_spatial_lag_adjusted_estimate(paths, spatial_diagnostics)
+        spatial_graph = build_spatial_graph(features, spec, loaded.frame)
+        spatial_bootstrap_rows, spatial_bootstrap_summary = run_spatial_block_bootstrap(
+            features,
+            spec,
+            spatial_graph,
+            source_frame=loaded.frame,
+            baseline_exposure_coef=float(baseline_coef)
+            if isinstance(baseline_coef, (int, float)) and np.isfinite(float(baseline_coef))
+            else None,
+            n_replicates=max(10, min(config.robustness.bootstrap.n_replicates, 100)),
+        )
+        spatial_bootstrap_rows.to_csv(paths.spatial_bootstrap_robustness, index=False)
+        paths.spatial_bootstrap_summary.write_text(
+            json.dumps(_json_ready(spatial_bootstrap_summary), indent=2, ensure_ascii=False),
+            encoding="utf-8",
+        )
         _write_target_exposures(config, features, paths.output_dir)
         credibility = audit_effects(features, spec, paths)
         write_report(

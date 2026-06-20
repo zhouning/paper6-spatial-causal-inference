@@ -27,7 +27,7 @@ def load_dataset(config: GeoCausalConfig) -> LoadedDataset:
         raise GeoCausalInputError(f"Input file does not exist: {path}")
 
     if config.input.format == "csv":
-        frame = _read_csv(path)
+        frame = _read_csv(path, config.variables.unit_id)
     elif config.input.format in {"gpkg", "geojson", "shp"}:
         frame = _read_spatial(path)
     else:
@@ -48,9 +48,10 @@ def load_dataset(config: GeoCausalConfig) -> LoadedDataset:
     )
 
 
-def _read_csv(path: Path) -> pd.DataFrame:
+def _read_csv(path: Path, unit_id: str | None = None) -> pd.DataFrame:
     try:
-        return pd.read_csv(path, encoding="utf-8-sig")
+        dtype = {unit_id: "string"} if unit_id else None
+        return pd.read_csv(path, encoding="utf-8-sig", dtype=dtype)
     except Exception as exc:
         raise GeoCausalInputError(f"Cannot read CSV input: {path}") from exc
 

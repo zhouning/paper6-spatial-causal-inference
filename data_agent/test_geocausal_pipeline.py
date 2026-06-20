@@ -107,6 +107,18 @@ def test_run_analysis_writes_complete_output_package(tmp_path):
         "bootstrap_robustness.csv",
         "bootstrap_summary.json",
         "erf_stability.json",
+        "spatial_diagnostics.json",
+        "spatial_bootstrap_robustness.csv",
+        "spatial_bootstrap_summary.json",
+        "spatial_graph_sensitivity.csv",
+        "spatial_graph_sensitivity_summary.json",
+        "spatial_slx_estimates.csv",
+        "spatial_slx_summary.json",
+        "spatial_spillover_decomposition.csv",
+        "spatial_spillover_summary.json",
+        "spatial_exposure_mapping.csv",
+        "spatial_exposure_mapping_summary.json",
+        "result_summary.md",
         "robustness_report.md",
         "manifest.json",
     }
@@ -126,6 +138,43 @@ def test_run_analysis_writes_complete_output_package(tmp_path):
         "bounded_support",
         "fragile_support",
     }
+    assert "spatial_diagnostics" in manifest["files"]
+    assert "spatial_bootstrap_robustness" in manifest["files"]
+    assert "spatial_bootstrap_summary" in manifest["files"]
+    assert "spatial_graph_sensitivity" in manifest["files"]
+    assert "spatial_graph_sensitivity_summary" in manifest["files"]
+    assert "spatial_slx_estimates" in manifest["files"]
+    assert "spatial_slx_summary" in manifest["files"]
+    assert "spatial_spillover_decomposition" in manifest["files"]
+    assert "spatial_spillover_summary" in manifest["files"]
+    assert "spatial_exposure_mapping" in manifest["files"]
+    assert "spatial_exposure_mapping_summary" in manifest["files"]
+    assert "result_summary_markdown" in manifest["files"]
+    assert "result_summary" in manifest
+    assert (output_dir / manifest["files"]["result_summary_markdown"]).exists()
+    estimates = pd.read_csv(output_dir / "effect_estimates.csv")
+    assert "spatial_neighbor_adjusted_ols" in set(estimates["estimator"])
+    spatial_bootstrap = json.loads((output_dir / "spatial_bootstrap_summary.json").read_text(encoding="utf-8"))
+    assert spatial_bootstrap["n_replicates_requested"] >= 5
+    assert spatial_bootstrap["n_replicates_valid"] > 0
+    assert manifest["result_summary"]["spatial_block_bootstrap"]["status"] == "ok"
+    assert manifest["result_summary"]["spatial_graph_sensitivity"]["status"] == "ok"
+    assert manifest["result_summary"]["spatial_slx_model"]["status"] in {"ok", "skipped", "unstable"}
+    assert manifest["result_summary"]["spatial_spillover_decomposition"]["status"] == "ok"
+    assert manifest["result_summary"]["spatial_exposure_mapping"]["status"] == "ok"
+    spatial_lag_summary = manifest["result_summary"].get("spatial_lag_adjusted_ols", {})
+    if "spatial_lag_adjusted_ols" in set(estimates["estimator"]):
+        assert spatial_lag_summary.get("status") == "ok"
+    report_text = (output_dir / "analysis_report.md").read_text(encoding="utf-8")
+    assert "## Result Summary" in report_text
+    assert "Spatial block bootstrap" in report_text
+    assert "Spatial graph sensitivity" in report_text
+    assert "Formal SLX output" in report_text
+    assert "Spatial spillover decomposition" in report_text
+    assert "Exposure mapping" in report_text
+    result_summary_text = (output_dir / "result_summary.md").read_text(encoding="utf-8")
+    assert "## Numeric Summary" in result_summary_text
+    assert "Formal SLX output" in result_summary_text
 
 
 def test_run_analysis_supports_arcgis_style_trimming_and_targets(tmp_path):
@@ -241,6 +290,52 @@ def test_run_analysis_bootstrap_falls_back_to_geojson_geometry(tmp_path):
     assert manifest == saved_manifest
     bootstrap_rows = pd.read_csv(output_dir / "bootstrap_robustness.csv")
     assert not bootstrap_rows.empty
+
+
+def test_run_analysis_writes_spatial_diagnostics_for_county_shapefile(tmp_path):
+    pytest.importorskip("geopandas")
+
+    county_path = REPO_ROOT / "data" / "CountyData.shp"
+    if not county_path.exists():
+        pytest.skip("County shapefile fixture is unavailable.")
+
+    config_path = tmp_path / "analysis.yaml"
+    config_path.write_text(
+        f"""
+case_name: county_shapefile_spatial_smoke
+input:
+  path: {county_path}
+variables:
+  unit_id: FIPS
+  exposure: SocialAsso
+  outcome: AveAgeDeat
+  confounders:
+    - UnemployRa
+    - pHHinPover
+    - pNoHealthI
+context:
+  columns:
+    - Shape_Leng
+    - Shape_Area
+robustness:
+  bootstrap:
+    group_column: STATE_NAME
+    n_replicates: 3
+output:
+  directory: results/county_shapefile_spatial_smoke
+""",
+        encoding="utf-8",
+    )
+    config = load_config(config_path)
+
+    manifest = run_analysis(config)
+
+    output_dir = config.resolve_output_dir()
+    diagnostics = json.loads((output_dir / "spatial_diagnostics.json").read_text(encoding="utf-8"))
+    assert manifest["files"]["spatial_diagnostics"] == "spatial_diagnostics.json"
+    assert diagnostics["graph"]["method"] in {"geometry_touches", "coordinate_knn", "unavailable"}
+    assert "graph" in diagnostics
+    assert "residual_moran" in diagnostics
 
 
 def test_rebuild_report_uses_existing_manifest(tmp_path):
