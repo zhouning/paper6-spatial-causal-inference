@@ -1,0 +1,13 @@
+{
+  "validation_csv": "paper\\ijgis_submission_20260605\\07_results\\llm_dag_validation.csv",
+  "examples_md": "paper\\ijgis_submission_20260605\\07_results\\llm_dag_examples.md",
+  "manifest_json": "paper\\ijgis_submission_20260605\\07_results\\llm_dag_validation_manifest.json",
+  "details_json": "paper\\ijgis_submission_20260605\\07_results\\llm_dag_validation_details.json",
+  "n_rows": 210,
+  "n_prompt_ids": 21,
+  "generators": [
+    "minimal_template_baseline",
+    "structured_prompt_proxy"
+  ],
+  "mode": "offline_only"
+}
