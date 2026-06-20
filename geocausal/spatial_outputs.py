@@ -297,11 +297,25 @@ def _plot_erf_curve(erf_curve: pd.DataFrame, output_path: Path) -> str | None:
     matplotlib.use("Agg", force=True)
     import matplotlib.pyplot as plt
 
-    curve = erf_curve[["exposure", "response"]].apply(pd.to_numeric, errors="coerce").dropna()
+    curve_columns = ["exposure", "response"]
+    if {"ci_lower", "ci_upper"}.issubset(erf_curve.columns):
+        curve_columns.extend(["ci_lower", "ci_upper"])
+    curve = erf_curve[curve_columns].apply(pd.to_numeric, errors="coerce").dropna(subset=["exposure", "response"])
     if curve.empty:
         return None
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.plot(curve["exposure"], curve["response"], color="#1f6f8b", linewidth=2.2)
+    if {"ci_lower", "ci_upper"}.issubset(curve.columns):
+        band = curve[["exposure", "ci_lower", "ci_upper"]].dropna()
+        if not band.empty:
+            ax.fill_between(
+                band["exposure"],
+                band["ci_lower"],
+                band["ci_upper"],
+                color="#1f6f8b",
+                alpha=0.18,
+                linewidth=0,
+            )
     ax.set_xlabel("Exposure")
     ax.set_ylabel("Estimated outcome response")
     ax.set_title("Exposure-response curve")

@@ -59,6 +59,28 @@ def _finite_or_nan(value: object) -> float:
     return numeric if np.isfinite(numeric) else np.nan
 
 
+def _range_effect_inference(
+    model: sm.regression.linear_model.RegressionResultsWrapper,
+    exposure_name: str,
+    exposure_min: float,
+    exposure_max: float,
+) -> tuple[float, float, float]:
+    params = getattr(model, "params", pd.Series(dtype=float))
+    if exposure_name not in params.index:
+        return np.nan, np.nan, np.nan
+    try:
+        contrast = np.zeros(len(params), dtype=float)
+        contrast[list(params.index).index(exposure_name)] = exposure_max - exposure_min
+        test = model.t_test(contrast)
+        se = _finite_or_nan(np.ravel(test.sd)[0])
+        ci = np.asarray(test.conf_int(alpha=0.05), dtype=float).reshape(-1, 2)
+        ci_lower = _finite_or_nan(ci[0, 0])
+        ci_upper = _finite_or_nan(ci[0, 1])
+    except Exception:
+        return np.nan, np.nan, np.nan
+    return se, ci_lower, ci_upper
+
+
 def _ols_effect(
     features: pd.DataFrame,
     outcome_name: str,
@@ -204,12 +226,15 @@ def _gps_weights(features: pd.DataFrame, spec: StudySpec, covariates: list[str])
 def _erf_curve(features: pd.DataFrame, spec: StudySpec, weights: pd.Series) -> tuple[pd.DataFrame, dict[str, object]]:
     if spec.exposure not in features.columns or spec.outcome not in features.columns:
         return (
-            pd.DataFrame({"exposure": [np.nan], "response": [np.nan]}),
+            pd.DataFrame({"exposure": [np.nan], "response": [np.nan], "ci_lower": [np.nan], "ci_upper": [np.nan]}),
             {
                 "status": "skipped",
                 "erf_n": 0,
                 "dropped_n": len(features),
                 "range_effect": np.nan,
+                "range_effect_se": np.nan,
+                "range_effect_ci_lower": np.nan,
+                "range_effect_ci_upper": np.nan,
                 "response_min_exposure": np.nan,
                 "response_max_exposure": np.nan,
                 "warnings": ["Exposure or outcome column is missing for ERF estimation."],
@@ -220,12 +245,15 @@ def _erf_curve(features: pd.DataFrame, spec: StudySpec, weights: pd.Series) -> t
     dropped_n = len(features) - len(frame)
     if frame.empty:
         return (
-            pd.DataFrame({"exposure": [np.nan], "response": [np.nan]}),
+            pd.DataFrame({"exposure": [np.nan], "response": [np.nan], "ci_lower": [np.nan], "ci_upper": [np.nan]}),
             {
                 "status": "skipped",
                 "erf_n": 0,
                 "dropped_n": dropped_n,
                 "range_effect": np.nan,
+                "range_effect_se": np.nan,
+                "range_effect_ci_lower": np.nan,
+                "range_effect_ci_upper": np.nan,
                 "response_min_exposure": np.nan,
                 "response_max_exposure": np.nan,
                 "warnings": ["No complete exposure/outcome rows for ERF estimation."],
@@ -238,6 +266,9 @@ def _erf_curve(features: pd.DataFrame, spec: StudySpec, weights: pd.Series) -> t
     messages: list[str] = []
     if len(frame) < 2 or exposure.nunique() < 2:
         response = np.repeat(float(frame[spec.outcome].mean()), len(grid))
+        ci_lower_curve = np.repeat(np.nan, len(grid))
+        ci_upper_curve = np.repeat(np.nan, len(grid))
+        range_se = range_ci_lower = range_ci_upper = np.nan
         status = "unstable"
         messages.append("ERF used mean response fallback due to sparse rows or no exposure variation.")
     else:
@@ -245,14 +276,28 @@ def _erf_curve(features: pd.DataFrame, spec: StudySpec, weights: pd.Series) -> t
             aligned_weights = weights.reindex(frame.index).astype(float)
             aligned_weights = aligned_weights.replace([np.inf, -np.inf], np.nan).fillna(1.0)
             x_const = sm.add_constant(exposure.rename(spec.exposure), has_constant="add")
+            grid_const = sm.add_constant(pd.Series(grid, name=spec.exposure), has_constant="add")
             with warnings.catch_warnings(record=True) as caught:
                 warnings.simplefilter("always", RuntimeWarning)
                 model = sm.WLS(frame[spec.outcome].astype(float), x_const.astype(float), weights=aligned_weights).fit()
-                response = model.predict(sm.add_constant(pd.Series(grid, name=spec.exposure), has_constant="add"))
+                prediction = model.get_prediction(grid_const.astype(float))
+                prediction_frame = prediction.summary_frame(alpha=0.05)
+                response = prediction_frame["mean"].to_numpy(dtype=float)
+                ci_lower_curve = prediction_frame["mean_ci_lower"].to_numpy(dtype=float)
+                ci_upper_curve = prediction_frame["mean_ci_upper"].to_numpy(dtype=float)
+                range_se, range_ci_lower, range_ci_upper = _range_effect_inference(
+                    model,
+                    spec.exposure,
+                    float(grid[0]),
+                    float(grid[-1]),
+                )
             for warning in caught:
                 messages.append(str(warning.message))
         except Exception as exc:
             response = np.repeat(np.nan, len(grid))
+            ci_lower_curve = np.repeat(np.nan, len(grid))
+            ci_upper_curve = np.repeat(np.nan, len(grid))
+            range_se = range_ci_lower = range_ci_upper = np.nan
             status = "unstable"
             messages.append(f"ERF fit failed: {exc}")
 
@@ -261,12 +306,22 @@ def _erf_curve(features: pd.DataFrame, spec: StudySpec, weights: pd.Series) -> t
     response_max = _finite_or_nan(response_array[-1]) if len(response_array) else np.nan
     range_effect = _finite_or_nan(response_max - response_min)
     return (
-        pd.DataFrame({"exposure": grid, "response": response_array}),
+        pd.DataFrame(
+            {
+                "exposure": grid,
+                "response": response_array,
+                "ci_lower": np.asarray(ci_lower_curve, dtype=float),
+                "ci_upper": np.asarray(ci_upper_curve, dtype=float),
+            }
+        ),
         {
             "status": status,
             "erf_n": int(len(frame)),
             "dropped_n": int(dropped_n),
             "range_effect": range_effect,
+            "range_effect_se": range_se,
+            "range_effect_ci_lower": range_ci_lower,
+            "range_effect_ci_upper": range_ci_upper,
             "response_min_exposure": response_min,
             "response_max_exposure": response_max,
             "warnings": messages,
@@ -312,10 +367,10 @@ def estimate_effects(
     gps_result = {
         "status": erf_result["status"],
         "coef": erf_result["range_effect"],
-        "se": np.nan,
+        "se": erf_result["range_effect_se"],
         "p_value": np.nan,
-        "ci_lower": np.nan,
-        "ci_upper": np.nan,
+        "ci_lower": erf_result["range_effect_ci_lower"],
+        "ci_upper": erf_result["range_effect_ci_upper"],
         "r_squared": np.nan,
         "n": int(erf_result["erf_n"]),
         "n_grid": int(len(erf)),

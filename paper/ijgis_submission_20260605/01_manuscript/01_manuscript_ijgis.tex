@@ -127,8 +127,8 @@ Figure~\ref{fig:scca_workflow} summarizes the workflow. The first step builds ca
 \node[box, fill=gray!10] (input) {Spatial units, exposure, outcome, observed covariates, geometries};
 \node[box, fill=blue!8, below=of input] (context) {Construct candidate spatial-context variables};
 \node[box, fill=blue!8, below=of context] (variants) {Define adjustment variants: minimal, geometry, terrain, remote sensing, embeddings};
-\node[box, fill=green!8, below=of variants] (estimate) {Estimate effect with matching, weighting, exposure-response, or case-specific SCCA estimator};
-\node[box, fill=orange!10, below=of estimate] (diagnose) {Diagnose common support, balance, matched counts, and residual spatial structure};
+\node[box, fill=green!8, below=of variants] (estimate) {Estimate effect with case-specific matching, weighting, exposure-response, or adjusted outcome models};
+\node[box, fill=orange!10, below=of estimate] (diagnose) {Diagnose support, balance, matched counts when applicable, and residual spatial structure};
 \node[box, fill=red!8, below=of diagnose] (grade) {Assign evidence grade and report claim boundary};
 \draw[arr] (input) -- (context);
 \draw[arr] (context) -- (variants);
@@ -143,17 +143,19 @@ Figure~\ref{fig:scca_workflow} summarizes the workflow. The first step builds ca
 
 \subsection{Adjustment variants}
 
-For binary treatment, SCCA estimates a propensity score
+SCCA does not impose a single estimator on all exposure types. The reusable core estimates adjusted outcome models and ERFs for continuous or ordered exposures using generalized propensity-score (GPS) weights. Case-specific modules can add binary-treatment estimators when the scientific question is naturally treated-control. In the Chongqing and AlphaEarth ablations used below, the binary module estimates a propensity score
 \begin{equation}
 e_i = P(T_i = 1 \mid X_i, C_i)
 \end{equation}
-for each adjustment variant. Units outside the overlapping propensity-score range are removed. Treated units are matched to controls under a caliper, and standardized mean differences (SMDs) are computed before and after matching:
+for each adjustment variant. Units outside the overlapping propensity-score range are removed. Treated units are matched to controls under a nearest-neighbor caliper rule, and standardized mean differences (SMDs) are computed before and after matching:
 \begin{equation}
 \mathrm{SMD}_k =
 \frac{\bar{Z}_{k,T=1} - \bar{Z}_{k,T=0}}
 {\sqrt{(s^2_{k,T=1} + s^2_{k,T=0})/2}},
 \end{equation}
 where $Z_k$ is the $k$th covariate in the adjustment set. A variant is treated as credible only if the maximum post-match absolute SMD is below 0.1 unless a case-specific justification is provided. The estimate is then reported together with matched sample counts and common-support attrition.
+
+For the shared continuous-exposure workflow, SCCA reports baseline adjusted OLS, difference-outcome OLS when a baseline outcome is available, and a generalized propensity-score weighted exposure-response function (ERF). The ERF is fit as a weighted outcome model over an exposure grid. The implementation writes the point estimate, pointwise model-based confidence limits for the fitted response, and an approximate confidence interval for the ERF range effect. These intervals describe uncertainty in the fitted outcome model; they do not replace the spatial bootstrap, placebo, support, and residual-spatial diagnostics used for the evidence grade.
 
 \subsection{Robustness diagnostics}
 
@@ -176,6 +178,8 @@ The manuscript uses \ruleversion. A case is downgraded from core to bounded supp
 SCCA is implemented as a shared Python core with thin interface adapters. The reusable boundary is an \texttt{AnalysisRequest} object that accepts an input table or spatial dataset, user-specified exposure and outcome fields, candidate confounders, context columns, optional coordinate columns, bootstrap groups, placebo exposures, trimming thresholds, and target outcome values. The same core is called from command-line scripts, notebooks, the ArcGIS Pro toolbox, and the QGIS Processing provider.
 
 This architecture is methodological rather than cosmetic. It prevents separate ArcGIS, QGIS, and notebook implementations from diverging, and it makes the evidence package comparable across interfaces. Each completed run writes CSV, JSON, and Markdown outputs including effect estimates, exposure-response tables, balance and overlap summaries, robustness tables, spatial diagnostics, spatial block bootstrap, graph sensitivity, spatial-lag summaries when estimable, and a machine-readable manifest. Notebook and QGIS workflows can additionally convert joined analysis tables into GeoPackage, GeoJSON, Shapefile, PNG, HTML, and QGIS style outputs for GIS inspection.
+
+The binary Chongqing and AlphaEarth modules write separate ablation, balance, and matched-count tables. These case-level outputs are the source of the post-match SMD and matched-sample counts reported in the experiments. They are intentionally separated from the reusable GeoCausal core, which keeps the interface-level workflow focused on common data loading, context construction, adjusted outcome estimation, ERF estimation, spatial diagnostics, and manifest generation.
 
 
 % ============================================================================
@@ -243,7 +247,7 @@ GCCM & Direction accuracy & 1.000 & 0.233 & 0.876 & Fragile direction recovery \
 
 The main real-data case asked whether high-rise buildings in Chongqing were associated with local summer land surface temperature after spatial-context adjustment. The analysis used a stratified sample of 5,000 buildings from 2021. Treatment was defined as buildings with at least 10 floors. The outcome was summer land surface temperature. Candidate context variables included centroid coordinates, footprint area, Sentinel-2 bands, spectral indices, elevation, and slope.
 
-The raw mean difference was 0.238$^\circ$C (Table~\ref{tab:chongqing}). Several variants achieved credible balance after matching. The full remote-sensing and terrain context specification estimated ATT = 0.244$^\circ$C with 95\% CI [0.148, 0.346] and maximum post-match SMD = 0.061. The current evidence supports a modest positive association under a balanced SCCA design. It does not support a large high-rise cooling effect.
+The raw mean difference was 0.238$^\circ$C (Table~\ref{tab:chongqing}). Several variants achieved credible balance after matching. The full remote-sensing and terrain context specification estimated ATT = 0.244$^\circ$C with 95\% CI [0.148, 0.346] and maximum post-match SMD = 0.061. These matching diagnostics are read from the Chongqing ablation, balance, and matched-count outputs, which record the caliper-matching estimator and retained treated-control pairs. The current evidence supports a modest positive association under a balanced SCCA design. It does not support a large high-rise cooling effect.
 
 \begin{table}[htbp]
 \centering
@@ -321,6 +325,8 @@ GIS outputs are therefore not causal evidence by themselves. Their role is audit
 \subsection{What SCCA does not solve}
 
 SCCA does not make observational spatial data equivalent to randomized experiments. It cannot adjust for unmeasured confounders that are absent from all candidate context sources. It does not automatically solve interference between neighboring units. The SLX-style direct, indirect, and total effect summaries are sensitivity outputs, not identified network-interference estimands. SCCA also does not remove the modifiable areal unit problem or scale mismatch between treatment and outcome measurement. In the Chongqing case, significant residual Moran's $I$ indicates that spatial structure remains after matching. In the county notebook case, residual Moran's $I$ and a significant neighboring-exposure coefficient similarly require bounded interpretation. The correct interpretation is therefore bounded causal evidence under measured context, not definitive identification.
+
+Several implementation choices also remain deliberately conservative. Context variables are specified and audited by variants rather than selected automatically by a high-dimensional procedure. Missing context values are handled by simple reproducible preprocessing in the shared workflow, so analyses with spatially structured missingness should add a missing-pattern audit or sensitivity analysis. The evidence-grade thresholds are machine-readable and predeclared for this manuscript, but future applications should report threshold sensitivity when a grade depends on values close to the rule boundary.
 
 \subsection{Why learned context must be tested}
 
