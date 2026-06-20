@@ -1,0 +1,120 @@
+{
+  "phase0_validation": {
+    "available": true,
+    "path": "scripts\\phase0_results\\phase0_results.json",
+    "overall": "PASS",
+    "recommendation": "方案 D 可行，信号足以支撑动力学学习",
+    "criteria": {
+      "interannual_signal": {
+        "avg_cosine_similarity": 0.9528996287144844,
+        "pass": true,
+        "strong": false,
+        "threshold": "< 0.99 (pass), < 0.95 (strong)"
+      },
+      "change_separation": {
+        "avg_separation_ratio": 2.4376328734653465,
+        "pass": true,
+        "strong": false,
+        "threshold": "> 2x (pass), > 5x (strong)"
+      },
+      "decodability": {
+        "avg_accuracy": 0.8366666666666666,
+        "pass": true,
+        "strong": true,
+        "threshold": "> 50% (pass), > 70% (strong)"
+      }
+    }
+  },
+  "local_alphaearth_weights": {
+    "available": true,
+    "path": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\synthetic-benchmark-audit\\data_agent\\weights\\local_alphaearth_encoder.pth"
+  },
+  "embedding_store_coverage": {
+    "total_embeddings": 0,
+    "areas": []
+  },
+  "input_geofm_columns": {
+    "available": true,
+    "n_columns": 64,
+    "columns": [
+      "A00",
+      "A01",
+      "A02",
+      "A03",
+      "A04",
+      "A05",
+      "A06",
+      "A07",
+      "A08",
+      "A09",
+      "A10",
+      "A11",
+      "A12",
+      "A13",
+      "A14",
+      "A15",
+      "A16",
+      "A17",
+      "A18",
+      "A19",
+      "A20",
+      "A21",
+      "A22",
+      "A23",
+      "A24",
+      "A25",
+      "A26",
+      "A27",
+      "A28",
+      "A29",
+      "A30",
+      "A31",
+      "A32",
+      "A33",
+      "A34",
+      "A35",
+      "A36",
+      "A37",
+      "A38",
+      "A39",
+      "A40",
+      "A41",
+      "A42",
+      "A43",
+      "A44",
+      "A45",
+      "A46",
+      "A47",
+      "A48",
+      "A49",
+      "A50",
+      "A51",
+      "A52",
+      "A53",
+      "A54",
+      "A55",
+      "A56",
+      "A57",
+      "A58",
+      "A59",
+      "A60",
+      "A61",
+      "A62",
+      "A63"
+    ],
+    "complete_rows": 199
+  },
+  "runtime_probe": {
+    "available": true,
+    "status": "ok"
+  },
+  "runtime_sampling": {
+    "status": "ok",
+    "year": 2021,
+    "n_rows": 200,
+    "n_sampled_rows": 199,
+    "batch_size": 50,
+    "max_rows": 200
+  },
+  "claim_guidance": "geofm_no_clear_gain"
+}

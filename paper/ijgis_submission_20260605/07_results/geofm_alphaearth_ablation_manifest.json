@@ -1,0 +1,10 @@
+{
+  "availability_report_json": "paper\\ijgis_submission_20260605\\07_results\\geofm_availability_report.json",
+  "causal_ablation_csv": "paper\\ijgis_submission_20260605\\07_results\\geofm_causal_ablation.csv",
+  "balance_diagnostics_csv": "paper\\ijgis_submission_20260605\\07_results\\geofm_balance_diagnostics.csv",
+  "manifest_json": "paper\\ijgis_submission_20260605\\07_results\\geofm_alphaearth_ablation_manifest.json",
+  "report_md": "paper\\ijgis_submission_20260605\\07_results\\geofm_alphaearth_ablation_report.md",
+  "analysis_sample_csv": "paper\\ijgis_submission_20260605\\07_results\\geofm_alphaearth_analysis_sample.csv",
+  "n_ablation_rows": 6,
+  "n_balance_rows": 226
+}
