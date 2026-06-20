@@ -2,9 +2,9 @@
 
 This repository is the standalone reproduction package for Paper6:
 
-**A three-angle framework for geospatial causal inference with statistical identification, LLM causal reasoning, and AlphaEarth/World-Model counterfactual simulation.**
+**Spatial Context Causal Adjustment (SCCA) for geographic observational studies: a reproducible workflow for constructing spatial-context adjustment sets, checking balance and common support, running spatial robustness diagnostics, and reporting bounded causal evidence.**
 
-The repository is organized for IJGIS-style peer review. It contains the IJGIS submission package, original manuscript sources, Paper6 code, tests, experiment scripts, generated outputs, selected raw Chongqing sample data, and model weights required by the world-model examples.
+The repository is organized for IJGIS-style peer review. It contains the IJGIS submission package, manuscript sources, Paper6 code, tests, experiment scripts, generated outputs, selected Chongqing sample data, and auxiliary materials from earlier exploratory phases.
 
 ## Repository Map
 
@@ -12,12 +12,12 @@ The repository is organized for IJGIS-style peer review. It contains the IJGIS s
 - `paper/source_docs/` - earlier Paper6 source drafts and Chinese/English document exports.
 - `paper/figures/` - publication figure PDFs generated for the manuscript.
 - `data_agent/` - Paper6 reproduction subset of the GIS Data Agent codebase.
-- `data_agent/experiments/` - causal and world-model experiment runners plus generated outputs.
+- `data_agent/experiments/` - SCCA, causal, and auxiliary validation experiment runners plus generated outputs.
 - `data_agent/uploads/anonymous/` - diagnostic files referenced by historical experiment JSON outputs.
 - `data/raw/01数据样例/` - raw Chongqing DEM, CLCD, and building-footprint sample data used by Paper6 real-data experiments.
 - `scripts/` - case-study, AlphaEarth feasibility, and manuscript-generation helper scripts.
-- `demos/` - small causal and world-model demos.
-- `docs/background/` - supporting technical notes for AlphaEarth and world-model design.
+- `demos/` - small causal and auxiliary simulation demos.
+- `docs/background/` - supporting technical notes for AlphaEarth, world-model exploration, and SCCA redesign.
 - `checksums/` - machine-readable SHA-256 file inventory.
 
 ## Quick Start
@@ -83,6 +83,18 @@ This writes:
 - `paper/ijgis_submission_20260605/07_results/synthetic_benchmark_audit/synthetic_benchmark_audit_details.json`
 - `paper/ijgis_submission_20260605/07_results/synthetic_benchmark_audit/synthetic_benchmark_audit_report.md`
 - `paper/ijgis_submission_20260605/07_results/synthetic_benchmark_audit/scenario_fragility_summary.csv`
+
+Write the unified SCCA evidence synthesis used to frame the manuscript:
+
+```powershell
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.scca_evidence_synthesis --output-dir paper\ijgis_submission_20260605\07_results
+```
+
+This writes:
+
+- `paper/ijgis_submission_20260605/07_results/scca_evidence_synthesis.csv`
+- `paper/ijgis_submission_20260605/07_results/scca_evidence_synthesis_report.md`
+- `paper/ijgis_submission_20260605/07_results/scca_evidence_synthesis_manifest.json`
 
 Run the IJGIS-required world-model holdout and scenario-calibration validation:
 

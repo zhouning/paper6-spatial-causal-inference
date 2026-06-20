@@ -1,0 +1,13 @@
+{
+  "synthesis_csv": "paper\\ijgis_submission_20260605\\07_results\\scca_evidence_synthesis.csv",
+  "report_md": "paper\\ijgis_submission_20260605\\07_results\\scca_evidence_synthesis_report.md",
+  "manifest_json": "paper\\ijgis_submission_20260605\\07_results\\scca_evidence_synthesis_manifest.json",
+  "results_dir": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\synthetic-benchmark-audit\\paper\\ijgis_submission_20260605\\07_results",
+  "n_rows": 8,
+  "grade_counts": {
+    "bounded_support": 3,
+    "core_support": 2,
+    "auxiliary_only": 2,
+    "negative_ablation": 1
+  }
+}

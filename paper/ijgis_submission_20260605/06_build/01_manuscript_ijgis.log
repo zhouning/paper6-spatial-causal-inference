@@ -1,4 +1,4 @@
-﻿This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.4.25)  7 JUN 2026 14:20
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.4.25)  20 JUN 2026 15:37
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -656,27 +656,28 @@ File: tikzlibrarycalc.code.tex 2025-08-29 v3.1.11a (3.1.11a)
 File: l3backend-pdftex.def 2026-02-18 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count344
 )
-(../06_build/01_manuscript_ijgis.aux)
+(D:/adk/paper6-spatial-causal-inference/.worktrees/synthetic-benchmark-audit/pa
+per/ijgis_submission_20260605/06_build/01_manuscript_ijgis.aux)
 \openout1 = `01_manuscript_ijgis.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 26.
-LaTeX Font Info:    ... okay on input line 26.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 25.
+LaTeX Font Info:    ... okay on input line 25.
 
 (d:/texlive/2026/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
@@ -704,189 +705,233 @@ Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: float package is loaded.
 Package caption Info: hyperref package is loaded.
 Package caption Info: End \AtBeginDocument code.
-Package hyperref Info: Link coloring OFF on input line 26.
+Package hyperref Info: Link coloring OFF on input line 25.
 
-(../06_build/01_manuscript_ijgis.out) (../06_build/01_manuscript_ijgis.out)
+(D:/adk/paper6-spatial-causal-inference/.worktrees/synthetic-benchmark-audit/pa
+per/ijgis_submission_20260605/06_build/01_manuscript_ijgis.out)
+(D:/adk/paper6-spatial-causal-inference/.worktrees/synthetic-benchmark-audit/pa
+per/ijgis_submission_20260605/06_build/01_manuscript_ijgis.out)
 \@outlinefile=\write4
 \openout4 = `01_manuscript_ijgis.out'.
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 35.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 34.
 
 
 (d:/texlive/2026/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 35.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 34.
 
 
 (d:/texlive/2026/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-Overfull \hbox (97.48555pt too wide) in paragraph at lines 35--35
+Overfull \hbox (97.48555pt too wide) in paragraph at lines 34--34
  [][] 
  []
 
 
-Overfull \hbox (3.1328pt too wide) in paragraph at lines 39--40
-\OT1/cmr/m/n/9 spa-tial Granger causal-ity, ge-o-graphic con-ver-gent cross-map
-ping, and causal
+Overfull \hbox (5.0182pt too wide) in paragraph at lines 38--39
+\OT1/cmr/m/n/9 ducible work-flow for con-struct-ing, di-ag-nos-ing, and re-port
+-ing spatial-context
  []
 
 [1
 
-{d:/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2]
-Overfull \hbox (0.36163pt too wide) in paragraph at lines 67--68
-\OT1/cmr/m/n/10 when avail-able, or remote-sensing-derived co-vari-ates can be 
-used as learned
+{d:/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
+Overfull \hbox (4.69287pt too wide) in paragraph at lines 66--67
+[]\OT1/cmr/m/n/10 A for-mal SCCA work-flow for rep-re-sent-ing, se-lect-ing, an
+d di-ag-nos-ing spatial-
+ []
+
+[2]
+Overfull \hbox (3.7228pt too wide) in paragraph at lines 88--89
+\OT1/cmr/m/n/10 ef-fects, dis-tance mea-sures, ter-rain vari-ables, land-cover 
+classes, built-environment
+ []
+
+[3] [4] [5]
+Underfull \hbox (badness 10000) in paragraph at lines 183--183
+[]\OT1/cmr/m/n/7 Synthetic
  []
 
 
-Overfull \hbox (0.83383pt too wide) in paragraph at lines 69--70
-[]\OT1/cmr/m/n/10 Cross-angle in-ter-faces in which LLM-assisted sce-nar-ios ma
-p to world model
- []
-
-[3]
-Overfull \hbox (124.22827pt too wide) in paragraph at lines 145--146
- [][] 
+Underfull \hbox (badness 10000) in paragraph at lines 183--183
+\OT1/cmr/m/n/7 bench-mark
  []
 
 
-Overfull \hbox (123.0732pt too wide) in paragraph at lines 156--178
- [][] 
- []
-
-[4]
-Overfull \hbox (96.75093pt too wide) in paragraph at lines 186--197
- [][] 
- []
-
-[5] [6] [7]
-Overfull \hbox (4.0468pt too wide) in paragraph at lines 273--274
- []\OT1/cmr/bx/n/10 Distributional as-sump-tions.[] \OT1/cmr/m/n/10 Equa-tion 3
- as-sumes nor-mally dis-tributed resid-
- []
-
-[8] [9] [10] [11] [12]
-Overfull \hbox (118.86206pt too wide) in paragraph at lines 454--466
- [][] 
- []
-
-[13] [14] [15]
-Overfull \hbox (146.37589pt too wide) in paragraph at lines 527--545
- [][] 
- []
-
-[16]
-<figures/fig_causal_psm_balance.pdf, id=381, 256.24663pt x 203.27773pt>
-File: figures/fig_causal_psm_balance.pdf Graphic file (type pdf)
-<use figures/fig_causal_psm_balance.pdf>
-Package pdftex.def Info: figures/fig_causal_psm_balance.pdf  used on input line
- 553.
-(pdftex.def)             Requested size: 165.59853pt x 131.3721pt.
-<figures/fig_causal_did_trends.pdf, id=382, 224.27351pt x 186.96144pt>
-File: figures/fig_causal_did_trends.pdf Graphic file (type pdf)
-<use figures/fig_causal_did_trends.pdf>
-Package pdftex.def Info: figures/fig_causal_did_trends.pdf  used on input line 
-559.
-(pdftex.def)             Requested size: 165.59853pt x 138.0526pt.
-<figures/fig_causal_erf_curve.pdf, id=383, 224.25783pt x 174.8973pt>
-File: figures/fig_causal_erf_curve.pdf Graphic file (type pdf)
-<use figures/fig_causal_erf_curve.pdf>
-Package pdftex.def Info: figures/fig_causal_erf_curve.pdf  used on input line 5
-69.
-(pdftex.def)             Requested size: 165.59853pt x 129.15242pt.
-
-Underfull \hbox (badness 10000) in paragraph at lines 570--570
-[]\OT1/cmr/m/n/10 Figure 6: |Es-ti-mated exposure-
+Underfull \hbox (badness 10000) in paragraph at lines 183--183
+[]\OT1/cmr/m/n/7 Controlled
  []
 
 
-Underfull \hbox (badness 3179) in paragraph at lines 570--570
-\OT1/cmr/m/n/10 response func-tion (ERF) for Sce-
+Underfull \hbox (badness 1584) in paragraph at lines 183--183
+\OT1/cmr/m/n/7 ro-bust and 29 frag-ile
  []
 
 
-Underfull \hbox (badness 1436) in paragraph at lines 570--570
-\OT1/cmr/m/n/10 con-fi-dence bands via IPSW ker-nel
- []
-
-<figures/fig_causal_cate_map.pdf, id=384, 237.2162pt x 174.72728pt>
-File: figures/fig_causal_cate_map.pdf Graphic file (type pdf)
-<use figures/fig_causal_cate_map.pdf>
-Package pdftex.def Info: figures/fig_causal_cate_map.pdf  used on input line 57
-5.
-(pdftex.def)             Requested size: 165.59853pt x 121.98032pt.
-
-Underfull \hbox (badness 1383) in paragraph at lines 576--576
-\OT1/cmr/m/n/10 di-tional Av-er-age Treat-ment Ef-fects
+Underfull \hbox (badness 10000) in paragraph at lines 184--184
+[]\OT1/cmr/m/n/7 Chongqing ur-
  []
 
 
-Underfull \hbox (badness 2035) in paragraph at lines 576--576
-\OT1/cmr/m/n/10 LST case study. Pos-i-tive val-ues
+Underfull \hbox (badness 4120) in paragraph at lines 184--184
+[]\OT1/cmr/m/n/7 Real build-ing
  []
 
-<figures/fig_causal_cross_validation_radar.pdf, id=385, 282.10634pt x 215.16902
-pt>
-File: figures/fig_causal_cross_validation_radar.pdf Graphic file (type pdf)
-<use figures/fig_causal_cross_validation_radar.pdf>
-Package pdftex.def Info: figures/fig_causal_cross_validation_radar.pdf  used on
- input line 583.
-(pdftex.def)             Requested size: 189.75105pt x 144.73048pt.
-[17] [18 <./figures/fig_causal_psm_balance.pdf> <./figures/fig_causal_did_trend
-s.pdf> <./figures/fig_causal_erf_curve.pdf> <./figures/fig_causal_cate_map.pdf>
-] [19 <./figures/fig_causal_cross_validation_radar.pdf>] [20]
-Underfull \hbox (badness 6063) in paragraph at lines 671--672
-[]\OT1/cmr/m/n/10 Rahman, S., 2026. Phys-i-cally In-ter-pretable Al-phaEarth Em
--bed-dings.
+
+Underfull \hbox (badness 10000) in paragraph at lines 184--184
+\OT1/cmr/m/n/7 and remote-
  []
 
-[21] [22] (../06_build/01_manuscript_ijgis.aux)
+
+Underfull \hbox (badness 3281) in paragraph at lines 184--184
+[]\OT1/cmr/m/n/7 Full con-text ATT =
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 184--185
+[]\OT1/cmr/m/n/7 Main real-data
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 185--185
+[]\OT1/cmr/m/n/7 Snow cholera
+ []
+
+
+Underfull \hbox (badness 6592) in paragraph at lines 185--185
+\OT1/cmr/m/n/7 high exposure-balance
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 186--186
+[]\OT1/cmr/m/n/7 Soho pump
+ []
+
+
+Underfull \hbox (badness 6592) in paragraph at lines 186--186
+\OT1/cmr/m/n/7 high exposure-balance
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 186--187
+[]\OT1/cmr/m/n/7 Mechanism-focused
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 187--187
+[]\OT1/cmr/m/n/7 County so-cial
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 187--187
+[]\OT1/cmr/m/n/7 External
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 187--188
+[]\OT1/cmr/m/n/7 Strongest ex-ter-nal
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 188--188
+[]\OT1/cmr/m/n/7 Candidate
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 188--188
+\OT1/cmr/m/n/7 em-bed-ding
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 188--188
+[]\OT1/cmr/m/n/7 RS/terrain SMD =
+ []
+
+
+Underfull \hbox (badness 3471) in paragraph at lines 188--188
+[]\OT1/cmr/m/n/7 Negative ab-
+ []
+
+[6]
+Underfull \hbox (badness 10000) in paragraph at lines 218--218
+[]\OT1/cmr/m/n/7 Difference-in-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 218--218
+[]\OT1/cmr/m/n/7 Direction ac-cu-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 218--218
+[]\OT1/cmr/m/n/7 Fragile generator-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 218--218
+[]\OT1/cmr/m/n/7 Direction ac-cu-
+ []
+
+
+Overfull \hbox (2.08847pt too wide) in paragraph at lines 225--226
+[]\OT1/cmr/m/n/10 Table []3[] shows the ad-just-ment vari-ants. The raw mean di
+f-fer-ence was 0.238$[]$C.
+ []
+
+[7] [8] [9]
+Overfull \hbox (2.29694pt too wide) in paragraph at lines 294--295
+[]\OT1/cmr/m/n/10 The main em-pir-i-cal re-sult is de-lib-er-ately bounded. In 
+Chongqing, full remote-
+ []
+
+[10] [11]
+(D:/adk/paper6-spatial-causal-inference/.worktrees/synthetic-benchmark-audit/pa
+per/ijgis_submission_20260605/06_build/01_manuscript_ijgis.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-03-20>
  ***********
 Package rerunfilecheck Info: File `01_manuscript_ijgis.out' has not changed.
-(rerunfilecheck)             Checksum: D64F6F8441E47B876F6D2A95C196A067;8898.
+(rerunfilecheck)             Checksum: 27B79D480AD804FBB18576FCCFC1CB67;3797.
  ) 
 Here is how much of TeX's memory you used:
- 23830 strings out of 468830
- 444251 string characters out of 5454207
- 843357 words of memory out of 5000000
- 52193 multiletter control sequences out of 15000+600000
- 639377 words of font info for 83 fonts, out of 8000000 for 9000
+ 23466 strings out of 468830
+ 438290 string characters out of 5454207
+ 841236 words of memory out of 5000000
+ 51898 multiletter control sequences out of 15000+600000
+ 640222 words of font info for 88 fonts, out of 8000000 for 9000
  319 hyphenation exceptions out of 8191
- 84i,13n,104p,1328b,911s stack positions out of 10000i,1000n,20000p,200000b,200000s
- <[redacted-texlive-cache]> <[redacted-texlive-cache]> <[redacted-texlive-cache]><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10
-.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><d:/
-texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb><d:/texlive/20
-26/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><d:/texlive/2026/texmf-
-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb><d:/texlive/2026/texmf-dist/font
-s/type1/public/amsfonts/cm/cmmi5.pfb><d:/texlive/2026/texmf-dist/fonts/type1/pu
-blic/amsfonts/cm/cmmi7.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfo
-nts/cm/cmmi8.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr
-10.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb><d:
-/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb><d:/texlive/2
-026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb><d:/texlive/2026/texmf-d
-ist/fonts/type1/public/amsfonts/cm/cmr7.pfb><d:/texlive/2026/texmf-dist/fonts/t
-ype1/public/amsfonts/cm/cmr8.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public
-/amsfonts/cm/cmr9.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/c
-m/cmsy10.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy5.p
-fb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb><d:/tex
-live/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb><d:/texlive/2026/
-texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><d:/texlive/2026/texmf-dist
-/fonts/type1/public/amsfonts/cm/cmti10.pfb><d:/texlive/2026/texmf-dist/fonts/ty
-pe1/public/amsfonts/cm/cmti12.pfb><d:/texlive/2026/texmf-dist/fonts/type1/publi
-c/amsfonts/cm/cmti9.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts
-/cm/cmtt10.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/symbols/
-msam10.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm
-10.pfb>
-Output written on ../06_build/01_manuscript_ijgis.pdf (22 pages, 500647 bytes).
-
+ 84i,11n,104p,890b,866s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ <c:/Users/zn198/.texlive2026/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm0600.
+600pk> <c:/Users/zn198/.texlive2026/texmf-var/fonts/pk/ljfour/jknappen/ec/tcrm0
+800.600pk><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb
+><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb><d:/texl
+ive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb><d:/texlive/2026/t
+exmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb><d:/texlive/2026/texmf-dist
+/fonts/type1/public/amsfonts/cm/cmmi10.pfb><d:/texlive/2026/texmf-dist/fonts/ty
+pe1/public/amsfonts/cm/cmmi7.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public
+/amsfonts/cm/cmmi8.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/
+cm/cmr10.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.p
+fb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb><d:/tex
+live/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb><d:/texlive/2026/t
+exmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb><d:/texlive/2026/texmf-dist/f
+onts/type1/public/amsfonts/cm/cmr9.pfb><d:/texlive/2026/texmf-dist/fonts/type1/
+public/amsfonts/cm/cmsy10.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/am
+sfonts/cm/cmsy5.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/
+cmsy6.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb>
+<d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><d:/texliv
+e/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmti10.pfb><d:/texlive/2026/te
+xmf-dist/fonts/type1/public/amsfonts/cm/cmti12.pfb><d:/texlive/2026/texmf-dist/
+fonts/type1/public/amsfonts/cm/cmtt10.pfb>
+Output written on D:/adk/paper6-spatial-causal-inference/.worktrees/synthetic-b
+enchmark-audit/paper/ijgis_submission_20260605/06_build/01_manuscript_ijgis.pdf
+ (11 pages, 292926 bytes).
 PDF statistics:
- 808 PDF objects out of 1000 (max. 8388607)
- 509 compressed objects within 6 object streams
- 127 named destinations out of 1000 (max. 500000)
- 374 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 325 PDF objects out of 1000 (max. 8388607)
+ 265 compressed objects within 3 object streams
+ 60 named destinations out of 1000 (max. 500000)
+ 197 words of extra memory for PDF output out of 10000 (max. 10000000)
 
