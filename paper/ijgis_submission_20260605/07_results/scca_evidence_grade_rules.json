@@ -1,0 +1,86 @@
+{
+  "rule_version": "scca-evidence-grade-rules-2026-06-20",
+  "grade_meanings": {
+    "core_support": "Strong credibility, robust support, and no material spatial caution under the declared thresholds.",
+    "bounded_support": "Useful SCCA evidence with explicit credibility, robustness, support, or spatial-diagnostic limits.",
+    "negative_ablation": "A candidate context source was tested and did not improve the diagnostic design.",
+    "auxiliary_only": "An output may support interpretation or software development but is not causal evidence for SCCA."
+  },
+  "thresholds": {
+    "max_balance_corr_moderate": 0.5,
+    "overlap_boundary_mass_moderate": 0.25,
+    "bootstrap_sign_stability_min": 0.8,
+    "erf_monotonic_fraction_min": 0.8,
+    "material_residual_moran_abs": 0.2,
+    "spatial_p_value_max": 0.05,
+    "spatial_adjustment_relative_change_max": 0.25
+  },
+  "rules": [
+    {
+      "rule_id": "strong_nonspatial_and_robust",
+      "scope": "core_support gate",
+      "condition": "credibility_decision == strong_support and robustness_interpretation == robust_support",
+      "effect": "Required, but not sufficient, for core_support."
+    },
+    {
+      "rule_id": "moderate_credibility",
+      "scope": "credibility",
+      "condition": "credibility_decision == moderate_support",
+      "effect": "Downgrade final manuscript evidence to bounded_support."
+    },
+    {
+      "rule_id": "weak_credibility",
+      "scope": "credibility",
+      "condition": "credibility_decision == weak_or_failed_support",
+      "effect": "Downgrade final manuscript evidence to bounded_support."
+    },
+    {
+      "rule_id": "high_exposure_balance_correlation",
+      "scope": "credibility",
+      "condition": "max absolute exposure-balance correlation > 0.50",
+      "effect": "Downgrade credibility to moderate_support and final evidence to bounded_support."
+    },
+    {
+      "rule_id": "high_overlap_boundary_mass",
+      "scope": "credibility",
+      "condition": "exposure boundary mass > 0.25",
+      "effect": "Downgrade credibility to moderate_support and final evidence to bounded_support."
+    },
+    {
+      "rule_id": "bounded_robustness",
+      "scope": "robustness",
+      "condition": "robustness_interpretation == bounded_support",
+      "effect": "Downgrade final manuscript evidence to bounded_support."
+    },
+    {
+      "rule_id": "fragile_robustness",
+      "scope": "robustness",
+      "condition": "robustness_interpretation == fragile_support",
+      "effect": "Downgrade final manuscript evidence to bounded_support."
+    },
+    {
+      "rule_id": "material_residual_moran",
+      "scope": "spatial diagnostics",
+      "condition": "|residual Moran's I| >= 0.20 and permutation p <= 0.05",
+      "effect": "Downgrade final manuscript evidence to bounded_support."
+    },
+    {
+      "rule_id": "significant_neighbor_exposure",
+      "scope": "spatial diagnostics",
+      "condition": "neighbor-exposure p <= 0.05 after adjustment",
+      "effect": "Downgrade final manuscript evidence to bounded_support."
+    },
+    {
+      "rule_id": "material_spatial_adjustment_shift",
+      "scope": "spatial diagnostics",
+      "condition": "max relative main-effect change across spatial adjustments >= 0.25",
+      "effect": "Downgrade final manuscript evidence to bounded_support."
+    },
+    {
+      "rule_id": "graph_sign_unstable",
+      "scope": "spatial diagnostics",
+      "condition": "graph-sensitivity sign stability is false",
+      "effect": "Downgrade final manuscript evidence to bounded_support."
+    }
+  ]
+}

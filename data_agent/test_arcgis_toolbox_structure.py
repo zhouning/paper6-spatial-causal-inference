@@ -157,6 +157,7 @@ def test_summarize_manifest_messages_includes_spatial_diagnostics_and_result_sum
 
     messages = summarize_manifest_messages(manifest)
 
+    assert any("Evidence grade:" in line for line in messages)
     assert any("Spatial diagnostics:" in line for line in messages)
     assert any("coordinate_knn" in line for line in messages)
     assert any("SLX total effect:" in line for line in messages)

@@ -130,6 +130,18 @@ def summarize_manifest_messages(manifest: dict[str, Any]) -> list[str]:
         f"Credibility: {manifest.get('credibility_decision')}",
         f"Robustness: {manifest.get('robustness_interpretation')}",
     ]
+    evidence_grade = manifest.get("evidence_grade")
+    if not evidence_grade:
+        credibility = str(manifest.get("credibility_decision") or "")
+        robustness = str(manifest.get("robustness_interpretation") or "")
+        if credibility == "strong_support" and robustness == "robust_support":
+            evidence_grade = "core_support"
+        elif credibility or robustness:
+            evidence_grade = "bounded_support"
+    rule_ids = manifest.get("evidence_grade_rule_ids") or []
+    rule_text = ", ".join(map(str, rule_ids)) if isinstance(rule_ids, list) else str(rule_ids)
+    if evidence_grade:
+        messages.append(f"Evidence grade: {evidence_grade} ({rule_text or 'no downgrade rules'}).")
     preprocessing = manifest.get("preprocessing", {})
     trim = preprocessing.get("exposure_trim", {}) if isinstance(preprocessing, dict) else {}
     removed_n = trim.get("removed_n")

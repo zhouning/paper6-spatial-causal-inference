@@ -88,6 +88,7 @@ Write the unified SCCA evidence synthesis used to frame the manuscript:
 
 ```powershell
 D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.scca_evidence_synthesis --output-dir paper\ijgis_submission_20260605\07_results
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.scca_method_comparison --output-dir paper\ijgis_submission_20260605\07_results
 ```
 
 This writes:
@@ -95,6 +96,10 @@ This writes:
 - `paper/ijgis_submission_20260605/07_results/scca_evidence_synthesis.csv`
 - `paper/ijgis_submission_20260605/07_results/scca_evidence_synthesis_report.md`
 - `paper/ijgis_submission_20260605/07_results/scca_evidence_synthesis_manifest.json`
+- `paper/ijgis_submission_20260605/07_results/scca_evidence_grade_rules.json`
+- `paper/ijgis_submission_20260605/07_results/scca_evidence_grade_rules.md`
+- `paper/ijgis_submission_20260605/07_results/scca_method_comparison.csv`
+- `paper/ijgis_submission_20260605/07_results/scca_method_comparison_report.md`
 
 Run the IJGIS-required world-model holdout and scenario-calibration validation:
 

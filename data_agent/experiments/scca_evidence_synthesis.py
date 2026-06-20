@@ -9,6 +9,12 @@ from typing import Any
 
 import pandas as pd
 
+from data_agent.scca.evidence_rules import (
+    RULE_VERSION,
+    assess_scca_evidence_grade,
+    write_evidence_rule_outputs,
+)
+
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 DEFAULT_RESULTS_DIR = PROJECT_ROOT / "paper" / "ijgis_submission_20260605" / "07_results"
@@ -28,6 +34,8 @@ SYNTHESIS_COLUMNS = [
     "balance_status",
     "robustness_status",
     "evidence_grade",
+    "grade_rule_ids",
+    "grade_reasons",
     "limitation",
     "manuscript_use",
 ]
@@ -67,6 +75,8 @@ def _row(
     balance_status: str,
     robustness_status: str,
     evidence_grade: str,
+    grade_rule_ids: str = "",
+    grade_reasons: str = "",
     limitation: str,
     manuscript_use: str,
 ) -> dict[str, str]:
@@ -81,8 +91,32 @@ def _row(
         "balance_status": balance_status,
         "robustness_status": robustness_status,
         "evidence_grade": evidence_grade,
+        "grade_rule_ids": grade_rule_ids,
+        "grade_reasons": grade_reasons,
         "limitation": limitation,
         "manuscript_use": manuscript_use,
+    }
+
+
+def _assessment_text(assessment: dict[str, Any]) -> tuple[str, str, str]:
+    rules = assessment.get("triggered_rules", [])
+    reasons = assessment.get("reasons", [])
+    rule_text = "; ".join(map(str, rules)) if isinstance(rules, list) else str(rules)
+    reason_text = "; ".join(map(str, reasons)) if isinstance(reasons, list) else str(reasons)
+    return str(assessment.get("evidence_grade", "bounded_support")), rule_text, reason_text
+
+
+def _spatial_summary_from_chongqing(results_dir: Path, variant: str) -> dict[str, Any]:
+    residuals = _read_csv(results_dir / "chongqing_residual_spatial_diagnostics.csv")
+    if residuals.empty:
+        return {}
+    rows = residuals.loc[residuals.get("variant").astype(str) == variant]
+    if rows.empty:
+        rows = residuals.head(1)
+    record = rows.iloc[0]
+    return {
+        "residual_moran_i": record.get("moran_i"),
+        "residual_moran_p_value": record.get("permutation_p_value"),
     }
 
 
@@ -103,10 +137,16 @@ def _synthetic_row(results_dir: Path) -> dict[str, str] | None:
     scenarios = ", ".join(sorted(map(str, summary["scenario"].dropna().unique())))
     if n_fragile:
         grade = "bounded_support"
+        rule_ids = "synthetic_fragility"
+        grade_reasons = (
+            "At least one controlled scenario produced fragile estimator behavior."
+        )
         robustness = f"{n_robust}/{n_rows} robust rows; {n_fragile} fragile rows"
         limitation = "Stress audit found fragile estimator settings, especially for direction-recovery cases."
     else:
         grade = "core_support"
+        rule_ids = ""
+        grade_reasons = ""
         robustness = f"{n_robust or n_rows}/{n_rows} rows without recorded fragility"
         limitation = "Synthetic evidence checks implementation behavior under controlled generators only."
     return _row(
@@ -120,6 +160,8 @@ def _synthetic_row(results_dir: Path) -> dict[str, str] | None:
         balance_status="not_applicable",
         robustness_status=robustness,
         evidence_grade=grade,
+        grade_rule_ids=rule_ids,
+        grade_reasons=grade_reasons,
         limitation=limitation,
         manuscript_use="Use as estimator stress-test evidence, not as real-world causal validation.",
     )
@@ -143,7 +185,12 @@ def _chongqing_row(results_dir: Path) -> dict[str, str] | None:
     balance_pass = str(record.get("balance_pass_0_1")).lower() == "true"
     max_smd = _fmt_num(record.get("max_post_smd"))
     ci = f"[{_fmt_num(record.get('ci_lower'))}, {_fmt_num(record.get('ci_upper'))}]"
-    grade = "core_support" if balance_pass else "bounded_support"
+    assessment = assess_scca_evidence_grade(
+        credibility_decision="strong_support" if balance_pass else "moderate_support",
+        robustness_interpretation="robust_support",
+        spatial_summary=_spatial_summary_from_chongqing(results_dir, str(record.get("variant"))),
+    )
+    grade, rule_ids, grade_reasons = _assessment_text(assessment)
     return _row(
         case="chongqing_uhi",
         data_type="real remote-sensing and building-footprint case",
@@ -155,6 +202,8 @@ def _chongqing_row(results_dir: Path) -> dict[str, str] | None:
         balance_status=f"max post-match SMD = {max_smd}; balance pass = {balance_pass}",
         robustness_status="threshold placebo, spatial bootstrap, and residual spatial diagnostics available",
         evidence_grade=grade,
+        grade_rule_ids=rule_ids,
+        grade_reasons=grade_reasons,
         limitation="MODIS LST scale, building-level treatment assignment, and spatial interference limit causal strength.",
         manuscript_use="Use as the main real-data SCCA ablation; report the modest positive balanced estimate.",
     )
@@ -185,6 +234,8 @@ def _geofm_row(results_dir: Path) -> dict[str, str] | None:
         balance_status=f"claim guidance = {guidance}",
         robustness_status="negative ablation under the current Chongqing sampling design",
         evidence_grade="negative_ablation",
+        grade_rule_ids="negative_ablation",
+        grade_reasons="AlphaEarth embedding variants did not improve balance in the current run.",
         limitation="Only 199 complete AlphaEarth rows were available in this run, so the result is a bounded negative diagnostic.",
         manuscript_use="Use to state that GeoFM is a candidate context source with no clear gain in the current evidence.",
     )
@@ -225,7 +276,12 @@ def _scca_case_rows(results_dir: Path) -> list[dict[str, str]]:
         case = str(record.get("case"))
         info = metadata.get(case, {})
         interpretation = str(record.get("robustness_interpretation"))
-        grade = "core_support" if interpretation == "robust_support" else "bounded_support"
+        assessment = assess_scca_evidence_grade(
+            credibility_decision=str(record.get("original_decision")),
+            robustness_interpretation=interpretation,
+            max_balance_corr=0.828 if case == "snow8" else 0.543 if case == "soho" else None,
+        )
+        grade, rule_ids, grade_reasons = _assessment_text(assessment)
         rows.append(
             _row(
                 case=case,
@@ -244,6 +300,8 @@ def _scca_case_rows(results_dir: Path) -> list[dict[str, str]]:
                     f"{_fmt_num(record.get('bootstrap_sign_stability'))}; ERF direction = {record.get('erf_monotonic_direction')}"
                 ),
                 evidence_grade=grade,
+                grade_rule_ids=rule_ids,
+                grade_reasons=grade_reasons,
                 limitation=str(record.get("main_limitation")),
                 manuscript_use=info.get("use", "Use as SCCA cross-case evidence."),
             )
@@ -286,6 +344,25 @@ def _county_spatial_notebook_row(results_dir: Path) -> dict[str, str] | None:
     else:
         enriched_text = "no enriched spatial fields recorded"
 
+    spatial_summary = {
+        "residual_moran_i": diagnostics.get("residual_moran_i"),
+        "residual_moran_p_value": diagnostics.get("residual_moran_p_value"),
+        "neighbor_exposure_p_value": spatial_lag.get("neighbor_exposure_p_value")
+        or result_summary.get("spatial_neighbor_adjusted_ols", {}).get("neighbor_exposure_p_value"),
+        "spatial_lag_relative_change": spatial_lag.get("relative_change"),
+        "neighbor_adjusted_relative_change_max": graph.get("neighbor_adjusted_relative_change_max"),
+        "neighbor_adjusted_sign_stability": graph.get("neighbor_adjusted_sign_stability"),
+        "spatial_lag_sign_stability": graph.get("spatial_lag_sign_stability"),
+    }
+    assessment = assess_scca_evidence_grade(
+        credibility_decision="strong_support",
+        robustness_interpretation="robust_support"
+        if bootstrap.get("sign_stability") == 1.0 and graph.get("neighbor_adjusted_sign_stability") is True
+        else "bounded_support",
+        spatial_summary=spatial_summary,
+    )
+    grade, rule_ids, grade_reasons = _assessment_text(assessment)
+
     return _row(
         case="county_social_capital_spatial_notebook",
         data_type="external county-level validation and GIS output case",
@@ -307,7 +384,9 @@ def _county_spatial_notebook_row(results_dir: Path) -> dict[str, str] | None:
             f"spatial bootstrap sign stability = {_fmt_num(bootstrap.get('sign_stability'))}; "
             f"graph sensitivity sign stable = {graph.get('neighbor_adjusted_sign_stability')}"
         ),
-        evidence_grade="bounded_support",
+        evidence_grade=grade,
+        grade_rule_ids=rule_ids,
+        grade_reasons=grade_reasons,
         limitation=(
             "Residual spatial autocorrelation and a significant neighboring-exposure term remain, "
             "so this is spatially cautioned external evidence rather than definitive identification."
@@ -340,6 +419,8 @@ def _llm_row(results_dir: Path) -> dict[str, str] | None:
         balance_status="not_applicable",
         robustness_status="offline proxy only",
         evidence_grade="auxiliary_only",
+        grade_rule_ids="auxiliary_only",
+        grade_reasons="Offline DAG validation does not estimate treatment effects.",
         limitation="Does not identify treatment effects or validate SCCA adjustment sets.",
         manuscript_use="Exclude from core evidence; mention only as optional interpretive tooling if needed.",
     )
@@ -373,6 +454,8 @@ def _world_model_row(results_dir: Path) -> dict[str, str] | None:
         balance_status="not_applicable",
         robustness_status="persistence baseline beat world-model baseline in the offline fixture",
         evidence_grade="auxiliary_only",
+        grade_rule_ids="auxiliary_only",
+        grade_reasons="Scenario simulation is not identified treatment-effect evidence.",
         limitation="Scenario simulation only; no real held-out causal validation.",
         manuscript_use="Exclude from core SCCA evidence; use only to bound future simulation claims.",
     )
@@ -422,6 +505,7 @@ def render_scca_evidence_report(table: pd.DataFrame) -> str:
         "# SCCA Evidence Synthesis Report",
         "",
         "This report is the evidence boundary for the revised Paper 6 manuscript.",
+        f"The grade rule version is `{RULE_VERSION}`.",
         "The main paper should use `core_support` and `bounded_support` rows as SCCA evidence,",
         "treat `negative_ablation` rows as boundary findings, and keep `auxiliary_only` rows out of the core claim.",
         "",
@@ -441,6 +525,8 @@ def render_scca_evidence_report(table: pd.DataFrame) -> str:
                 f"- Effect/diagnostic: {record['effect_estimate']}",
                 f"- Balance: {record['balance_status']}",
                 f"- Robustness: {record['robustness_status']}",
+                f"- Grade rules: `{record['grade_rule_ids']}`",
+                f"- Grade reasons: {record['grade_reasons'] or 'No downgrade rules triggered.'}",
                 f"- Limitation: {record['limitation']}",
                 f"- Manuscript use: {record['manuscript_use']}",
                 "",
@@ -471,6 +557,7 @@ def run_scca_evidence_synthesis(
     synthesis_path = target / OUTPUT_FILES["synthesis_csv"]
     report_path = target / OUTPUT_FILES["report_md"]
     manifest_path = target / OUTPUT_FILES["manifest_json"]
+    grade_rule_manifest = write_evidence_rule_outputs(target)
 
     table.to_csv(synthesis_path, index=False)
     report_path.write_text(render_scca_evidence_report(table), encoding="utf-8")
@@ -479,9 +566,12 @@ def run_scca_evidence_synthesis(
         "synthesis_csv": str(synthesis_path),
         "report_md": str(report_path),
         "manifest_json": str(manifest_path),
+        "grade_rules_json": grade_rule_manifest["rules_json"],
+        "grade_rules_md": grade_rule_manifest["rules_md"],
         "results_dir": str(Path(results_dir)),
         "n_rows": int(len(table)),
         "grade_counts": table["evidence_grade"].value_counts().to_dict() if not table.empty else {},
+        "rule_version": grade_rule_manifest["rule_version"],
     }
     manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
     return manifest

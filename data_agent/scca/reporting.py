@@ -340,6 +340,13 @@ def write_result_summary_markdown(
             f"- Credibility decision: {manifest.get('credibility_decision') or manifest.get('decision')}",
             f"- Robustness interpretation: {manifest.get('robustness_interpretation') or 'not available'}",
         ]
+        if manifest.get("evidence_grade"):
+            decision_lines.extend(
+                [
+                    f"- Evidence grade: {manifest.get('evidence_grade')}",
+                    f"- Evidence grade rules: {', '.join(manifest.get('evidence_grade_rule_ids') or []) or 'none'}",
+                ]
+            )
     spatial_lines = [
         "",
         "## Spatial Outputs",
@@ -436,6 +443,10 @@ def write_report(
 
 `{credibility.get("decision")}`
 
+## Evidence Grade
+
+`{credibility.get("evidence_grade", "not available")}`
+
 ## Reasons
 
 {reason_lines}
@@ -448,6 +459,10 @@ def write_report(
     manifest = {
         "study": spec.name,
         "decision": credibility.get("decision"),
+        "evidence_grade": credibility.get("evidence_grade"),
+        "evidence_grade_rule_ids": credibility.get("evidence_grade_rule_ids", []),
+        "evidence_grade_reasons": credibility.get("evidence_grade_reasons", []),
+        "rule_version": credibility.get("rule_version"),
         "metadata": metadata or {},
         "result_summary": result_summary,
         "files": files,

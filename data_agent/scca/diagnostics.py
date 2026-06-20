@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 
+from .evidence_rules import assess_scca_evidence_grade
 from .specs import SCCAPaths, StudySpec
 
 
@@ -270,9 +271,55 @@ def audit_effects(
     if not reasons:
         reasons.append("No credibility downgrade warnings were triggered.")
 
+    graph_sensitivity: dict[str, object] = {}
+    if paths.spatial_graph_sensitivity_summary.exists():
+        try:
+            loaded = json.loads(paths.spatial_graph_sensitivity_summary.read_text(encoding="utf-8"))
+            if isinstance(loaded, dict):
+                graph_sensitivity = loaded
+        except (OSError, json.JSONDecodeError):
+            graph_sensitivity = {}
+    residual = spatial_diagnostics.get("residual_moran", {})
+    neighbor = spatial_diagnostics.get("neighbor_exposure_model", {})
+    lag = spatial_diagnostics.get("spatial_lag_model", {})
+    evidence_assessment = assess_scca_evidence_grade(
+        credibility_decision=decision,
+        robustness_interpretation="robust_support",
+        max_balance_corr=max_balance_corr,
+        overlap_boundary_mass=boundary_mass if isinstance(boundary_mass, (int, float)) else None,
+        spatial_summary={
+            "residual_moran_i": residual.get("moran_i") if isinstance(residual, dict) else None,
+            "residual_moran_p_value": residual.get("permutation_p_value") if isinstance(residual, dict) else None,
+            "neighbor_exposure_p_value": neighbor.get("p_value") if isinstance(neighbor, dict) else None,
+            "neighbor_adjusted_relative_change": (
+                neighbor.get("spatial_adjustment_sensitivity", {}).get("relative_change")
+                if isinstance(neighbor, dict)
+                and isinstance(neighbor.get("spatial_adjustment_sensitivity"), dict)
+                else None
+            ),
+            "spatial_lag_relative_change": (
+                lag.get("spatial_adjustment_sensitivity", {}).get("relative_change")
+                if isinstance(lag, dict)
+                and isinstance(lag.get("spatial_adjustment_sensitivity"), dict)
+                else None
+            ),
+            "neighbor_adjusted_relative_change_max": graph_sensitivity.get(
+                "neighbor_adjusted_relative_change_max"
+            ),
+            "spatial_lag_relative_change_max": graph_sensitivity.get("spatial_lag_relative_change_max"),
+            "neighbor_adjusted_sign_stability": graph_sensitivity.get(
+                "neighbor_adjusted_sign_stability"
+            ),
+            "spatial_lag_sign_stability": graph_sensitivity.get("spatial_lag_sign_stability"),
+        },
+    )
     report: dict[str, object] = {
         "decision": decision,
         "reasons": reasons,
+        "evidence_grade": evidence_assessment["evidence_grade"],
+        "evidence_grade_rule_ids": evidence_assessment["triggered_rules"],
+        "evidence_grade_reasons": evidence_assessment["reasons"],
+        "rule_version": evidence_assessment["rule_version"],
         "max_balance_corr": max_balance_corr,
         "overlap_boundary_mass": boundary_mass,
         "leave_group_sign_stable": sign_stable,

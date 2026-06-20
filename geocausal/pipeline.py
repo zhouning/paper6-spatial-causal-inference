@@ -13,6 +13,7 @@ import statsmodels.api as sm
 from data_agent.scca.context import build_context_features
 from data_agent.scca.design import select_design
 from data_agent.scca.diagnostics import audit_effects
+from data_agent.scca.evidence_rules import assess_scca_evidence_grade
 from data_agent.scca.estimators import estimate_effects
 from data_agent.scca.profiling import profile_table
 from data_agent.scca.reporting import (
@@ -410,6 +411,41 @@ def _write_geocausal_manifest(
     if target_exposures.exists():
         files["target_exposures"] = target_exposures.name
     result_summary = collect_result_summary(paths)
+    spatial = result_summary.get("spatial_diagnostics", {})
+    spatial_neighbor = result_summary.get("spatial_neighbor_adjusted_ols", {})
+    spatial_lag = result_summary.get("spatial_lag_adjusted_ols", {})
+    graph = result_summary.get("spatial_graph_sensitivity", {})
+    evidence_assessment = assess_scca_evidence_grade(
+        credibility_decision=str(credibility.get("decision")),
+        robustness_interpretation=str(robustness_manifest.get("robustness_interpretation")),
+        spatial_summary={
+            "residual_moran_i": spatial.get("residual_moran_i") if isinstance(spatial, dict) else None,
+            "residual_moran_p_value": spatial.get("residual_moran_p_value") if isinstance(spatial, dict) else None,
+            "neighbor_exposure_p_value": spatial_lag.get("neighbor_exposure_p_value")
+            if isinstance(spatial_lag, dict)
+            else spatial_neighbor.get("neighbor_exposure_p_value")
+            if isinstance(spatial_neighbor, dict)
+            else None,
+            "neighbor_adjusted_relative_change": spatial_neighbor.get("relative_change")
+            if isinstance(spatial_neighbor, dict)
+            else None,
+            "spatial_lag_relative_change": spatial_lag.get("relative_change")
+            if isinstance(spatial_lag, dict)
+            else None,
+            "neighbor_adjusted_relative_change_max": graph.get("neighbor_adjusted_relative_change_max")
+            if isinstance(graph, dict)
+            else None,
+            "spatial_lag_relative_change_max": graph.get("spatial_lag_relative_change_max")
+            if isinstance(graph, dict)
+            else None,
+            "neighbor_adjusted_sign_stability": graph.get("neighbor_adjusted_sign_stability")
+            if isinstance(graph, dict)
+            else None,
+            "spatial_lag_sign_stability": graph.get("spatial_lag_sign_stability")
+            if isinstance(graph, dict)
+            else None,
+        },
+    )
     manifest = {
         "geocausal_version": __version__,
         "generated_at_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
@@ -435,6 +471,10 @@ def _write_geocausal_manifest(
         },
         "credibility_decision": credibility.get("decision"),
         "robustness_interpretation": robustness_manifest.get("robustness_interpretation"),
+        "evidence_grade": evidence_assessment.get("evidence_grade"),
+        "evidence_grade_rule_ids": evidence_assessment.get("triggered_rules"),
+        "evidence_grade_reasons": evidence_assessment.get("reasons"),
+        "rule_version": evidence_assessment.get("rule_version"),
         "result_summary": result_summary,
         "warnings": warnings,
         "files": files,

@@ -63,6 +63,8 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
         "synthesis_csv": tmp_path / "scca_evidence_synthesis.csv",
         "report_md": tmp_path / "scca_evidence_synthesis_report.md",
         "manifest_json": tmp_path / "scca_evidence_synthesis_manifest.json",
+        "grade_rules_json": tmp_path / "scca_evidence_grade_rules.json",
+        "grade_rules_md": tmp_path / "scca_evidence_grade_rules.md",
     }
     for key, path in expected.items():
         assert manifest[key] == str(path)
@@ -80,6 +82,8 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
         "balance_status",
         "robustness_status",
         "evidence_grade",
+        "grade_rule_ids",
+        "grade_reasons",
         "limitation",
         "manuscript_use",
     }
@@ -99,6 +103,10 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
     ].iloc[0] == "bounded_support"
     assert synthesis.loc[
         synthesis["case"] == "county_social_capital_spatial_notebook",
+        "grade_rule_ids",
+    ].str.contains("material_residual_moran").any()
+    assert synthesis.loc[
+        synthesis["case"] == "county_social_capital_spatial_notebook",
         "robustness_status",
     ].str.contains("residual Moran I").any()
     assert synthesis.loc[
@@ -111,3 +119,4 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
 
     payload = json.loads(expected["manifest_json"].read_text(encoding="utf-8"))
     assert payload["n_rows"] == len(synthesis)
+    assert payload["rule_version"]

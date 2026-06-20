@@ -1,0 +1,12 @@
+{
+  "comparison_csv": "paper\\ijgis_submission_20260605\\07_results\\scca_method_comparison.csv",
+  "report_md": "paper\\ijgis_submission_20260605\\07_results\\scca_method_comparison_report.md",
+  "manifest_json": "paper\\ijgis_submission_20260605\\07_results\\scca_method_comparison_manifest.json",
+  "results_dir": "paper\\ijgis_submission_20260605\\07_results",
+  "n_rows": 2,
+  "comparisons": [
+    "county_nonspatial_vs_spatial",
+    "chongqing_raw_vs_full_scca"
+  ],
+  "rule_version": "scca-evidence-grade-rules-2026-06-20"
+}

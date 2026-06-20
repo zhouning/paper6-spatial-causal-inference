@@ -127,6 +127,9 @@ def test_run_analysis_writes_complete_output_package(tmp_path):
     assert manifest["exposure"] == "exposure"
     assert manifest["outcome"] == "outcome"
     assert manifest["row_count"] == 8
+    assert manifest["evidence_grade"] in {"core_support", "bounded_support"}
+    assert manifest["rule_version"]
+    assert isinstance(manifest["evidence_grade_reasons"], list)
     assert manifest["files"]["manifest"] == "manifest.json"
     saved_manifest = json.loads((output_dir / "manifest.json").read_text(encoding="utf-8"))
     assert manifest == saved_manifest
@@ -175,6 +178,7 @@ def test_run_analysis_writes_complete_output_package(tmp_path):
     result_summary_text = (output_dir / "result_summary.md").read_text(encoding="utf-8")
     assert "## Numeric Summary" in result_summary_text
     assert "Formal SLX output" in result_summary_text
+    assert "Evidence grade" in result_summary_text
 
 
 def test_run_analysis_supports_arcgis_style_trimming_and_targets(tmp_path):
