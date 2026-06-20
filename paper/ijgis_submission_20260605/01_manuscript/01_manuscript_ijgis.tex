@@ -8,14 +8,9 @@
 \usepackage{amsmath,amssymb}
 \usepackage{booktabs}
 \usepackage{graphicx}
-\usepackage{multirow}
 \usepackage{array}
 \usepackage{caption}
-\usepackage{subcaption}
-\usepackage{algorithm}
-\usepackage{algorithmic}
 \usepackage{hyperref}
-\usepackage{color}
 \usepackage{natbib}
 \usepackage{tikz}
 \usetikzlibrary{positioning,arrows.meta,shapes.geometric,fit,calc}
@@ -31,7 +26,7 @@
 
 \begin{document}
 
-\title{\parbox{0.9\textwidth}{\centering Spatial Context Causal Adjustment\\for Geographic Observational Studies}}
+\title{\parbox{0.9\textwidth}{\centering Spatial Context Causal Adjustment:\\A Diagnostic Workflow for Geographic Observational Studies}}
 
 \author{Ning Zhou$^{a}$ and Xiang Jing$^{a}$$^{\ast}$\thanks{$^\ast$Corresponding author. Email: jingxiang@pku.edu.cn}\\
 \small $^{a}${\em School of Software and Microelectronics, Peking University}\\
@@ -41,17 +36,17 @@
 \maketitle
 
 \begin{abstract}
-Geographic observational studies often estimate effects from spatially structured treatments, outcomes, and environmental conditions. Standard causal estimators can be applied to such data, but their credibility depends on diagnosed adjustment rather than estimator choice alone.
+Geographic observational studies often estimate effects from spatially structured treatments, outcomes, and environmental conditions. Standard causal estimators can be applied to such data, but their credibility depends on the adjustment design, not on estimator choice alone.
 
-We introduce Spatial Context Causal Adjustment (SCCA), a reproducible workflow for constructing and auditing spatial-context adjustment sets. SCCA treats coordinates, geometry, terrain, remote-sensing indices, land-cover descriptors, and learned geospatial embeddings as candidate context variables rather than automatically valid controls. The workflow standardizes feature construction, adjustment-set comparison, common-support and balance diagnostics, spatial block bootstrap, placebo exposure definitions, residual spatial autocorrelation checks, spatial-lag sensitivity, and evidence grading.
+We introduce Spatial Context Causal Adjustment (SCCA), a reproducible workflow for constructing and auditing spatial-context adjustment sets. SCCA treats coordinates, geometry, terrain, remote-sensing indices, land-cover descriptors, and learned geospatial embeddings as candidate context variables rather than automatically valid controls. The workflow standardizes feature construction, adjustment-set comparison, common-support and balance diagnostics, spatial block bootstrap, placebo exposure definitions, residual spatial autocorrelation checks, spatial-lag sensitivity, and rule-based evidence grading.
 
-We evaluate SCCA on controlled benchmarks and three geographic case settings: Chongqing urban heat, historical cholera, and county social capital. In Chongqing, the full remote-sensing and terrain specification estimated a modest positive high-rise effect on summer land surface temperature (ATT = 0.244$^\circ$C, 95\% CI [0.148, 0.346]) with maximum post-match SMD = 0.061. Historical cholera cases showed stable directions but bounded support because exposure-balance correlations remained high. In the county validation, the baseline adjusted coefficient was positive (0.181), but residual Moran's $I$ remained 0.313 ($p=0.010$) and the spatial-lag coefficient was smaller (0.145). The shared core also produced GeoPackage, GeoJSON, Shapefile, static map, HTML map, and QGIS-style outputs. An AlphaEarth embedding ablation did not improve balance over conventional remote-sensing and terrain variables.
+We evaluate SCCA on controlled benchmarks and three geographic case settings: Chongqing urban heat, historical cholera, and county social capital. In Chongqing, the full remote-sensing and terrain specification estimated a modest positive high-rise effect on summer land surface temperature (ATT = 0.244$^\circ$C, 95\% CI [0.148, 0.346]) with maximum post-match SMD = 0.061. Historical cholera cases showed stable directions but bounded support because exposure-balance correlations remained high. In the county validation, the baseline adjusted coefficient was positive (0.181), but residual Moran's $I$ remained 0.313 ($p=0.010$) and the spatial-lag coefficient was smaller (0.145). An ArcGIS-compatible county run reproduced the positive exposure-response direction and analysis count of a commercial GIS example while adding open diagnostic outputs. An AlphaEarth embedding ablation did not improve balance over conventional remote-sensing and terrain variables.
 
-SCCA therefore contributes a bounded diagnostic protocol for grading evidence in geographic causal analysis. It makes spatial adjustment claims more auditable. It does not establish general superiority for any single representation source.
+SCCA therefore contributes a bounded diagnostic protocol for grading evidence in geographic causal analysis. It makes spatial adjustment claims more auditable, but it does not establish general superiority for any single estimator or representation source.
 \end{abstract}
 
 \begin{keywords}
-spatial causal inference; spatial confounding; causal adjustment; propensity score matching; remote sensing; geospatial foundation models; robustness diagnostics
+spatial causal inference; spatial confounding; causal adjustment; evidence grading; remote sensing; geospatial foundation models; GIS workflow
 \end{keywords}
 
 
@@ -62,18 +57,18 @@ spatial causal inference; spatial confounding; causal adjustment; propensity sco
 
 Geographic information science increasingly supports policy questions that are causal rather than merely descriptive: whether urban form changes heat exposure, whether infrastructure changes disease risk, whether land-use interventions change environmental outcomes, or whether social context affects population health. These questions are usually studied from observational spatial data. Treatment is rarely randomized, spatial units are embedded in environmental gradients, and outcomes are measured at spatial resolutions that do not always match the intervention units.
 
-The main difficulty is not the absence of causal estimators. Matching, weighting, regression adjustment, difference-in-differences, spatial panel models, and machine-learning estimators are all available to GIS researchers \citep{stuart2010matching, angrist2009mostly, athey2019estimating}. The difficulty is that spatial context determines both exposure and outcome. Elevation, slope, land cover, access, urban morphology, historical settlement, and administrative structure can all confound a geographic effect estimate. If these context variables are omitted, the estimate is vulnerable to spatial confounding. If they are added indiscriminately, the estimator may lose common support, amplify noise, or adjust for variables that are not valid confounders.
+The main difficulty is not the absence of causal estimators. Matching, weighting, regression adjustment, difference-in-differences, spatial panel models, and machine-learning estimators are all available to GIS researchers \citep{stuart2010matching, angrist2009mostly, athey2019estimating}. The difficulty is that spatial context can determine both exposure and outcome. Elevation, slope, land cover, access, urban morphology, historical settlement, and administrative structure can all confound a geographic effect estimate. If these context variables are omitted, the estimate is vulnerable to spatial confounding. If they are added indiscriminately, the estimator may lose common support, amplify noise, or adjust for variables that are not valid confounders.
 
 Recent geospatial representation methods make this problem more important. Remote-sensing indices and terrain variables are now easy to extract at scale, and geospatial foundation-model embeddings may encode broad environmental context \citep{brown2025alphaearth}. These representations are useful only if their role in causal adjustment is diagnosed. A dense embedding is not automatically a confounder, and a richer adjustment set is not automatically a better adjustment set. Geographic causal analysis therefore needs a workflow that asks a practical question: which spatial-context variables improve credible adjustment for this study, under visible diagnostics, and where does the evidence stop?
 
-This paper proposes Spatial Context Causal Adjustment (SCCA). SCCA is a method workflow rather than a new estimator. It wraps standard estimators with spatial-context feature construction, adjustment-set comparison, common-support checks, post-adjustment balance diagnostics, spatial robustness tests, and an evidence grade. The central idea is deliberately conservative: spatial context is useful only when it improves a diagnosed adjustment design.
+This paper proposes Spatial Context Causal Adjustment (SCCA). SCCA is a method workflow rather than a new estimator. It wraps standard estimators with spatial-context feature construction, adjustment-set comparison, common-support checks, post-adjustment balance diagnostics, spatial robustness tests, and an evidence grade. The central idea is deliberately conservative: spatial context is useful for causal adjustment only when it improves a diagnosed adjustment design.
 
 Our contributions are:
 
 \begin{enumerate}
 \item A formal SCCA workflow for selecting and diagnosing spatial-context adjustment sets in geographic observational studies.
 \item A reproducible diagnostic protocol covering common support, covariate balance, spatial block bootstrap, placebo exposure definitions, residual spatial autocorrelation, and evidence grading.
-\item Cross-case evidence from synthetic benchmarks, a Chongqing urban heat analysis, two historical cholera analyses, and a county social-capital validation with explicit spatial diagnostics and GIS-facing outputs.
+\item Cross-case evidence from synthetic benchmarks, a Chongqing urban heat analysis, two historical cholera analyses, and a county social-capital validation with explicit spatial diagnostics, ArcGIS-compatible comparison, and GIS-facing outputs.
 \item A bounded AlphaEarth embedding ablation showing that learned geospatial embeddings are a candidate context source but offered no clear diagnostic gain in the current Chongqing case.
 \end{enumerate}
 
@@ -115,7 +110,7 @@ Let $i = 1,\ldots,n$ index geographic units with location or geometry $g_i$. Eac
 \end{equation}
 For continuous exposures, SCCA estimates exposure-response functions or local slopes, but the same adjustment logic applies.
 
-SCCA does not identify $\tau$ by itself. Identification still requires that relevant confounders are measured, treatment has sufficient overlap, and interference is limited or explicitly modeled. SCCA contributes a structured workflow for testing whether the chosen spatial-context adjustment set is plausible enough to support a bounded causal interpretation.
+SCCA does not identify $\tau$ by itself. Identification still requires that relevant confounders are measured, treatment has sufficient overlap, and interference is limited or explicitly modeled. SCCA contributes a structured workflow for testing whether a chosen spatial-context adjustment set is plausible enough to support a bounded causal interpretation.
 
 \subsection{Workflow}
 
@@ -172,7 +167,7 @@ where $W$ is a row-standardized neighborhood matrix. We interpret $\beta$ as the
 
 \subsection{Evidence grades}
 
-SCCA assigns one of four evidence grades using a machine-readable rule file. \textit{Core support} requires a strong credibility decision, robust support, and no material spatial downgrade rule. \textit{Bounded support} indicates useful evidence with explicit support, scale, balance, robustness, residual-spatial-structure, or external-validity limits. \textit{Negative ablation} indicates that a tested candidate context source did not improve diagnostics. \textit{Auxiliary only} indicates results that may help interpretation or future work but do not support the main causal adjustment claim.
+SCCA assigns one of four evidence grades using a machine-readable rule file. \textit{Core support} requires a strong credibility decision, robust support, and no material spatial downgrade rule. \textit{Bounded support} indicates useful evidence with explicit support, scale, balance, robustness, residual-spatial-structure, or external-validity limits. \textit{Negative ablation} indicates that a tested candidate context source did not improve diagnostics. \textit{Auxiliary only} indicates outputs that may help interpretation or software development but do not support the main causal adjustment claim.
 
 The manuscript uses \ruleversion. A case is downgraded from core to bounded support when credibility is moderate or weak, exposure-balance correlation exceeds 0.50, exposure boundary mass exceeds 0.25, robustness is bounded or fragile, $|I_{\mathrm{residual}}|\geq 0.20$ with permutation $p\leq 0.05$, the neighbor-exposure coefficient remains significant at $p\leq 0.05$, spatial adjustment changes the main coefficient by at least 25\%, or graph-sensitivity checks do not preserve the effect sign. The full table is exported as \rulesjson\ and \rulesmd.
 
@@ -190,7 +185,9 @@ This architecture is methodological rather than cosmetic. It prevents separate A
 
 \subsection{Evidence synthesis design}
 
-The experiments were organized to answer four questions: whether the estimators behave as expected under controlled generators, whether spatial-context adjustment improves a real urban heat analysis, whether SCCA remains useful across distinct geographic case studies, and whether learned geospatial embeddings improve diagnostics over conventional context variables. Table~\ref{tab:evidence_synthesis} summarizes the evidence matrix used to rewrite the manuscript.
+The experiments addressed four questions: estimator behavior under controlled generators; balance in an urban heat analysis; claim boundaries across geographic cases and GIS interfaces; and embedding diagnostics relative to conventional context variables.
+
+Table~\ref{tab:evidence_synthesis} summarizes the resulting evidence matrix.
 
 \begin{table}[htbp]
 \centering
@@ -207,7 +204,7 @@ Synthetic benchmark audit & Controlled generators & 48 benchmark rows; 13 robust
 Chongqing urban heat & Real building and remote-sensing data & Full context ATT = 0.244$^\circ$C; max SMD = 0.061 & Core support & Main real-data SCCA ablation \\
 Snow cholera subdistricts & Historical case & Sign stability = 0.985; high exposure-balance correlation = 0.828 & Bounded support & Historical replication with explicit limitation \\
 Soho pump proximity & Historical case & Sign stability = 1.000; high exposure-balance correlation = 0.543 & Bounded support & Mechanism-focused historical case \\
-County social capital spatial notebook & GIS output case & residual Moran's $I$ = 0.313; spatial-lag coef. = 0.145; SLX total = 0.215 & Bounded support & Spatial diagnostics and cross-interface output evidence \\
+County social capital spatial notebook & GIS output case & residual Moran's $I$ = 0.313; spatial-lag coef. = 0.145; ArcGIS-trimmed ERF range = 6.85 years & Bounded support & Spatial diagnostics and cross-interface output evidence \\
 AlphaEarth ablation & Candidate embedding source & RS/terrain SMD = 0.061; best embedding SMD = 0.268 & Negative ablation & Boundary finding: no clear embedding gain \\
 \bottomrule
 \end{tabular}
@@ -218,7 +215,7 @@ AlphaEarth ablation & Candidate embedding source & RS/terrain SMD = 0.061; best 
 
 The controlled benchmark used six scenario families: propensity-score matching, difference-in-differences, spatial Granger causality, exposure-response estimation, causal forest heterogeneity, and geographic convergent cross-mapping. Each scenario was run over 30 seeds and stress settings including small samples, noisy outcomes, and severe stress. The audit produced 48 summary rows.
 
-The results were mixed, which is useful for a methods paper because they prevent overclaiming. Difference-in-differences was stable in the baseline setting (RMSE = 0.207 for a true effect of $-8$). Causal forests also recovered the average effect in the baseline setting (RMSE = 1.841 for an effect near 100). Exposure-response estimation remained useful but showed nontrivial bias in some settings. In contrast, the original propensity-score scenario remained biased under the saved generator, and geographic convergent cross-mapping was fragile for direction recovery, with baseline direction accuracy of 0.233 under the standard variant. The audit therefore supports SCCA as a diagnostic wrapper around estimators, not as a guarantee that every estimator works in every spatial setting.
+The results support the diagnostic role of SCCA rather than a universal estimator claim. Difference-in-differences was stable in the baseline setting (RMSE = 0.207 for a true effect of $-8$). Causal forests also recovered the average effect in the baseline setting (RMSE = 1.841 for an effect near 100). Exposure-response estimation remained useful but showed nontrivial bias in some settings. In contrast, the saved propensity-score scenario remained biased under severe stress, and geographic convergent cross-mapping was fragile for direction recovery, with baseline direction accuracy of 0.233 under the standard variant. The audit therefore supports SCCA as a diagnostic wrapper around estimators, not as a guarantee that every estimator works in every spatial setting.
 
 \begin{table}[htbp]
 \centering
@@ -246,7 +243,7 @@ GCCM & Direction accuracy & 1.000 & 0.233 & 0.876 & Fragile direction recovery \
 
 The main real-data case asked whether high-rise buildings in Chongqing were associated with local summer land surface temperature after spatial-context adjustment. The analysis used a stratified sample of 5,000 buildings from 2021. Treatment was defined as buildings with at least 10 floors. The outcome was summer land surface temperature. Candidate context variables included centroid coordinates, footprint area, Sentinel-2 bands, spectral indices, elevation, and slope.
 
-The raw mean difference was 0.238$^\circ$C (Table~\ref{tab:chongqing}). Several variants achieved credible balance after matching. The full remote-sensing and terrain context specification estimated ATT = 0.244$^\circ$C with 95\% CI [0.148, 0.346] and maximum post-match SMD = 0.061. This replaces the earlier draft's sign-reversal story. The current evidence supports a modest positive association under a balanced SCCA design, not a large negative high-rise cooling effect.
+The raw mean difference was 0.238$^\circ$C (Table~\ref{tab:chongqing}). Several variants achieved credible balance after matching. The full remote-sensing and terrain context specification estimated ATT = 0.244$^\circ$C with 95\% CI [0.148, 0.346] and maximum post-match SMD = 0.061. The current evidence supports a modest positive association under a balanced SCCA design. It does not support a large high-rise cooling effect.
 
 \begin{table}[htbp]
 \centering
@@ -275,13 +272,15 @@ Threshold placebos gave similar positive estimates for the full context specific
 
 Three additional cases tested whether the SCCA diagnostic workflow could be used beyond the Chongqing setting. In the South London Snow cholera subdistrict case, the main coefficient was 83.172 and bootstrap sign stability was 0.985, but the maximum exposure-balance correlation was high (0.828), leading to bounded support. In the Soho pump-proximity case, the main coefficient was 1.087 and sign stability was 1.000, but exposure-balance correlation was still high (0.543), again leading to bounded support. The county social-capital case initially appeared stronger under non-spatial grouped-bootstrap criteria: the main coefficient was 0.147, sign stability was 1.000, placebo checks were weaker than the main result, and no credibility downgrade warnings were triggered. We treat that result as a non-spatial robustness baseline rather than as the final county evidence grade.
 
-The county notebook run adds an explicit spatial-diagnostic layer and therefore gives the final county interpretation used in the evidence table. After 1\%--99\% exposure trimming, 3,044 of 3,108 county records remained in the analysis. Baseline adjusted OLS estimated a positive coefficient of 0.181 (95\% CI 0.166 to 0.197). Adding neighboring exposure reduced the main coefficient to 0.146, while a richer spatial-lag model including neighboring confounders and context variables produced a coefficient of 0.145. The formal SLX summary reported a direct effect of 0.145, an indirect effect of 0.070, and a total effect of 0.215 (95\% CI 0.188 to 0.241). Spatial block bootstrap over 50 valid replicates kept sign stability at 1.000, and graph sensitivity across four coordinate-kNN specifications gave a neighbor-adjusted coefficient range of 0.144 to 0.154. However, exposure Moran's $I$ was 0.517 and residual Moran's $I$ was 0.313 (both permutation $p=0.010$), and the neighbor-exposure term remained significant. The rule table therefore assigns bounded support through the \texttt{material\_residual\_moran} and \texttt{significant\_neighbor\_exposure} rules: the positive association is stable under the tested spatial sensitivity models, but residual spatial structure and neighboring-exposure association remain important.
+The county notebook run adds an explicit spatial-diagnostic layer and therefore gives the final county interpretation used in the evidence table. After 1\%--99\% exposure trimming, 3,044 of 3,108 county records remained in the analysis, matching the sample count used in an ArcGIS Causal Inference example for the same dataset. Baseline adjusted OLS estimated a positive coefficient of 0.181 (95\% CI 0.166 to 0.197). Adding neighboring exposure reduced the main coefficient to 0.146, while a richer spatial-lag model including neighboring confounders and context variables produced a coefficient of 0.145. The formal SLX summary reported a direct effect of 0.145, an indirect effect of 0.070, and a total effect of 0.215 (95\% CI 0.188 to 0.241). Spatial block bootstrap over 50 valid replicates kept sign stability at 1.000, and graph sensitivity across four coordinate-kNN specifications gave a neighbor-adjusted coefficient range of 0.144 to 0.154. However, exposure Moran's $I$ was 0.517 and residual Moran's $I$ was 0.313 (both permutation $p=0.010$), and the neighbor-exposure term remained significant. The rule table therefore assigns bounded support through the \texttt{material\_residual\_moran} and \texttt{significant\_neighbor\_exposure} rules: the positive association is stable under the tested spatial sensitivity models, but residual spatial structure and neighboring-exposure association remain important.
+
+The ArcGIS-compatible county run also provides a practical reproducibility check. The open SCCA implementation reproduced the positive exposure-response direction, exactly matched the 3,044-row trimmed analysis count, and estimated an ERF range effect of 6.85 years, close to the commercial-tool interpretation of an approximately 8-year range. A dedicated knot-13 sensitivity test found a slope increase of 0.104 years per exposure unit after social capital 13 (HC3 $p=0.00075$, AIC improvement = 17.46). This comparison is not used as independent identification evidence, but it shows that the open workflow can reproduce and audit a GIS-facing causal analysis.
 
 These cases do not test one substantive theory across domains. They test whether SCCA exposes the same design questions across different geographic datasets: overlap, balance, sign stability, placebo behavior, and residual spatial structure.
 
 \subsection{Direct baseline comparison}
 
-We also generated a direct comparison table rather than relying only on the final evidence synthesis. In Chongqing, the raw treated-control difference was 0.238$^\circ$C and had no covariate-balance guarantee. The full SCCA specification estimated 0.244$^\circ$C, achieved maximum post-match SMD = 0.061, and retained a core-support grade under the declared rules. Thus the contribution is not a dramatic change in the coefficient; it is a diagnosed adjustment design attached to the coefficient.
+We also generated a direct comparison table rather than relying only on the final evidence synthesis. In Chongqing, the raw treated-control difference was 0.238$^\circ$C and had no covariate-balance guarantee. The full SCCA specification estimated 0.244$^\circ$C, achieved maximum post-match SMD = 0.061, and retained a core-support grade under the declared rules. Thus the contribution is not a dramatic change in the coefficient. It is a diagnosed adjustment design attached to the coefficient.
 
 The county comparison shows the opposite pattern. The grouped robustness run without spatial diagnostics would have been graded as core support, with a coefficient of 0.181. Adding the spatial layer reduced the spatial-lag coefficient to 0.145, a relative change of -20.2\%. The same layer downgraded the case because residual Moran's $I$ remained materially large and the neighboring-exposure term remained significant. The comparison is stored in \comparecsv.
 
@@ -289,7 +288,7 @@ The county comparison shows the opposite pattern. The grouped robustness run wit
 
 The county notebook run also tested SCCA as an operational GIS workflow. The same \texttt{AnalysisRequest} used by the shared core wrote a joined analysis table and then produced spatial outputs against the committed county boundary layer. The spatial-output manifest recorded 3,108 boundary rows and 3,044 matched analysis rows. GeoPackage, GeoJSON, and Shapefile outputs were written, and the GeoPackage/GeoJSON layers preserved target-exposure fields, \texttt{gc\_spatial\_*} direct/indirect/total effect fields, out-neighbor count, and incoming-weight summaries. The run also produced ERF and effect-estimate charts, static target-exposure and indirect-effect maps, interactive HTML maps, and QGIS \texttt{.qml} styles for target exposure change and spatial effect fields.
 
-This experiment supports the practical claim of the paper. SCCA is not only a script-level estimator; it produces an inspectable evidence package that can move across notebooks, QGIS, and ArcGIS-facing table outputs without changing the causal-analysis core. The GIS outputs do not strengthen identification by themselves, but they make the assumptions, spatial residuals, target-exposure consequences, and neighborhood sensitivity visible in the environments where many geographic analysts work.
+This experiment supports the practical claim of the paper. SCCA is not only a script-level estimator. It produces an inspectable evidence package that can move across notebooks, QGIS, and ArcGIS-facing table outputs without changing the causal-analysis core. The GIS outputs do not strengthen identification by themselves, but they make assumptions, spatial residuals, target-exposure consequences, and neighborhood sensitivity visible in the environments where many geographic analysts work.
 
 \subsection{GeoFM ablation}
 
@@ -315,7 +314,9 @@ The county notebook case shows the same logic for practical GIS use. A non-spati
 
 SCCA converts a causal analysis into an inspectable spatial evidence package. The ArcGIS toolbox, QGIS provider, notebook workflow, and command-line interface share the same core request object and output manifest. This matters because GIS analyses often diverge silently across notebooks, desktop joins, and publication tables. In the present implementation, one run can produce numeric estimates, robustness diagnostics, joined GIS tables, spatial layers, static maps, interactive maps, and QGIS symbology without rewriting the causal estimator.
 
-This does not make the GIS outputs causal evidence by themselves. Their role is auditability. Analysts can inspect where target-exposure changes are large, where indirect-effect proxies concentrate, and where residual spatial structure cautions against a stronger claim. For IJGIS readers, the evidence boundary remains attached to the spatial objects used in analysis.
+The ArcGIS-compatible county comparison gives a concrete example of this value. SCCA reproduced the main positive exposure-response direction and sample-trimming count of a commercial GIS analysis, then added explicit robustness, knot-sensitivity, and spatial-diagnostic outputs. This does not mean SCCA replaces the substantive judgment required in GIS analysis. It means the same analysis can be inspected, rerun, and downgraded under declared rules.
+
+GIS outputs are therefore not causal evidence by themselves. Their role is auditability. Analysts can inspect where target-exposure changes are large, where indirect-effect proxies concentrate, and where residual spatial structure cautions against a stronger claim. For IJGIS readers, the evidence boundary remains attached to the spatial objects used in analysis.
 
 \subsection{What SCCA does not solve}
 
@@ -337,7 +338,7 @@ Auxiliary language-model and scenario-simulation experiments were run during dev
 
 We presented Spatial Context Causal Adjustment, a diagnostic workflow for geographic observational causal studies. SCCA formalizes spatial context as a candidate adjustment source and evaluates each adjustment variant through common support, balance, robustness, spatial diagnostics, and reproducible evidence-grade rules. Across synthetic benchmarks, a Chongqing urban heat case, historical cholera cases, and a county social-capital spatial notebook case, SCCA distinguished credible estimates from bounded and fragile designs.
 
-The main empirical result is deliberately bounded. In Chongqing, the full context model produced a modest positive high-rise effect on summer land surface temperature, with credible post-match balance and core support under the declared rules. Cross-case analyses showed stable directions but exposed limitations in synthetic stress settings, historical cholera cases, and county spatial diagnostics. The county run showed why a non-spatial strong result should be downgraded after spatial diagnostics. The AlphaEarth ablation showed no clear gain over conventional context variables in the current sample. Taken together, these findings support SCCA as a reproducible method for auditing spatial causal adjustment, not as a universal solution to spatial confounding.
+The main empirical result is deliberately bounded. In Chongqing, the full context model produced a modest positive high-rise effect on summer land surface temperature, with credible post-match balance and core support under the declared rules. Cross-case analyses showed stable directions but exposed limitations in synthetic stress settings, historical cholera cases, and county spatial diagnostics. The ArcGIS-compatible county run showed practical reproducibility, while the spatial-diagnostic layer showed why a non-spatial strong result should be downgraded after residual spatial structure remains visible. The AlphaEarth ablation showed no clear gain over conventional context variables in the current sample. Taken together, these findings support SCCA as a reproducible method for auditing spatial causal adjustment, not as a universal solution to spatial confounding.
 
 
 % ============================================================================
