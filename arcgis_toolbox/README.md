@@ -35,6 +35,16 @@ Chinese step-by-step manuals for the county social-capital example:
 - `ArcGIS_Pro_choropleth_join_county_social_capital_zh.md`
 - `ArcGIS_Pro_layout_export_county_social_capital_zh.md`
 
+The example input table is committed at:
+
+```text
+examples/data/county_social_capital.csv
+```
+
+For ArcGIS Pro, import that CSV into a file geodatabase first, then use the
+field settings in `examples/data/README.md`. The same CSV can also be used
+directly from notebooks and QGIS-side smoke tests.
+
 ## Main Parameters
 
 - `Input Features or Table`: Any ArcGIS table or feature layer readable by ArcPy.

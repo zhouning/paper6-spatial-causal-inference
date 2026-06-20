@@ -101,6 +101,19 @@ D:\adk\.venv\Scripts\python.exe -m geocausal.cli report results/example_case
 
 The MVP input boundary supports CSV, GeoPackage, GeoJSON, and Shapefile datasets. A completed run writes `effect_estimates.csv`, `erf_curve.csv`, `context_ablation.csv`, `placebo_tests.csv`, `bootstrap_robustness.csv`, `bootstrap_summary.json`, `erf_stability.json`, `robustness_report.md`, and `manifest.json`.
 
+A committed county-level smoke-test dataset is available at:
+
+```text
+examples/data/county_social_capital.csv
+```
+
+Run the same example from Windows, macOS, or Linux:
+
+```bash
+python -m geocausal.cli diagnose examples/county_social_capital_example.yaml
+python -m geocausal.cli run examples/county_social_capital_example.yaml
+```
+
 Programmatic callers can skip YAML and use the adapter API directly:
 
 ```python
@@ -109,13 +122,17 @@ from pathlib import Path
 from geocausal.adapters import AnalysisRequest, build_analysis_joined_table, run_scca_analysis
 
 request = AnalysisRequest(
-    case_name="generic_case",
-    input_path=Path("input.csv"),
-    output_dir=Path("results/generic_case"),
-    unit_id="unit_id",
-    exposure="exposure",
-    outcome="outcome",
-    confounders=("confounder_1", "confounder_2"),
+    case_name="county_social_capital_example",
+    input_path=Path("examples/data/county_social_capital.csv"),
+    output_dir=Path("results/county_social_capital_example"),
+    unit_id="FIPS",
+    exposure="SocialAssoc",
+    outcome="AveAgeDeath",
+    confounders=("UnemployRate", "pHHinPoverty", "pNoHealthInsur"),
+    context_columns=("Shape_Length", "Shape_Area"),
+    bootstrap_group="STATE_NAME",
+    lower_exposure_quantile=0.01,
+    upper_exposure_quantile=0.99,
     target_outcomes=(70.0,),
 )
 

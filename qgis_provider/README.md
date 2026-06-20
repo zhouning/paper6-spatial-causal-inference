@@ -10,3 +10,13 @@ CSV or GeoPackage, call `GeoCausalSCCAAlgorithm.run_from_csv`, and register the
 generated `analysis_joined.csv` and report files as QGIS outputs.
 
 No Paper 6 case-study field names or dataset paths belong in this provider.
+
+For macOS/QGIS smoke testing, use the committed cross-platform CSV:
+
+```text
+examples/data/county_social_capital.csv
+```
+
+The provider skeleton can consume the CSV through
+`GeoCausalSCCAAlgorithm.run_from_csv`; use the field settings documented in
+`examples/data/README.md`.

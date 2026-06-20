@@ -1,0 +1,82 @@
+{
+  "geocausal_version": "0.1.0",
+  "generated_at_utc": "2026-06-20T01:56:37.405544Z",
+  "case_name": "county_social_capital_example",
+  "study": "county_social_capital_example",
+  "config_path": "D:\\adk\\paper6-spatial-causal-inference\\examples\\county_social_capital_example.yaml",
+  "input_path": "D:\\adk\\paper6-spatial-causal-inference\\examples\\data\\county_social_capital.csv",
+  "input_format": "csv",
+  "row_count": 3044,
+  "column_count": 17,
+  "preprocessing": {
+    "exposure_trim": {
+      "status": "applied",
+      "column": "SocialAssoc",
+      "lower_quantile": 0.01,
+      "upper_quantile": 0.99,
+      "lower_value": 1.77955779839,
+      "upper_value": 38.06309620159998,
+      "original_n": 3108,
+      "kept_n": 3044,
+      "removed_n": 64
+    }
+  },
+  "exposure": "SocialAssoc",
+  "outcome": "AveAgeDeath",
+  "unit_id": "FIPS",
+  "baseline_outcome": null,
+  "confounders": [
+    "UnemployRate",
+    "pHHinPoverty",
+    "pNoHealthInsur",
+    "MentalHealth",
+    "pAdultSmoking",
+    "pAdultObesity",
+    "FastFood",
+    "pInsufficientSleep",
+    "pAlcohol",
+    "pSuicideDeaths",
+    "AirPollution"
+  ],
+  "context_columns": [
+    "Shape_Length",
+    "Shape_Area"
+  ],
+  "targets": {
+    "outcome_values": [
+      {
+        "name": "target_70",
+        "value": 70.0
+      }
+    ]
+  },
+  "credibility_decision": "strong_support",
+  "robustness_interpretation": "robust_support",
+  "warnings": [
+    "CSV input has no coordinate columns; geometry-derived bootstrap groups are unavailable."
+  ],
+  "files": {
+    "data_profile": "data_profile.json",
+    "variable_candidates": "variable_candidates.csv",
+    "context_features": "context_features.csv",
+    "context_manifest": "context_feature_manifest.json",
+    "design_plan": "design_plan.json",
+    "effect_estimates": "effect_estimates.csv",
+    "erf_curve": "erf_curve.csv",
+    "model_diagnostics": "model_diagnostics.json",
+    "balance_summary": "balance_summary.csv",
+    "overlap_summary": "overlap_summary.json",
+    "spatial_robustness": "spatial_robustness.csv",
+    "credibility_report": "credibility_report.json",
+    "analysis_report": "analysis_report.md",
+    "context_ablation": "context_ablation.csv",
+    "placebo_tests": "placebo_tests.csv",
+    "bootstrap_robustness": "bootstrap_robustness.csv",
+    "bootstrap_summary": "bootstrap_summary.json",
+    "erf_stability": "erf_stability.json",
+    "robustness_report": "robustness_report.md",
+    "robustness_manifest": "robustness_manifest.json",
+    "manifest": "manifest.json",
+    "target_exposures": "target_exposures.csv"
+  }
+}

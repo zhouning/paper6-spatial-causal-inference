@@ -41,6 +41,44 @@ call `run_scca_analysis`. The output folder contains CSV/JSON/Markdown artifacts
 that can be read back into pandas, GeoPandas, matplotlib, or other plotting
 libraries.
 
+The repository includes a cross-platform smoke-test CSV at:
+
+```text
+examples/data/county_social_capital.csv
+```
+
+Example notebook call:
+
+```python
+from pathlib import Path
+
+from geocausal.adapters import AnalysisRequest, build_analysis_joined_table, run_scca_analysis
+
+request = AnalysisRequest(
+    case_name="county_social_capital_example",
+    input_path=Path("examples/data/county_social_capital.csv"),
+    output_dir=Path("results/county_social_capital_example"),
+    unit_id="FIPS",
+    exposure="SocialAssoc",
+    outcome="AveAgeDeath",
+    confounders=("UnemployRate", "pHHinPoverty", "pNoHealthInsur"),
+    context_columns=("Shape_Length", "Shape_Area"),
+    bootstrap_group="STATE_NAME",
+    lower_exposure_quantile=0.01,
+    upper_exposure_quantile=0.99,
+    target_outcomes=(70.0,),
+    bootstrap_replicates=50,
+)
+
+manifest = run_scca_analysis(request)
+build_analysis_joined_table(
+    input_csv=request.input_path,
+    target_exposures_csv=request.output_dir / "target_exposures.csv",
+    output_csv=request.output_dir / "analysis_joined.csv",
+    unit_id_field="FIPS",
+)
+```
+
 When target outcomes are configured, notebook users can also build a one-row-per-
 unit joined analysis table from the original input and `target_exposures.csv`:
 
@@ -67,6 +105,10 @@ The toolbox only handles ArcGIS UI parameters, ArcPy data export, and optional
 copying of CSV outputs back to ArcGIS tables. It delegates algorithm execution to
 `geocausal.adapters.AnalysisRequest` and reuses the same
 `build_analysis_joined_table` helper to create an ArcGIS-ready analysis table.
+
+For a reproducible toolbox smoke test, import
+`examples/data/county_social_capital.csv` into a file geodatabase table and use
+the fields documented in `examples/data/README.md`.
 
 ## QGIS Path
 
