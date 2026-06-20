@@ -1,0 +1,25 @@
+{
+  "ablation_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\synthetic-benchmark-audit\\paper\\ijgis_submission_20260605\\07_results\\chongqing_uhi_ablation.csv",
+  "balance_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\synthetic-benchmark-audit\\paper\\ijgis_submission_20260605\\07_results\\chongqing_uhi_balance.csv",
+  "matched_counts_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\synthetic-benchmark-audit\\paper\\ijgis_submission_20260605\\07_results\\chongqing_uhi_matched_counts.csv",
+  "bootstrap_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\synthetic-benchmark-audit\\paper\\ijgis_submission_20260605\\07_results\\chongqing_spatial_bootstrap.csv",
+  "placebo_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\synthetic-benchmark-audit\\paper\\ijgis_submission_20260605\\07_results\\chongqing_placebo_thresholds.csv",
+  "residual_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\synthetic-benchmark-audit\\paper\\ijgis_submission_20260605\\07_results\\chongqing_residual_spatial_diagnostics.csv",
+  "manifest_json": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\synthetic-benchmark-audit\\paper\\ijgis_submission_20260605\\07_results\\chongqing_uhi_analysis_manifest.json",
+  "report_md": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\synthetic-benchmark-audit\\paper\\ijgis_submission_20260605\\07_results\\chongqing_uhi_analysis_report.md",
+  "metadata": {
+    "sample_size": 5000,
+    "treatment_threshold": 10,
+    "caliper": 0.2,
+    "n_bootstrap": 500,
+    "n_spatial_bootstrap": 500,
+    "study": "Building density -> UHI in Chongqing",
+    "buildings_total": 107035,
+    "analysis_sample_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\synthetic-benchmark-audit\\paper\\ijgis_submission_20260605\\07_results\\chongqing_uhi_analysis_sample.csv",
+    "data_source": "provided_analysis_sample",
+    "fallback_reason": null,
+    "gee_required_for_final_evidence": false,
+    "balance_interpretation": "credible_balance"
+  },
+  "balance_interpretation": "credible_balance"
+}

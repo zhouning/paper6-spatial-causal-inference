@@ -6,6 +6,7 @@ Uses: MODIS LST + AlphaEarth GeoFM embeddings + Building footprint data
 Runs: PSM (with/without GeoFM), PCA ablation, Causal Forest
 """
 import sys, os, json, time
+from pathlib import Path
 import numpy as np
 import pandas as pd
 import geopandas as gpd
@@ -16,6 +17,8 @@ if sys.platform == "win32":
 REPO_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, REPO_ROOT)
 
+from data_agent.experiments.chongqing_uhi_analysis import run_chongqing_uhi_analysis
+
 BUILDING_PATH = os.path.join(
     REPO_ROOT,
     "data",
@@ -24,6 +27,12 @@ BUILDING_PATH = os.path.join(
     "04重庆市中心城区建筑物轮廓数据2021年",
     "中心城区建筑数据带层高.shp",
 )
+
+RESULTS_DIR = (
+    Path(REPO_ROOT) / "paper" / "ijgis_submission_20260605" / "07_results"
+)
+ANALYSIS_SAMPLE_PATH = RESULTS_DIR / "chongqing_uhi_analysis_sample.csv"
+DEFAULT_BUILDINGS_TOTAL = 107035
 
 def banner(title):
     print(f"\n{'='*60}")
@@ -204,6 +213,171 @@ def step3_extract_spectral_features(sample):
     print(f"  Elevation range: {sample['rs_elevation'].min():.0f} - {sample['rs_elevation'].max():.0f}m")
 
     return sample
+
+
+def _normalize_analysis_sample(sample):
+    """Normalize historical script column names for the reusable analysis module."""
+    prepared = sample.copy()
+    if "floor" not in prepared.columns and "Floor" in prepared.columns:
+        prepared["floor"] = pd.to_numeric(prepared["Floor"], errors="coerce")
+    elif "floor" in prepared.columns:
+        prepared["floor"] = pd.to_numeric(prepared["floor"], errors="coerce")
+    if "treatment" not in prepared.columns and "floor" in prepared.columns:
+        prepared["treatment"] = (prepared["floor"] >= 10).astype(int)
+    if "area_m2" not in prepared.columns and "area_sqm" in prepared.columns:
+        prepared["area_m2"] = prepared["area_sqm"]
+    if "LST" not in prepared.columns and "lst" in prepared.columns:
+        prepared["LST"] = prepared["lst"]
+    return prepared
+
+
+def _minmax(series):
+    values = pd.to_numeric(series, errors="coerce")
+    span = values.max() - values.min()
+    if not np.isfinite(span) or abs(span) < 1e-12:
+        return pd.Series(np.zeros(len(values)), index=values.index)
+    return (values - values.min()) / span
+
+
+def _build_fallback_analysis_sample(gdf, fallback_reason, sample_size=5000):
+    """Create a clearly labeled smoke sample when GEE extraction is unavailable."""
+    banner("Fallback: synthetic smoke sample for pipeline verification")
+    rng = np.random.default_rng(42)
+    treated = gdf[gdf["treatment"] == 1]
+    control = gdf[gdf["treatment"] == 0]
+    n_each = min(sample_size // 2, len(treated), len(control))
+    sample = pd.concat(
+        [
+            treated.sample(n=n_each, random_state=42),
+            control.sample(n=n_each, random_state=42),
+        ],
+        ignore_index=False,
+    ).copy()
+    sample = _normalize_analysis_sample(sample)
+    x_norm = _minmax(sample["centroid_x"])
+    y_norm = _minmax(sample["centroid_y"])
+    area_norm = _minmax(sample["area_m2"])
+    floor_norm = _minmax(sample["floor"])
+
+    sample["rs_elevation"] = 180 + 260 * y_norm + 30 * x_norm
+    sample["rs_slope"] = 2 + 18 * area_norm
+    sample["rs_NDVI"] = 0.55 - 0.18 * x_norm - 0.05 * floor_norm
+    sample["rs_NDBI"] = 0.08 + 0.28 * floor_norm + 0.08 * x_norm
+    sample["rs_MNDWI"] = -0.12 + 0.08 * y_norm
+    sample["rs_BSI"] = 0.05 + 0.16 * area_norm + 0.04 * floor_norm
+    sample["rs_B2"] = 0.10 + 0.03 * x_norm
+    sample["rs_B3"] = 0.12 + 0.04 * y_norm
+    sample["rs_B4"] = 0.14 + 0.03 * floor_norm
+    sample["rs_B8"] = 0.22 + 0.05 * sample["rs_NDVI"]
+    sample["rs_B11"] = 0.25 + 0.04 * sample["rs_NDBI"]
+    sample["rs_B12"] = 0.27 + 0.03 * sample["rs_BSI"]
+    sample["LST"] = (
+        34.0
+        - 0.004 * sample["rs_elevation"]
+        + 0.55 * sample["treatment"]
+        + 1.2 * sample["rs_NDBI"]
+        - 0.6 * sample["rs_NDVI"]
+        + rng.normal(0, 0.35, len(sample))
+    )
+    sample.attrs["fallback_reason"] = str(fallback_reason)
+    print(f"  GEE extraction failed; generated fallback smoke sample: {fallback_reason}")
+    print("  This output is for pipeline verification, not final IJGIS evidence.")
+    return sample
+
+
+def _save_analysis_sample(sample):
+    RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+    if hasattr(sample, "geometry"):
+        sample.drop(columns=["geometry"], errors="ignore").to_csv(
+            ANALYSIS_SAMPLE_PATH,
+            index=False,
+        )
+    else:
+        sample.to_csv(ANALYSIS_SAMPLE_PATH, index=False)
+    return ANALYSIS_SAMPLE_PATH
+
+
+def run_chongqing_uhi_case_study(
+    *,
+    analysis_sample_csv=None,
+    allow_fallback=True,
+    output_dir=RESULTS_DIR,
+    n_bootstrap=500,
+    n_spatial_bootstrap=500,
+):
+    """Run extraction plus the reusable Chongqing UHI analysis suite."""
+    banner("Real-World Causal Case Study: Building Density -> UHI")
+    print("  Study area: Chongqing central urban districts")
+    print("  Treatment: high-rise (>=10 floors) vs low-rise (<10 floors)")
+    print("  Outcome: MODIS Land Surface Temperature (Summer 2021)")
+    print("  Confounders: location, area, Sentinel-2, and DEM features")
+
+    t0 = time.time()
+    fallback_reason = None
+    if analysis_sample_csv is not None:
+        sample_path = Path(analysis_sample_csv)
+        sample = _normalize_analysis_sample(pd.read_csv(sample_path))
+        gdf = sample
+        buildings_total = DEFAULT_BUILDINGS_TOTAL
+        data_source = "provided_analysis_sample"
+        print(f"  Reusing analysis sample: {sample_path}")
+    else:
+        gdf = step1_load_buildings()
+        buildings_total = int(len(gdf))
+        data_source = "gee_modis_sentinel_srtm"
+        try:
+            sample = step2_extract_modis_lst(gdf)
+            sample = step3_extract_spectral_features(sample)
+            sample = _normalize_analysis_sample(sample)
+        except Exception as exc:
+            if not allow_fallback:
+                raise
+            fallback_reason = str(exc)
+            data_source = "synthetic_fallback_smoke"
+            sample = _build_fallback_analysis_sample(gdf, fallback_reason)
+        sample_path = _save_analysis_sample(sample)
+    manifest = run_chongqing_uhi_analysis(
+        sample,
+        output_dir=output_dir,
+        threshold=10,
+        caliper=0.2,
+        n_bootstrap=n_bootstrap,
+        n_spatial_bootstrap=n_spatial_bootstrap,
+        random_state=42,
+        outcome_col="LST",
+        metadata={
+            "study": "Building density -> UHI in Chongqing",
+            "buildings_total": buildings_total,
+            "analysis_sample_csv": str(sample_path),
+            "data_source": data_source,
+            "fallback_reason": fallback_reason,
+            "gee_required_for_final_evidence": bool(fallback_reason),
+        },
+    )
+
+    elapsed = time.time() - t0
+    legacy_results = {
+        "study": "Building density -> UHI in Chongqing",
+        "data": {
+            "buildings_total": buildings_total,
+            "sample_size": int(len(sample)),
+            "treatment_threshold": ">=10 floors",
+            "data_source": data_source,
+            "fallback_reason": fallback_reason,
+        },
+        "analysis_manifest": manifest,
+        "elapsed_seconds": round(elapsed, 1),
+    }
+    report_path = os.path.join(os.path.dirname(__file__), "causal_case_study_results.json")
+    with open(report_path, "w", encoding="utf-8") as f:
+        json.dump(legacy_results, f, ensure_ascii=False, indent=2, default=str)
+
+    banner("Summary")
+    print(f"  Total time: {elapsed:.0f}s")
+    print(f"  Analysis sample saved: {sample_path}")
+    print(f"  Manifest saved: {manifest['manifest_json']}")
+    print(f"  Legacy summary saved: {report_path}")
+    return manifest
 
 
 def step4_psm_analysis(sample):
@@ -408,52 +582,4 @@ def step6_causal_forest(sample):
 
 
 if __name__ == "__main__":
-    banner("Real-World Causal Case Study: Building Density -> UHI")
-    print("  Study area: Chongqing central urban districts")
-    print("  Treatment: high-rise (>=10 floors) vs low-rise (<10 floors)")
-    print("  Outcome: MODIS Land Surface Temperature (Summer 2021)")
-    print("  Confounders: location, area + AlphaEarth 64D embeddings")
-
-    t0 = time.time()
-
-    # Step 1: Load buildings
-    gdf = step1_load_buildings()
-
-    # Step 2: Extract MODIS LST from GEE
-    sample = step2_extract_modis_lst(gdf)
-
-    # Step 3: Extract spectral features from GEE (Sentinel-2 + SRTM)
-    sample = step3_extract_spectral_features(sample)
-
-    # Step 4: PSM analysis
-    psm_results = step4_psm_analysis(sample)
-
-    # Step 5: PCA ablation
-    pca_results = step5_pca_ablation(sample)
-
-    # Step 6: Causal Forest
-    cf_results = step6_causal_forest(sample)
-
-    elapsed = time.time() - t0
-
-    # Save results
-    all_results = {
-        "study": "Building density -> UHI in Chongqing",
-        "data": {
-            "buildings_total": len(gdf),
-            "sample_size": len(sample),
-            "treatment_threshold": ">=10 floors",
-        },
-        "psm": psm_results,
-        "pca_ablation": pca_results,
-        "causal_forest": cf_results,
-        "elapsed_seconds": round(elapsed, 1),
-    }
-
-    report_path = os.path.join(os.path.dirname(__file__), "causal_case_study_results.json")
-    with open(report_path, "w", encoding="utf-8") as f:
-        json.dump(all_results, f, ensure_ascii=False, indent=2, default=str)
-
-    banner("Summary")
-    print(f"  Total time: {elapsed:.0f}s")
-    print(f"  Results saved: {report_path}")
+    run_chongqing_uhi_case_study()

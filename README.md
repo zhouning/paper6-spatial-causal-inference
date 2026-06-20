@@ -42,6 +42,23 @@ The real-data UHI and LULC/LST experiments can be run with:
 
 Those commands use local Chongqing sample data and will try Google Earth Engine for MODIS LST. If Earth Engine is not authenticated, the scripts fall back to synthetic LST for a runnable smoke reproduction; see `REPRODUCIBILITY.md` for details.
 
+Run the strengthened Chongqing UHI ablation and spatial-robustness suite from
+the cached GEE analysis sample:
+
+```powershell
+.\.venv\Scripts\python.exe -c "import pandas as pd; from data_agent.experiments.chongqing_uhi_analysis import run_chongqing_uhi_analysis; df = pd.read_csv('paper/ijgis_submission_20260605/07_results/chongqing_uhi_analysis_sample.csv'); run_chongqing_uhi_analysis(df, n_bootstrap=500, n_spatial_bootstrap=500)"
+```
+
+This writes:
+
+- `paper/ijgis_submission_20260605/07_results/chongqing_uhi_ablation.csv`
+- `paper/ijgis_submission_20260605/07_results/chongqing_uhi_balance.csv`
+- `paper/ijgis_submission_20260605/07_results/chongqing_uhi_matched_counts.csv`
+- `paper/ijgis_submission_20260605/07_results/chongqing_spatial_bootstrap.csv`
+- `paper/ijgis_submission_20260605/07_results/chongqing_placebo_thresholds.csv`
+- `paper/ijgis_submission_20260605/07_results/chongqing_residual_spatial_diagnostics.csv`
+- `paper/ijgis_submission_20260605/07_results/chongqing_uhi_analysis_manifest.json`
+
 Run the IJGIS-required multi-seed synthetic benchmark:
 
 ```powershell
