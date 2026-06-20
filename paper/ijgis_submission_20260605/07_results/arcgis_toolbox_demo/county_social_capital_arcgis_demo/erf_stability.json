@@ -1,0 +1,13 @@
+{
+  "case": "county_social_capital_arcgis_demo",
+  "n_grid": 50,
+  "response_at_min_exposure": 74.27512373046217,
+  "response_at_median_exposure": 77.76865508607959,
+  "response_at_max_exposure": 81.12244518747232,
+  "range_effect": 6.847321457010153,
+  "median_split_effect": 3.3537901013927325,
+  "monotonic_direction": "increasing",
+  "monotonic_fraction": 1.0,
+  "max_adjacent_response_jump": 0.13974125422470252,
+  "interpretation": "ERF is mostly increasing with monotonic fraction 1.000."
+}

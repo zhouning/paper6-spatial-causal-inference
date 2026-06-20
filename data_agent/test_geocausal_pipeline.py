@@ -128,6 +128,74 @@ def test_run_analysis_writes_complete_output_package(tmp_path):
     }
 
 
+def test_run_analysis_supports_arcgis_style_trimming_and_targets(tmp_path):
+    _fixture_frame().to_csv(tmp_path / "fixture.csv", index=False)
+    config_path = tmp_path / "analysis.yaml"
+    config_path.write_text(
+        """
+case_name: arcgis_compatible_fixture
+input:
+  path: fixture.csv
+  x: x
+  y: y
+variables:
+  unit_id: unit_id
+  exposure: exposure
+  outcome: outcome
+  baseline_outcome: baseline
+  confounders:
+    - baseline
+    - confounder
+context:
+  columns:
+    - context
+robustness:
+  placebo_exposures:
+    - name: placebo_check
+      column: placebo
+      role: negative_control
+      expected_relation: weaker_than_main
+  bootstrap:
+    group_column: group
+    n_replicates: 5
+preprocessing:
+  exposure_trim:
+    lower_quantile: 0.01
+    upper_quantile: 0.99
+targets:
+  outcome_values:
+    - name: outcome_target_7
+      value: 7.0
+output:
+  directory: results/arcgis_compatible_fixture
+""",
+        encoding="utf-8",
+    )
+    config = load_config(config_path)
+
+    manifest = run_analysis(config)
+
+    output_dir = config.resolve_output_dir()
+    assert (output_dir / "target_exposures.csv").exists()
+    assert manifest["case_name"] == "arcgis_compatible_fixture"
+    assert manifest["row_count"] == 6
+    assert manifest["preprocessing"]["exposure_trim"]["removed_n"] == 2
+    assert manifest["files"]["target_exposures"] == "target_exposures.csv"
+
+    targets = pd.read_csv(output_dir / "target_exposures.csv")
+    assert set(targets.columns) >= {
+        "unit_id",
+        "method",
+        "target_name",
+        "target_outcome",
+        "current_exposure",
+        "required_exposure",
+        "exposure_change",
+    }
+    assert set(targets["target_name"]) == {"outcome_target_7"}
+    assert set(targets["method"]) == {"adjusted_ols_prediction", "erf_delta_anchor"}
+
+
 def test_run_analysis_bootstrap_falls_back_to_input_coordinates(tmp_path):
     _fixture_frame().to_csv(tmp_path / "fixture.csv", index=False)
     config = load_config(_write_fixture_config(tmp_path, include_bootstrap_group=False))

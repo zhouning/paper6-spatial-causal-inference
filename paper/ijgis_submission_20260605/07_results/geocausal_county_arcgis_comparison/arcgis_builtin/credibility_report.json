@@ -1,0 +1,13 @@
+{
+  "decision": "strong_support",
+  "reasons": [
+    "No credibility downgrade warnings were triggered."
+  ],
+  "max_balance_corr": 0.4597574411844699,
+  "overlap_boundary_mass": 0.000328515111695138,
+  "leave_group_sign_stable": true,
+  "estimator_statuses": {
+    "baseline_adjusted_ols": "ok",
+    "generalized_propensity_erf": "ok"
+  }
+}

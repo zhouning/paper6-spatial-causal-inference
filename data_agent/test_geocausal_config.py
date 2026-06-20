@@ -63,6 +63,40 @@ output:
     assert spec.subgroup_column == "group"
 
 
+def test_load_config_accepts_preprocessing_and_target_outputs(tmp_path):
+    config_path = _write_yaml(
+        tmp_path / "analysis.yaml",
+        """
+case_name: arcgis_compatible_case
+input:
+  path: fixture.csv
+variables:
+  unit_id: unit_id
+  exposure: exposure
+  outcome: outcome
+preprocessing:
+  exposure_trim:
+    lower_quantile: 0.01
+    upper_quantile: 0.99
+targets:
+  outcome_values:
+    - name: age_70
+      value: 70
+output:
+  directory: results/arcgis_compatible
+""",
+    )
+
+    config = load_config(config_path)
+
+    assert config.preprocessing.exposure_trim is not None
+    assert config.preprocessing.exposure_trim.lower_quantile == 0.01
+    assert config.preprocessing.exposure_trim.upper_quantile == 0.99
+    assert len(config.targets.outcome_values) == 1
+    assert config.targets.outcome_values[0].name == "age_70"
+    assert config.targets.outcome_values[0].value == 70.0
+
+
 def test_load_config_infers_lon_lat_coordinate_columns(tmp_path):
     config_path = _write_yaml(
         tmp_path / "analysis.yaml",

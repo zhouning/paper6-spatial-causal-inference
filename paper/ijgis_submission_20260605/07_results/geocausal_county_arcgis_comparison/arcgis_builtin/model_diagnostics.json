@@ -1,0 +1,45 @@
+{
+  "original_n": 3044,
+  "covariates": [
+    "UnemployRate",
+    "pHHinPoverty",
+    "pNoHealthInsur",
+    "MentalHealth",
+    "pAdultSmoking",
+    "pAdultObesity",
+    "FastFood",
+    "pInsufficientSleep",
+    "pAlcohol",
+    "pSuicideDeaths",
+    "AirPollution",
+    "Shape_Length",
+    "Shape_Area"
+  ],
+  "context_columns": [
+    "Shape_Length",
+    "Shape_Area"
+  ],
+  "gps_weight_min": 0.24439643412957404,
+  "gps_weight_max": 180.5676286694291,
+  "gps_weight_mean": 1.0,
+  "gps_fit_n": 3044,
+  "gps_fallback_reason": null,
+  "erf_n": 3044,
+  "erf_grid_n": 50,
+  "estimators": {
+    "baseline_adjusted_ols": {
+      "status": "ok",
+      "n": 3044,
+      "complete_n": 3044,
+      "dropped_n": 0,
+      "warnings": []
+    },
+    "generalized_propensity_erf": {
+      "status": "ok",
+      "n": 3044,
+      "complete_n": 3044,
+      "dropped_n": 0,
+      "warnings": []
+    }
+  }
+}

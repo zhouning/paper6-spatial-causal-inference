@@ -1,0 +1,3 @@
+case,test_name,exposure,role,expected_relation,estimator,coef,se,p_value,ci_lower,ci_upper,n,status,interpretation
+county_social_capital_geocausal_arcgis_trimmed,shape_length,Shape_Length,shape_placebo,weaker_than_social_assoc,baseline_adjusted_ols,-6.2351273409145435e-06,8.711595976154403e-07,1.0279711351338345e-12,-7.943251099995387e-06,-4.5270035818337e-06,3044,ok,estimated
+county_social_capital_geocausal_arcgis_trimmed,shape_area,Shape_Area,shape_placebo,weaker_than_social_assoc,baseline_adjusted_ols,9.314367924568059e-11,2.6831324189137026e-11,0.0005248887417110121,4.05342349366058e-11,1.4575312355475539e-10,3044,ok,estimated

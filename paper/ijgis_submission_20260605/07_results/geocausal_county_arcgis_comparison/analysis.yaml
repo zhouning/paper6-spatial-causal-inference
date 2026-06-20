@@ -1,0 +1,38 @@
+case_name: county_social_capital_geocausal_arcgis_compare
+input:
+  path: county_social_capital.csv
+variables:
+  unit_id: FIPS
+  exposure: SocialAssoc
+  outcome: AveAgeDeath
+  confounders:
+    - UnemployRate
+    - pHHinPoverty
+    - pNoHealthInsur
+    - MentalHealth
+    - pAdultSmoking
+    - pAdultObesity
+    - FastFood
+    - pInsufficientSleep
+    - pAlcohol
+    - pSuicideDeaths
+    - AirPollution
+context:
+  columns:
+    - Shape_Length
+    - Shape_Area
+robustness:
+  placebo_exposures:
+    - name: shape_length
+      column: Shape_Length
+      role: shape_placebo
+      expected_relation: weaker_than_social_assoc
+    - name: shape_area
+      column: Shape_Area
+      role: shape_placebo
+      expected_relation: weaker_than_social_assoc
+  bootstrap:
+    group_column: STATE_NAME
+    n_replicates: 200
+output:
+  directory: .

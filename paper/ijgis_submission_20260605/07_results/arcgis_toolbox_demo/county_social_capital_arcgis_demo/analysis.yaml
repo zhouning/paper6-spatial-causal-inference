@@ -1,0 +1,46 @@
+case_name: county_social_capital_arcgis_demo
+input:
+  path: D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results\arcgis_toolbox_demo\county_social_capital_arcgis_demo\input.csv
+variables:
+  exposure: SocialAssoc
+  outcome: AveAgeDeath
+  unit_id: FIPS
+  confounders:
+  - UnemployRate
+  - pHHinPoverty
+  - pNoHealthInsur
+  - MentalHealth
+  - pAdultSmoking
+  - pAdultObesity
+  - FastFood
+  - pInsufficientSleep
+  - pAlcohol
+  - pSuicideDeaths
+  - AirPollution
+output:
+  directory: D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results\arcgis_toolbox_demo\county_social_capital_arcgis_demo
+context:
+  columns:
+  - Shape_Length
+  - Shape_Area
+preprocessing:
+  exposure_trim:
+    lower_quantile: 0.01
+    upper_quantile: 0.99
+robustness:
+  bootstrap:
+    n_replicates: 200
+    group_column: STATE_NAME
+  placebo_exposures:
+  - name: Shape_Length
+    column: Shape_Length
+    role: placebo
+    expected_relation: weaker_than_main
+  - name: Shape_Area
+    column: Shape_Area
+    role: placebo
+    expected_relation: weaker_than_main
+targets:
+  outcome_values:
+  - name: target_70
+    value: 70.0

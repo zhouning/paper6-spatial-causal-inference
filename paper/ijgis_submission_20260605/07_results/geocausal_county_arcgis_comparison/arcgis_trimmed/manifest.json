@@ -1,0 +1,60 @@
+{
+  "geocausal_version": "0.1.0",
+  "generated_at_utc": "2026-06-19T13:29:29.309792Z",
+  "case_name": "county_social_capital_geocausal_arcgis_trimmed",
+  "study": "county_social_capital_geocausal_arcgis_trimmed",
+  "config_path": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\geocausal_county_arcgis_comparison\\arcgis_trimmed\\analysis.yaml",
+  "input_path": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\geocausal_county_arcgis_comparison\\arcgis_trimmed\\county_social_capital_arcgis_trimmed.csv",
+  "input_format": "csv",
+  "row_count": 3044,
+  "column_count": 20,
+  "exposure": "SocialAssoc",
+  "outcome": "AveAgeDeath",
+  "unit_id": "FIPS",
+  "baseline_outcome": null,
+  "confounders": [
+    "UnemployRate",
+    "pHHinPoverty",
+    "pNoHealthInsur",
+    "MentalHealth",
+    "pAdultSmoking",
+    "pAdultObesity",
+    "FastFood",
+    "pInsufficientSleep",
+    "pAlcohol",
+    "pSuicideDeaths",
+    "AirPollution"
+  ],
+  "context_columns": [
+    "Shape_Length",
+    "Shape_Area"
+  ],
+  "credibility_decision": "strong_support",
+  "robustness_interpretation": "robust_support",
+  "warnings": [
+    "CSV input has no coordinate columns; geometry-derived bootstrap groups are unavailable."
+  ],
+  "files": {
+    "data_profile": "data_profile.json",
+    "variable_candidates": "variable_candidates.csv",
+    "context_features": "context_features.csv",
+    "context_manifest": "context_feature_manifest.json",
+    "design_plan": "design_plan.json",
+    "effect_estimates": "effect_estimates.csv",
+    "erf_curve": "erf_curve.csv",
+    "model_diagnostics": "model_diagnostics.json",
+    "balance_summary": "balance_summary.csv",
+    "overlap_summary": "overlap_summary.json",
+    "spatial_robustness": "spatial_robustness.csv",
+    "credibility_report": "credibility_report.json",
+    "analysis_report": "analysis_report.md",
+    "context_ablation": "context_ablation.csv",
+    "placebo_tests": "placebo_tests.csv",
+    "bootstrap_robustness": "bootstrap_robustness.csv",
+    "bootstrap_summary": "bootstrap_summary.json",
+    "erf_stability": "erf_stability.json",
+    "robustness_report": "robustness_report.md",
+    "robustness_manifest": "robustness_manifest.json",
+    "manifest": "manifest.json"
+  }
+}

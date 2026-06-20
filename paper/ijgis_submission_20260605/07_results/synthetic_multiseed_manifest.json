@@ -1,0 +1,15 @@
+{
+  "summary_csv": "paper/ijgis_submission_20260605/07_results/synthetic_multiseed_summary.csv",
+  "details_json": "paper/ijgis_submission_20260605/07_results/synthetic_multiseed_details.json",
+  "manifest_json": "paper/ijgis_submission_20260605/07_results/synthetic_multiseed_manifest.json",
+  "n_rows": 180,
+  "n_summary_rows": 6,
+  "scenarios": [
+    "CausalForest",
+    "DiD",
+    "ERF",
+    "GCCM",
+    "Granger",
+    "PSM"
+  ]
+}

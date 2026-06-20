@@ -1,0 +1,16 @@
+{
+  "study": "county_social_capital_arcgis_demo",
+  "design": "continuous_exposure_baseline_adjusted",
+  "n_rows": 3044,
+  "unique_exposure_values": 3020,
+  "exposure": "SocialAssoc",
+  "outcome": "AveAgeDeath",
+  "baseline_outcome": null,
+  "estimators": [
+    "baseline_adjusted_ols",
+    "generalized_propensity_erf"
+  ],
+  "warnings": [
+    "No baseline outcome configured; difference-outcome checks will be skipped."
+  ]
+}

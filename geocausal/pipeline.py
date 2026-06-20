@@ -6,7 +6,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import pandas as pd
+import statsmodels.api as sm
 
 from data_agent.scca.context import build_context_features
 from data_agent.scca.design import select_design
@@ -68,6 +70,7 @@ def diagnose_config(config: GeoCausalConfig) -> dict[str, Any]:
         "input_format": loaded.format,
         "input_rows": int(len(loaded.frame)),
         "input_columns": int(len(loaded.frame.columns)),
+        "preprocessing": loaded.preprocessing,
         "geometry_available": loaded.geometry_available,
         "output_directory": str(output_directory),
         "output_writable": output_writable,
@@ -155,6 +158,222 @@ def _bootstrap_group(
     )
 
 
+def _analysis_covariates(config: GeoCausalConfig, features: pd.DataFrame) -> list[str]:
+    candidates = [
+        *config.variables.confounders,
+        *config.context.columns,
+    ]
+    return list(dict.fromkeys(column for column in candidates if column in features.columns))
+
+
+def _interpolate_erf_response(erf_curve: pd.DataFrame, exposure_value: float) -> float:
+    if not np.isfinite(exposure_value) or erf_curve.empty:
+        return np.nan
+    exposure_grid = pd.to_numeric(erf_curve.get("exposure"), errors="coerce")
+    response_grid = pd.to_numeric(erf_curve.get("response"), errors="coerce")
+    valid = exposure_grid.notna() & response_grid.notna()
+    if valid.sum() < 2:
+        return np.nan
+    ordered = pd.DataFrame(
+        {"exposure": exposure_grid[valid], "response": response_grid[valid]}
+    ).sort_values("exposure")
+    return float(
+        np.interp(
+            exposure_value,
+            ordered["exposure"].to_numpy(dtype=float),
+            ordered["response"].to_numpy(dtype=float),
+        )
+    )
+
+
+def _invert_erf_response(erf_curve: pd.DataFrame, response_value: float) -> tuple[float, str, str]:
+    if not np.isfinite(response_value) or erf_curve.empty:
+        return np.nan, "skipped", "ERF inversion requires finite response values."
+    exposure_grid = pd.to_numeric(erf_curve.get("exposure"), errors="coerce")
+    response_grid = pd.to_numeric(erf_curve.get("response"), errors="coerce")
+    valid = exposure_grid.notna() & response_grid.notna()
+    if valid.sum() < 2:
+        return np.nan, "skipped", "ERF inversion requires at least two finite grid points."
+    ordered = pd.DataFrame(
+        {"exposure": exposure_grid[valid], "response": response_grid[valid]}
+    ).sort_values("response")
+    response_values = ordered["response"].to_numpy(dtype=float)
+    exposure_values = ordered["exposure"].to_numpy(dtype=float)
+    support_min = float(response_values.min())
+    support_max = float(response_values.max())
+    if response_value < support_min or response_value > support_max:
+        return (
+            float(np.interp(response_value, response_values, exposure_values)),
+            "outside_erf_support",
+            "Target response is outside the ERF response support.",
+        )
+    return float(np.interp(response_value, response_values, exposure_values)), "ok", ""
+
+
+def _target_row(
+    *,
+    unit_id: object,
+    method: str,
+    target_name: str,
+    target_outcome: float,
+    current_outcome: float,
+    predicted_outcome: float,
+    current_exposure: float,
+    required_exposure: float,
+    exposure_change: float,
+    model_exposure_coef: float,
+    status: str,
+    warning: str,
+    extra: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    row = {
+        "unit_id": str(unit_id),
+        "method": method,
+        "target_name": target_name,
+        "target_outcome": target_outcome,
+        "current_outcome": current_outcome if np.isfinite(current_outcome) else np.nan,
+        "predicted_outcome": predicted_outcome if np.isfinite(predicted_outcome) else np.nan,
+        "current_exposure": current_exposure if np.isfinite(current_exposure) else np.nan,
+        "required_exposure": required_exposure if np.isfinite(required_exposure) else np.nan,
+        "exposure_change": exposure_change if np.isfinite(exposure_change) else np.nan,
+        "model_exposure_coef": model_exposure_coef if np.isfinite(model_exposure_coef) else np.nan,
+        "status": status,
+        "warning": warning,
+    }
+    if extra:
+        row.update(extra)
+    return row
+
+
+def _write_target_exposures(
+    config: GeoCausalConfig,
+    features: pd.DataFrame,
+    output_dir: Path,
+) -> Path | None:
+    if not config.targets.outcome_values:
+        return None
+    exposure = config.variables.exposure
+    outcome = config.variables.outcome
+    unit_id = config.variables.unit_id
+    covariates = _analysis_covariates(config, features)
+    required_columns = [unit_id, exposure, outcome, *covariates]
+    available_columns = [column for column in required_columns if column in features.columns]
+    frame = features[available_columns].copy()
+    numeric_columns = [exposure, outcome, *covariates]
+    for column in numeric_columns:
+        if column in frame.columns:
+            frame[column] = pd.to_numeric(frame[column], errors="coerce")
+    complete = frame.dropna(subset=[exposure, outcome, *covariates])
+    erf_path = output_dir / "erf_curve.csv"
+    erf_curve = pd.read_csv(erf_path) if erf_path.exists() else pd.DataFrame()
+
+    rows: list[dict[str, Any]] = []
+    status = "ok"
+    warning = ""
+    beta = np.nan
+    predictions = pd.Series(np.nan, index=features.index, dtype=float)
+    if len(complete) < max(3, len(covariates) + 2):
+        status = "skipped"
+        warning = "Fewer complete rows than required for target exposure model."
+    elif complete[exposure].nunique() < 2:
+        status = "skipped"
+        warning = "Exposure has no variation for target exposure model."
+    else:
+        try:
+            x = sm.add_constant(complete[[exposure, *covariates]], has_constant="add").astype(float)
+            y = complete[outcome].astype(float)
+            model = sm.OLS(y, x, missing="drop").fit()
+            beta = float(model.params.get(exposure, np.nan))
+            prediction_frame = features[[exposure, *covariates]].copy()
+            for column in prediction_frame.columns:
+                prediction_frame[column] = pd.to_numeric(prediction_frame[column], errors="coerce")
+            prediction_frame = sm.add_constant(prediction_frame, has_constant="add").astype(float)
+            predictions = pd.Series(model.predict(prediction_frame), index=features.index, dtype=float)
+            if not np.isfinite(beta) or beta == 0:
+                status = "skipped"
+                warning = "Target exposure model has zero or non-finite exposure coefficient."
+        except Exception as exc:
+            status = "skipped"
+            warning = f"Target exposure model failed: {exc}"
+
+    for target in config.targets.outcome_values:
+        for index, row in features.iterrows():
+            current_exposure = pd.to_numeric(pd.Series([row.get(exposure)]), errors="coerce").iloc[0]
+            current_outcome = pd.to_numeric(pd.Series([row.get(outcome)]), errors="coerce").iloc[0]
+            predicted_outcome = predictions.loc[index] if index in predictions.index else np.nan
+            if status == "ok":
+                required_exposure = float(current_exposure + (target.value - predicted_outcome) / beta)
+                exposure_change = float(required_exposure - current_exposure)
+            else:
+                required_exposure = np.nan
+                exposure_change = np.nan
+            rows.append(
+                _target_row(
+                    unit_id=row.get(unit_id, index),
+                    method="adjusted_ols_prediction",
+                    target_name=target.name,
+                    target_outcome=target.value,
+                    current_outcome=float(current_outcome) if np.isfinite(current_outcome) else np.nan,
+                    predicted_outcome=float(predicted_outcome)
+                    if np.isfinite(predicted_outcome)
+                    else np.nan,
+                    current_exposure=float(current_exposure)
+                    if np.isfinite(current_exposure)
+                    else np.nan,
+                    required_exposure=required_exposure,
+                    exposure_change=exposure_change,
+                    model_exposure_coef=beta,
+                    status=status,
+                    warning=warning,
+                )
+            )
+
+            erf_current = _interpolate_erf_response(
+                erf_curve,
+                float(current_exposure) if np.isfinite(current_exposure) else np.nan,
+            )
+            desired_erf_response = (
+                target.value - float(current_outcome) + erf_current
+                if np.isfinite(current_outcome) and np.isfinite(erf_current)
+                else np.nan
+            )
+            erf_required, erf_status, erf_warning = _invert_erf_response(
+                erf_curve,
+                desired_erf_response,
+            )
+            erf_change = (
+                float(erf_required - current_exposure)
+                if np.isfinite(erf_required) and np.isfinite(current_exposure)
+                else np.nan
+            )
+            rows.append(
+                _target_row(
+                    unit_id=row.get(unit_id, index),
+                    method="erf_delta_anchor",
+                    target_name=target.name,
+                    target_outcome=target.value,
+                    current_outcome=float(current_outcome) if np.isfinite(current_outcome) else np.nan,
+                    predicted_outcome=target.value if erf_status == "ok" else np.nan,
+                    current_exposure=float(current_exposure)
+                    if np.isfinite(current_exposure)
+                    else np.nan,
+                    required_exposure=erf_required,
+                    exposure_change=erf_change,
+                    model_exposure_coef=np.nan,
+                    status=erf_status,
+                    warning=erf_warning,
+                    extra={
+                        "erf_current_response": erf_current,
+                        "erf_target_response": desired_erf_response,
+                    },
+                )
+            )
+
+    output_path = output_dir / "target_exposures.csv"
+    pd.DataFrame(rows).to_csv(output_path, index=False)
+    return output_path
+
+
 def _write_geocausal_manifest(
     config: GeoCausalConfig,
     loaded: LoadedDataset,
@@ -186,6 +405,9 @@ def _write_geocausal_manifest(
         "robustness_manifest": ROBUSTNESS_FILES["robustness_manifest"],
         "manifest": paths.manifest.name,
     }
+    target_exposures = paths.output_dir / "target_exposures.csv"
+    if target_exposures.exists():
+        files["target_exposures"] = target_exposures.name
     manifest = {
         "geocausal_version": __version__,
         "generated_at_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
@@ -196,12 +418,19 @@ def _write_geocausal_manifest(
         "input_format": loaded.format,
         "row_count": int(len(loaded.frame)),
         "column_count": int(len(loaded.frame.columns)),
+        "preprocessing": loaded.preprocessing,
         "exposure": config.variables.exposure,
         "outcome": config.variables.outcome,
         "unit_id": config.variables.unit_id,
         "baseline_outcome": config.variables.baseline_outcome,
         "confounders": list(config.variables.confounders),
         "context_columns": list(config.context.columns),
+        "targets": {
+            "outcome_values": [
+                {"name": target.name, "value": target.value}
+                for target in config.targets.outcome_values
+            ]
+        },
         "credibility_decision": credibility.get("decision"),
         "robustness_interpretation": robustness_manifest.get("robustness_interpretation"),
         "warnings": warnings,
@@ -227,6 +456,7 @@ def run_analysis(config: GeoCausalConfig) -> dict[str, Any]:
         features, _ = build_context_features(loaded.frame, spec, paths)
         select_design(features, spec, paths)
         estimate_effects(features, spec, paths)
+        _write_target_exposures(config, features, paths.output_dir)
         credibility = audit_effects(features, spec, paths)
         write_report(
             spec,

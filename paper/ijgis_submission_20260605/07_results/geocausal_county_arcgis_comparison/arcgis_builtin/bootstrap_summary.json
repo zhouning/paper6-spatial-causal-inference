@@ -1,0 +1,13 @@
+{
+  "case": "county_social_capital_geocausal_arcgis_builtin",
+  "bootstrap_type": "STATE_NAME",
+  "n_replicates_requested": 200,
+  "n_replicates_valid": 200,
+  "coef_mean": 0.18101429202332933,
+  "coef_median": 0.18124834457294292,
+  "coef_std": 0.014650152296287619,
+  "ci_lower_2_5": 0.1542121067044244,
+  "ci_upper_97_5": 0.21018246717896402,
+  "sign_stability": 1.0,
+  "failure_count": 0
+}

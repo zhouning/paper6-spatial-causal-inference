@@ -267,6 +267,24 @@ def run_synthetic_experiments():
     return results
 
 
+def run_synthetic_multiseed_experiments(n_seeds: int = 30):
+    """Run the reproducible multi-seed synthetic benchmark required by IJGIS review."""
+    from data_agent.experiments.synthetic_multiseed import (
+        DEFAULT_OUTPUT_DIR as SYNTHETIC_BENCHMARK_OUTPUT_DIR,
+        run_synthetic_multiseed_benchmark,
+    )
+
+    manifest = run_synthetic_multiseed_benchmark(
+        output_dir=SYNTHETIC_BENCHMARK_OUTPUT_DIR,
+        seeds=range(n_seeds),
+    )
+    print(
+        "\nSynthetic multi-seed benchmark saved to "
+        f"{manifest['summary_csv']} and {manifest['details_json']}"
+    )
+    return manifest
+
+
 # =========================================================================
 # Experiment 2: Chongqing Building → UHI (Real-world, Angle A)
 # =========================================================================
@@ -582,16 +600,30 @@ def main():
     parser = argparse.ArgumentParser(description="Causal Inference Paper Experiments")
     parser.add_argument("--synthetic-only", action="store_true",
                         help="Run only the 6 synthetic scenarios (fast, no API)")
+    parser.add_argument(
+        "--synthetic-multiseed-only",
+        action="store_true",
+        help="Run only the multi-seed synthetic benchmark and write submission-grade outputs.",
+    )
     parser.add_argument("--uhi", action="store_true", help="Run Chongqing UHI experiment")
     parser.add_argument("--lulc", action="store_true", help="Run Chongqing LULC→LST experiment")
     parser.add_argument("--all", action="store_true", help="Run all experiments")
+    parser.add_argument("--n-seeds", type=int, default=30, help="Number of synthetic benchmark seeds.")
     args = parser.parse_args()
+
+    if args.synthetic_multiseed_only and not args.all:
+        print("\n" + "=" * 60)
+        print("PHASE 1B: Synthetic Multi-Seed Benchmark")
+        print("=" * 60)
+        run_synthetic_multiseed_experiments(n_seeds=args.n_seeds)
+        return
 
     if args.all or args.synthetic_only or (not any([args.uhi, args.lulc])):
         print("\n" + "=" * 60)
         print("PHASE 1: Synthetic Scenarios")
         print("=" * 60)
         run_synthetic_experiments()
+        run_synthetic_multiseed_experiments(n_seeds=args.n_seeds)
 
     if args.all or args.uhi:
         print("\n" + "=" * 60)

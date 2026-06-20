@@ -18,6 +18,7 @@ class LoadedDataset:
     geometry_available: bool
     columns: set[str]
     warnings: tuple[str, ...] = field(default_factory=tuple)
+    preprocessing: dict[str, Any] = field(default_factory=dict)
 
 
 def load_dataset(config: GeoCausalConfig) -> LoadedDataset:
@@ -33,6 +34,7 @@ def load_dataset(config: GeoCausalConfig) -> LoadedDataset:
         raise GeoCausalInputError(f"Unsupported input format: {config.input.format}")
 
     frame = _ensure_unit_id(frame, config.variables.unit_id)
+    frame, preprocessing = _apply_preprocessing(frame, config)
     geometry_available = _has_geometry(frame) if config.input.format != "csv" else False
     warnings = _geometry_warnings(frame, geometry_available)
     return LoadedDataset(
@@ -42,6 +44,7 @@ def load_dataset(config: GeoCausalConfig) -> LoadedDataset:
         geometry_available=geometry_available,
         columns=set(str(column) for column in frame.columns),
         warnings=warnings,
+        preprocessing=preprocessing,
     )
 
 
@@ -76,6 +79,41 @@ def _ensure_unit_id(frame: Any, unit_id: str) -> Any:
         frame.insert(0, unit_id, [str(index) for index in range(1, len(frame) + 1)])
         return frame
     raise GeoCausalInputError(f"Configured unit_id column is missing: {unit_id}")
+
+
+def _apply_preprocessing(frame: Any, config: GeoCausalConfig) -> tuple[Any, dict[str, Any]]:
+    trim = config.preprocessing.exposure_trim
+    if trim is None:
+        return frame, {}
+    exposure_column = config.variables.exposure
+    if exposure_column not in frame.columns:
+        return frame, {
+            "exposure_trim": {
+                "status": "skipped",
+                "reason": f"Exposure column is missing: {exposure_column}",
+            }
+        }
+
+    exposure = pd.to_numeric(frame[exposure_column], errors="coerce")
+    lower_value = float(exposure.quantile(trim.lower_quantile))
+    upper_value = float(exposure.quantile(trim.upper_quantile))
+    keep = exposure.ge(lower_value) & exposure.le(upper_value)
+    original_n = int(len(frame))
+    trimmed = frame.loc[keep].copy()
+    summary = {
+        "exposure_trim": {
+            "status": "applied",
+            "column": exposure_column,
+            "lower_quantile": trim.lower_quantile,
+            "upper_quantile": trim.upper_quantile,
+            "lower_value": lower_value,
+            "upper_value": upper_value,
+            "original_n": original_n,
+            "kept_n": int(len(trimmed)),
+            "removed_n": int(original_n - len(trimmed)),
+        }
+    }
+    return trimmed, summary
 
 
 def _has_geometry(frame: Any) -> bool:

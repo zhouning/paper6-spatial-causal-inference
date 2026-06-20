@@ -42,6 +42,17 @@ The real-data UHI and LULC/LST experiments can be run with:
 
 Those commands use local Chongqing sample data and will try Google Earth Engine for MODIS LST. If Earth Engine is not authenticated, the scripts fall back to synthetic LST for a runnable smoke reproduction; see `REPRODUCIBILITY.md` for details.
 
+Run the IJGIS-required multi-seed synthetic benchmark:
+
+```powershell
+.\.venv\Scripts\python.exe -m data_agent.experiments.run_causal --synthetic-multiseed-only --n-seeds 30
+```
+
+This writes:
+
+- `paper/ijgis_submission_20260605/07_results/synthetic_multiseed_summary.csv`
+- `paper/ijgis_submission_20260605/07_results/synthetic_multiseed_details.json`
+
 Run the first Spatial Context Causal Adjustment (SCCA) redesign experiment on the South London Snow cholera data:
 
 ```powershell
@@ -89,6 +100,38 @@ D:\adk\.venv\Scripts\python.exe -m geocausal.cli report results/example_case
 ```
 
 The MVP input boundary supports CSV, GeoPackage, GeoJSON, and Shapefile datasets. A completed run writes `effect_estimates.csv`, `erf_curve.csv`, `context_ablation.csv`, `placebo_tests.csv`, `bootstrap_robustness.csv`, `bootstrap_summary.json`, `erf_stability.json`, `robustness_report.md`, and `manifest.json`.
+
+Programmatic callers can skip YAML and use the adapter API directly:
+
+```python
+from pathlib import Path
+
+from geocausal.adapters import AnalysisRequest, build_analysis_joined_table, run_scca_analysis
+
+request = AnalysisRequest(
+    case_name="generic_case",
+    input_path=Path("input.csv"),
+    output_dir=Path("results/generic_case"),
+    unit_id="unit_id",
+    exposure="exposure",
+    outcome="outcome",
+    confounders=("confounder_1", "confounder_2"),
+    target_outcomes=(70.0,),
+)
+
+manifest = run_scca_analysis(request)
+build_analysis_joined_table(
+    input_csv=request.input_path,
+    target_exposures_csv=request.output_dir / "target_exposures.csv",
+    output_csv=request.output_dir / "analysis_joined.csv",
+    unit_id_field=request.unit_id,
+)
+```
+
+Integration wrappers now exist at:
+
+- `arcgis_toolbox/GeoCausalSCCA.pyt` for ArcGIS Pro
+- `qgis_provider/geocausal_scca_algorithm.py` as the QGIS Processing skeleton
 
 ## Paper Entry Points
 

@@ -1,0 +1,38 @@
+{
+  "study": "county_social_capital_geocausal_arcgis_trimmed",
+  "n_rows": 3044,
+  "n_features": 30,
+  "source_columns": [
+    "SocialAssoc",
+    "AveAgeDeath",
+    "UnemployRate",
+    "pHHinPoverty",
+    "pNoHealthInsur",
+    "MentalHealth",
+    "pAdultSmoking",
+    "pAdultObesity",
+    "FastFood",
+    "pInsufficientSleep",
+    "pAlcohol",
+    "pSuicideDeaths",
+    "AirPollution",
+    "Shape_Length",
+    "Shape_Area",
+    "STATE_NAME"
+  ],
+  "generated_columns": [
+    "UnemployRate_centered",
+    "pHHinPoverty_centered",
+    "pNoHealthInsur_centered",
+    "MentalHealth_centered",
+    "pAdultSmoking_centered",
+    "pAdultObesity_centered",
+    "FastFood_centered",
+    "pInsufficientSleep_centered",
+    "pAlcohol_centered",
+    "pSuicideDeaths_centered",
+    "AirPollution_centered",
+    "Shape_Length_centered",
+    "Shape_Area_centered"
+  ]
+}

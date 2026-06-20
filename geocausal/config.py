@@ -45,6 +45,17 @@ class ContextConfig:
 
 
 @dataclass(frozen=True)
+class ExposureTrimConfig:
+    lower_quantile: float
+    upper_quantile: float
+
+
+@dataclass(frozen=True)
+class PreprocessingConfig:
+    exposure_trim: ExposureTrimConfig | None = None
+
+
+@dataclass(frozen=True)
 class PlaceboExposureConfig:
     name: str
     column: str
@@ -73,6 +84,17 @@ class RobustnessConfig:
 
 
 @dataclass(frozen=True)
+class TargetOutcomeConfig:
+    name: str
+    value: float
+
+
+@dataclass(frozen=True)
+class TargetsConfig:
+    outcome_values: tuple[TargetOutcomeConfig, ...] = field(default_factory=tuple)
+
+
+@dataclass(frozen=True)
 class OutputConfig:
     directory: Path
 
@@ -83,7 +105,9 @@ class GeoCausalConfig:
     input: InputConfig
     variables: VariablesConfig
     context: ContextConfig
+    preprocessing: PreprocessingConfig
     robustness: RobustnessConfig
+    targets: TargetsConfig
     output: OutputConfig
     config_path: Path
 
@@ -147,6 +171,15 @@ def _text_tuple(value: Any, owner: str) -> tuple[str, ...]:
     return tuple(item.strip() for item in value)
 
 
+def _optional_float(mapping: dict[str, Any], key: str, owner: str) -> float | None:
+    value = mapping.get(key)
+    if value is None:
+        return None
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise GeoCausalConfigError(f"{owner}.{key} must be a number when provided.")
+    return float(value)
+
+
 def _infer_format(path: Path, explicit: str | None) -> str:
     if explicit:
         normalized = explicit.lower().lstrip(".")
@@ -177,7 +210,9 @@ def load_config(path: str | Path) -> GeoCausalConfig:
     input_raw = _require_mapping(root.get("input"), "input")
     variables_raw = _require_mapping(root.get("variables"), "variables")
     context_raw = _require_mapping(root.get("context", {}), "context")
+    preprocessing_raw = _require_mapping(root.get("preprocessing", {}), "preprocessing")
     robustness_raw = _require_mapping(root.get("robustness", {}), "robustness")
+    targets_raw = _require_mapping(root.get("targets", {}), "targets")
     output_raw = _require_mapping(root.get("output"), "output")
 
     input_path = Path(_require_text(input_raw, "path", "input"))
@@ -211,6 +246,33 @@ def load_config(path: str | Path) -> GeoCausalConfig:
         confounders=_text_tuple(variables_raw.get("confounders"), "variables.confounders"),
     )
 
+    trim_raw = preprocessing_raw.get("exposure_trim")
+    exposure_trim = None
+    if trim_raw is not None:
+        trim_mapping = _require_mapping(trim_raw, "preprocessing.exposure_trim")
+        lower_quantile = _optional_float(
+            trim_mapping,
+            "lower_quantile",
+            "preprocessing.exposure_trim",
+        )
+        upper_quantile = _optional_float(
+            trim_mapping,
+            "upper_quantile",
+            "preprocessing.exposure_trim",
+        )
+        if lower_quantile is None or upper_quantile is None:
+            raise GeoCausalConfigError(
+                "preprocessing.exposure_trim.lower_quantile and upper_quantile are required."
+            )
+        if not (0.0 <= lower_quantile < upper_quantile <= 1.0):
+            raise GeoCausalConfigError(
+                "preprocessing.exposure_trim quantiles must satisfy 0 <= lower < upper <= 1."
+            )
+        exposure_trim = ExposureTrimConfig(
+            lower_quantile=lower_quantile,
+            upper_quantile=upper_quantile,
+        )
+
     placebo_items = robustness_raw.get("placebo_exposures", [])
     if not isinstance(placebo_items, list):
         raise GeoCausalConfigError("robustness.placebo_exposures must be a list.")
@@ -232,11 +294,28 @@ def load_config(path: str | Path) -> GeoCausalConfig:
     if isinstance(n_replicates, bool) or not isinstance(n_replicates, int) or n_replicates <= 0:
         raise GeoCausalConfigError("robustness.bootstrap.n_replicates must be a positive integer.")
 
+    target_items = targets_raw.get("outcome_values", [])
+    if not isinstance(target_items, list):
+        raise GeoCausalConfigError("targets.outcome_values must be a list.")
+    outcome_values: list[TargetOutcomeConfig] = []
+    for index, item in enumerate(target_items):
+        item_raw = _require_mapping(item, f"targets.outcome_values[{index}]")
+        value = _optional_float(item_raw, "value", f"targets.outcome_values[{index}]")
+        if value is None:
+            raise GeoCausalConfigError(f"targets.outcome_values[{index}].value is required.")
+        outcome_values.append(
+            TargetOutcomeConfig(
+                name=_optional_text(item_raw, "name") or f"target_{index + 1}",
+                value=value,
+            )
+        )
+
     return GeoCausalConfig(
         case_name=case_name,
         input=input_config,
         variables=variables,
         context=ContextConfig(columns=_text_tuple(context_raw.get("columns"), "context.columns")),
+        preprocessing=PreprocessingConfig(exposure_trim=exposure_trim),
         robustness=RobustnessConfig(
             placebo_exposures=tuple(placebo_exposures),
             bootstrap=BootstrapConfig(
@@ -244,6 +323,7 @@ def load_config(path: str | Path) -> GeoCausalConfig:
                 n_replicates=n_replicates,
             ),
         ),
+        targets=TargetsConfig(outcome_values=tuple(outcome_values)),
         output=OutputConfig(directory=Path(_require_text(output_raw, "directory", "output"))),
         config_path=config_path,
     )

@@ -1,0 +1,201 @@
+{
+  "study": "county_social_capital_geocausal_arcgis_trimmed",
+  "n_rows": 3044,
+  "n_columns": 20,
+  "columns": {
+    "OBJECTID": {
+      "role": "available",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 3044,
+      "min": 1.0,
+      "max": 3108.0,
+      "mean": 1552.5827858081473
+    },
+    "STATE_NAME": {
+      "role": "subgroup",
+      "dtype": "object",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 49
+    },
+    "CountyCode": {
+      "role": "available",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 3044,
+      "min": 1001.0,
+      "max": 56045.0,
+      "mean": 30645.419185282524
+    },
+    "County": {
+      "role": "available",
+      "dtype": "object",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 3044
+    },
+    "FIPS": {
+      "role": "unit_id",
+      "dtype": "object",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 3044,
+      "min": 1001.0,
+      "max": 56045.0,
+      "mean": 30645.419185282524
+    },
+    "AveAgeDeath": {
+      "role": "outcome",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 3042,
+      "min": 52.37777709960938,
+      "max": 89.0,
+      "mean": 74.61700897993772
+    },
+    "SocialAssoc": {
+      "role": "exposure",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 3020,
+      "min": 1.831166453,
+      "max": 37.95721187,
+      "mean": 13.605810055601182
+    },
+    "UnemployRate": {
+      "role": "confounder",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 143,
+      "min": 0.0,
+      "max": 30.5,
+      "mean": 4.418856767411301
+    },
+    "pHHinPoverty": {
+      "role": "confounder",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 1602,
+      "min": 1.56,
+      "max": 47.26,
+      "mean": 15.552279894875165
+    },
+    "pNoHealthInsur": {
+      "role": "confounder",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 3043,
+      "min": 2.150759220123291,
+      "max": 43.77992248535156,
+      "mean": 11.055054141563435
+    },
+    "MentalHealth": {
+      "role": "confounder",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 3044,
+      "min": 2.439653597,
+      "max": 5.964156153,
+      "mean": 3.944354740339685
+    },
+    "pAdultSmoking": {
+      "role": "confounder",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 3044,
+      "min": 6.821751688,
+      "max": 41.201763375,
+      "mean": 17.874720183158015
+    },
+    "pAdultObesity": {
+      "role": "confounder",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 269,
+      "min": 0.271,
+      "max": 49.5,
+      "mean": 32.10682358738502
+    },
+    "FastFood": {
+      "role": "confounder",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 244,
+      "min": 1.14,
+      "max": 4.7,
+      "mean": 2.6400788436268066
+    },
+    "pInsufficientSleep": {
+      "role": "confounder",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 3044,
+      "min": 23.028347779,
+      "max": 46.707783456,
+      "mean": 33.12089388056866
+    },
+    "pAlcohol": {
+      "role": "confounder",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 2743,
+      "min": 0.0,
+      "max": 86.4936294555664,
+      "mean": 8.560866429285683
+    },
+    "pSuicideDeaths": {
+      "role": "confounder",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 2923,
+      "min": 0.0,
+      "max": 55.51464462280273,
+      "mean": 14.769595428615926
+    },
+    "AirPollution": {
+      "role": "confounder",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 113,
+      "min": 3.0,
+      "max": 19.7,
+      "mean": 9.071846254927728
+    },
+    "Shape_Length": {
+      "role": "context",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 3044,
+      "min": 11482.20110004675,
+      "max": 1091498.980263452,
+      "mean": 210911.01685732818
+    },
+    "Shape_Area": {
+      "role": "context",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 3044,
+      "unique": 3044,
+      "min": 4459803.572441049,
+      "max": 52111986603.08356,
+      "mean": 2481822842.674273
+    }
+  }
+}
