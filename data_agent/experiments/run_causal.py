@@ -285,6 +285,24 @@ def run_synthetic_multiseed_experiments(n_seeds: int = 30):
     return manifest
 
 
+def run_synthetic_benchmark_audit_experiments(n_seeds: int = 30):
+    """Run the expanded synthetic benchmark audit required for stronger Paper 6 evidence."""
+    from data_agent.experiments.synthetic_benchmark_audit import (
+        DEFAULT_AUDIT_OUTPUT_DIR,
+        run_synthetic_benchmark_audit,
+    )
+
+    manifest = run_synthetic_benchmark_audit(
+        output_dir=DEFAULT_AUDIT_OUTPUT_DIR,
+        seeds=range(n_seeds),
+    )
+    print(
+        "\nSynthetic benchmark audit saved to "
+        f"{manifest['summary_csv']} and {manifest['report_md']}"
+    )
+    return manifest
+
+
 # =========================================================================
 # Experiment 2: Chongqing Building → UHI (Real-world, Angle A)
 # =========================================================================
@@ -605,6 +623,11 @@ def main():
         action="store_true",
         help="Run only the multi-seed synthetic benchmark and write submission-grade outputs.",
     )
+    parser.add_argument(
+        "--synthetic-audit-only",
+        action="store_true",
+        help="Run only the expanded synthetic benchmark audit.",
+    )
     parser.add_argument("--uhi", action="store_true", help="Run Chongqing UHI experiment")
     parser.add_argument("--lulc", action="store_true", help="Run Chongqing LULC→LST experiment")
     parser.add_argument("--all", action="store_true", help="Run all experiments")
@@ -616,6 +639,13 @@ def main():
         print("PHASE 1B: Synthetic Multi-Seed Benchmark")
         print("=" * 60)
         run_synthetic_multiseed_experiments(n_seeds=args.n_seeds)
+        return
+
+    if args.synthetic_audit_only and not args.all:
+        print("\n" + "=" * 60)
+        print("PHASE 1C: Synthetic Benchmark Audit")
+        print("=" * 60)
+        run_synthetic_benchmark_audit_experiments(n_seeds=args.n_seeds)
         return
 
     if args.all or args.synthetic_only or (not any([args.uhi, args.lulc])):

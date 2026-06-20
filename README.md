@@ -53,6 +53,20 @@ This writes:
 - `paper/ijgis_submission_20260605/07_results/synthetic_multiseed_summary.csv`
 - `paper/ijgis_submission_20260605/07_results/synthetic_multiseed_details.json`
 
+Run the expanded synthetic benchmark audit that stress-tests all six estimators
+under multiple settings:
+
+```powershell
+.\.venv\Scripts\python.exe -m data_agent.experiments.run_causal --synthetic-audit-only --n-seeds 30
+```
+
+This writes:
+
+- `paper/ijgis_submission_20260605/07_results/synthetic_benchmark_audit/synthetic_benchmark_audit_summary.csv`
+- `paper/ijgis_submission_20260605/07_results/synthetic_benchmark_audit/synthetic_benchmark_audit_details.json`
+- `paper/ijgis_submission_20260605/07_results/synthetic_benchmark_audit/synthetic_benchmark_audit_report.md`
+- `paper/ijgis_submission_20260605/07_results/synthetic_benchmark_audit/scenario_fragility_summary.csv`
+
 Run the first Spatial Context Causal Adjustment (SCCA) redesign experiment on the South London Snow cholera data:
 
 ```powershell
