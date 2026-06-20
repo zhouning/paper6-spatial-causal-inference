@@ -2,12 +2,18 @@
 
 This folder contains the Docker-backed notebook workflow for GeoCausal SCCA on macOS.
 
-## Default example
+## Examples
 
-The default notebook uses the committed county spatial data:
+Two notebook-backed examples are provided.
+
+The county notebook uses the committed county spatial data:
 
 - `data/CountyData.shp`
 - `data/States.shp`
+
+The Chongqing notebook uses the committed main-case analysis sample:
+
+- `paper/ijgis_submission_20260605/07_results/chongqing_uhi_analysis_sample.csv`
 
 ## Start
 
@@ -34,14 +40,26 @@ Then open:
   - writes QGIS `.qml` styles for target exposure change, spatial indirect effect, and spatial total effect
 - `run_county_social_capital_demo.py`:
   - runs the same workflow non-interactively for Docker smoke testing
+- `chongqing_uhi_demo.ipynb`:
+  - loads the Chongqing building-level UHI analysis sample
+  - reruns the binary high-rise treatment PSM/ablation workflow
+  - reports ATT, confidence intervals, matched counts, post-match SMD, threshold placebos, spatial block bootstrap, and residual Moran diagnostics
+  - writes GIS-ready point outputs as CSV, GeoPackage, and GeoJSON
+  - writes notebook-side PNG charts and an interactive Folium HTML point map
+- `run_chongqing_uhi_demo.py`:
+  - runs the same Chongqing workflow non-interactively for Docker smoke testing
 
 ## Output location
 
-The notebook writes results under:
+The county notebook writes results under:
 
 `paper/ijgis_submission_20260605/07_results/examples/county_social_capital_notebook_demo/`
 
-This is separate from the committed example output directory so container runs do not overwrite tracked files by default.
+The Chongqing notebook writes results under:
+
+`paper/ijgis_submission_20260605/07_results/examples/chongqing_uhi_notebook_demo/`
+
+These directories are separate from committed result tables so container runs do not overwrite tracked manuscript evidence by default.
 
 ## Container scope
 
@@ -66,3 +84,20 @@ The notebook spatial manifest records:
 
 The QGIS styles can be loaded onto the GeoPackage or GeoJSON layer from Layer
 Properties > Symbology > Style > Load Style.
+
+## Chongqing UHI outputs
+
+The Chongqing notebook summary records:
+
+- `chongqing_uhi_ablation.csv`
+- `chongqing_uhi_balance.csv`
+- `chongqing_uhi_matched_counts.csv`
+- `chongqing_spatial_bootstrap.csv`
+- `chongqing_placebo_thresholds.csv`
+- `chongqing_residual_spatial_diagnostics.csv`
+- `spatial_outputs/chongqing_uhi_points.gpkg`
+- `spatial_outputs/chongqing_uhi_points.geojson`
+- `visualizations/chongqing_uhi_att_variants.png`
+- `visualizations/chongqing_uhi_balance.png`
+- `visualizations/chongqing_uhi_lst_points.png`
+- `visualizations/chongqing_uhi_lst_points.html`
