@@ -283,11 +283,31 @@ def test_write_report_creates_markdown_and_manifest(tmp_path):
     spec = StudySpec.snow8_default()
     paths = SCCAPaths(output_dir=tmp_path)
     paths.ensure()
+    pd.DataFrame(
+        [
+            {
+                "estimator": "baseline_adjusted_ols",
+                "status": "ok",
+                "coef": 1.2,
+                "se": 0.1,
+                "p_value": 0.01,
+                "ci_lower": 1.0,
+                "ci_upper": 1.4,
+                "r_squared": 0.5,
+                "n": 3,
+                "complete_n": 3,
+                "dropped_n": 0,
+                "warnings": "[]",
+            }
+        ]
+    ).to_csv(paths.effect_estimates, index=False)
     credibility = {"decision": "moderate_support", "reasons": ["diagnostic warning"]}
     metadata = {"source_csv": "fixture.csv", "input_rows": 3, "input_columns": 8}
     write_report(spec, paths, credibility, metadata=metadata)
     text = paths.analysis_report.read_text(encoding="utf-8")
     assert "# SCCA Analysis Report" in text
+    assert "## Result Summary" in text
+    assert "Baseline adjusted OLS estimates the main exposure coefficient" in text
     assert "moderate_support" in text
     assert paths.manifest.exists()
     manifest = json.loads(paths.manifest.read_text(encoding="utf-8"))
@@ -308,6 +328,7 @@ def test_write_report_creates_markdown_and_manifest(tmp_path):
         "manifest": paths.manifest.name,
     }
     assert manifest["metadata"] == metadata
+    assert "result_summary" in manifest
     assert manifest["files"] == expected_files
     for file_name in expected_files.values():
         assert f"`{file_name}`" in text

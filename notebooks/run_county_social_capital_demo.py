@@ -59,6 +59,7 @@ def run_demo(output_dir: Path = OUTPUT_DIR) -> dict[str, object]:
             "AirPollution",
         ),
         context_columns=("Shape_Length", "Shape_Area"),
+        coordinate_columns=("_gc_x", "_gc_y"),
         bootstrap_group="STATE_NAME",
         lower_exposure_quantile=0.01,
         upper_exposure_quantile=0.99,
@@ -84,9 +85,14 @@ def run_demo(output_dir: Path = OUTPUT_DIR) -> dict[str, object]:
         states_path=states_path,
         output_stem="county_social_capital_analysis",
     )
+    result_summary_path = output_dir / str(manifest["files"]["result_summary_markdown"])
+    notebook_summary_path = output_dir / "notebook_result_summary.md"
+    notebook_summary_path.write_text(result_summary_path.read_text(encoding="utf-8"), encoding="utf-8")
 
     summary = {
         "analysis_manifest": manifest,
+        "result_summary": manifest.get("result_summary", {}),
+        "narrative_summary_markdown": str(notebook_summary_path),
         "analysis_joined_csv": str(analysis_joined_csv),
         "analysis_input_csv": str(analysis_input_csv),
         "analysis_joined_rows": int(len(pd.read_csv(analysis_joined_csv, dtype={"FIPS": "string"}))),

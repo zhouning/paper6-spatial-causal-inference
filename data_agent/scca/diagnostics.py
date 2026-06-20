@@ -166,6 +166,16 @@ def _load_estimator_statuses(paths: SCCAPaths) -> dict[str, str]:
     return statuses
 
 
+def _load_spatial_diagnostics(paths: SCCAPaths) -> dict[str, object]:
+    if not paths.spatial_diagnostics.exists():
+        return {}
+    try:
+        diagnostics = json.loads(paths.spatial_diagnostics.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {}
+    return diagnostics if isinstance(diagnostics, dict) else {}
+
+
 def _stable_leave_group_signs(robustness: pd.DataFrame) -> bool | None:
     if robustness.empty or "coef" not in robustness.columns:
         return None
@@ -194,6 +204,7 @@ def audit_effects(
     overlap = _write_overlap_summary(features, spec, paths)
     robustness = _write_spatial_robustness(features, spec, paths)
     statuses = _load_estimator_statuses(paths)
+    spatial_diagnostics = _load_spatial_diagnostics(paths)
 
     decision = "strong_support"
     reasons: list[str] = []
@@ -249,6 +260,13 @@ def audit_effects(
         decision = _downgrade(decision, "weak_or_failed_support")
         reasons.append(f"Core estimator status is skipped: {', '.join(skipped)}.")
 
+    spatial_flags = spatial_diagnostics.get("flags")
+    if isinstance(spatial_flags, list):
+        for flag in spatial_flags:
+            if isinstance(flag, str) and flag.strip():
+                decision = _downgrade(decision, "moderate_support")
+                reasons.append(flag)
+
     if not reasons:
         reasons.append("No credibility downgrade warnings were triggered.")
 
@@ -259,6 +277,7 @@ def audit_effects(
         "overlap_boundary_mass": boundary_mass,
         "leave_group_sign_stable": sign_stable,
         "estimator_statuses": statuses,
+        "spatial_diagnostics": spatial_diagnostics,
     }
     paths.credibility_report.write_text(
         json.dumps(_json_ready(report), indent=2, ensure_ascii=False),

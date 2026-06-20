@@ -29,7 +29,9 @@ Then open:
   - runs `AnalysisRequest`
   - writes `analysis_joined.csv`
   - writes spatial outputs as GeoPackage, GeoJSON, and Shapefile
-  - visualizes the algorithm outputs as PNG charts, a static choropleth map, and an interactive Folium HTML map
+  - enriches the spatial files with `gc_spatial_*` direct, indirect, total, and graph-weight fields from the SLX exposure-mapping output
+  - visualizes the algorithm outputs as PNG charts, static choropleth maps, and interactive Folium HTML maps
+  - writes QGIS `.qml` styles for target exposure change, spatial indirect effect, and spatial total effect
 - `run_county_social_capital_demo.py`:
   - runs the same workflow non-interactively for Docker smoke testing
 
@@ -50,3 +52,17 @@ The Docker image installs the geospatial notebook stack needed for mainstream ve
 - Folium/Branca/Mapclassify for notebook-side web maps and choropleths
 
 The canonical vector outputs are GeoPackage and GeoJSON. Shapefile is also written for compatibility, but its 10-character DBF field-name limit will truncate long analysis field names.
+
+## Spatial effect outputs
+
+The notebook spatial manifest records:
+
+- `spatial_outputs/county_social_capital_analysis.gpkg`
+- `spatial_outputs/county_social_capital_analysis.geojson`
+- `spatial_outputs/visualizations/spatial_slx_effects.png`
+- `spatial_outputs/visualizations/spatial_indirect_effect_map.png`
+- `spatial_outputs/visualizations/spatial_indirect_effect_map.html`
+- `spatial_outputs/qgis_styles/*.qml`
+
+The QGIS styles can be loaded onto the GeoPackage or GeoJSON layer from Layer
+Properties > Symbology > Style > Load Style.

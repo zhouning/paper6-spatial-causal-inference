@@ -80,6 +80,8 @@ def test_qgis_algorithm_runs_from_parameter_dict(tmp_path):
     assert manifest["case_name"] == "county_social_capital_qgis_test"
     assert (case_dir / "manifest.json").exists()
     assert (case_dir / "analysis_joined.csv").exists()
+    assert manifest["files"]["result_summary_markdown"] == "result_summary.md"
+    assert (case_dir / "result_summary.md").exists()
 
 
 def test_qgis_required_fields_preserve_order_and_uniqueness():

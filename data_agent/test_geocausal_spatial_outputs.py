@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import geopandas as gpd
@@ -28,6 +29,8 @@ def test_prepare_county_analysis_table_from_shapefile_restores_expected_fields(t
     frame = pd.read_csv(output_csv, dtype={"FIPS": "string"})
     assert list(frame.columns) == list(COUNTY_ANALYSIS_COLUMNS)
     assert frame["FIPS"].iloc[0] == "01001"
+    assert frame["_gc_x"].notna().all()
+    assert frame["_gc_y"].notna().all()
     assert len(frame) == 3108
 
 
@@ -57,6 +60,32 @@ def test_build_spatial_analysis_outputs_writes_spatial_files_and_visuals(tmp_pat
             "response": [74.2, 75.5, 76.8],
         }
     ).to_csv(analysis_dir / "erf_curve.csv", index=False, encoding="utf-8-sig")
+    (analysis_dir / "spatial_slx_summary.json").write_text(
+        json.dumps(
+            {
+                "status": "ok",
+                "model": "SLX",
+                "direct_effect": 0.14,
+                "direct_ci_lower": 0.10,
+                "direct_ci_upper": 0.18,
+                "indirect_effect": 0.07,
+                "indirect_ci_lower": 0.03,
+                "indirect_ci_upper": 0.11,
+                "total_effect": 0.21,
+            }
+        ),
+        encoding="utf-8",
+    )
+    pd.DataFrame(
+        {
+            "unit_id": ["01001", "01003", "01005"],
+            "direct_effect": [0.14, 0.14, 0.14],
+            "indirect_effect": [0.06, 0.07, 0.08],
+            "total_effect": [0.20, 0.21, 0.22],
+            "out_neighbor_count": [4, 5, 3],
+            "incoming_weight_sum": [0.9, 1.0, 1.1],
+        }
+    ).to_csv(analysis_dir / "spatial_exposure_mapping.csv", index=False, encoding="utf-8-sig")
 
     output_dir = tmp_path / "spatial_outputs"
     manifest = build_spatial_analysis_outputs(
@@ -70,17 +99,31 @@ def test_build_spatial_analysis_outputs_writes_spatial_files_and_visuals(tmp_pat
 
     assert manifest["row_count"] == 3108
     assert manifest["matched_count"] == 3
+    assert "gc_spatial_indirect_effect" in manifest["enriched_effect_fields"]
     assert Path(manifest["manifest"]).exists()
     for key in ("gpkg", "geojson", "shp"):
         assert Path(manifest["spatial_files"][key]).exists()
     for key in (
         "erf_curve_png",
         "effect_estimates_png",
+        "spatial_slx_effects_png",
         "target_exposure_change_histogram_png",
         "target_exposure_change_map_png",
         "target_exposure_change_map_html",
+        "spatial_indirect_effect_map_png",
+        "spatial_indirect_effect_map_html",
     ):
         assert Path(manifest["visualizations"][key]).exists()
+    for key in (
+        "target_exposure_change_qml",
+        "spatial_indirect_effect_qml",
+        "spatial_total_effect_qml",
+    ):
+        assert Path(manifest["qgis_styles"][key]).exists()
 
     spatial_joined = gpd.read_file(Path(manifest["spatial_files"]["geojson"]))
     assert len(spatial_joined) == 3108
+    assert "gc_spatial_indirect_effect" in spatial_joined.columns
+    assert spatial_joined["gc_spatial_indirect_effect"].notna().sum() == 3
+    qml_text = Path(manifest["qgis_styles"]["spatial_indirect_effect_qml"]).read_text(encoding="utf-8")
+    assert "gc_spatial_indirect_effect" in qml_text

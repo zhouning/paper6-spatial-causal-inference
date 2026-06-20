@@ -57,6 +57,7 @@ class GeoCausalSCCAAlgorithm:
     OUTPUT_FOLDER = "OUTPUT_FOLDER_PATH"
     OUTPUT_MANIFEST = "OUTPUT_MANIFEST"
     OUTPUT_REPORT = "OUTPUT_REPORT"
+    OUTPUT_RESULT_SUMMARY = "OUTPUT_RESULT_SUMMARY"
 
     def name(self) -> str:
         return "geocausal_scca"
@@ -297,6 +298,7 @@ class GeoCausalSCCAAlgorithm:
                 self.addOutput(QgsProcessingOutputFolder(cls.OUTPUT_FOLDER, "Case Output Folder"))
                 self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_MANIFEST, "Manifest JSON"))
                 self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_REPORT, "Analysis Report"))
+                self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_RESULT_SUMMARY, "Result Summary"))
                 self.addOutput(QgsProcessingOutputFile(cls.PARAM_OUTPUT_JOINED, "Analysis Joined CSV"))
 
             def processAlgorithm(self, parameters, context, feedback):
@@ -353,6 +355,7 @@ class GeoCausalSCCAAlgorithm:
                     cls.OUTPUT_FOLDER: str(output_dir),
                     cls.OUTPUT_MANIFEST: str(output_dir / manifest["files"]["manifest"]),
                     cls.OUTPUT_REPORT: str(output_dir / manifest["files"]["analysis_report"]),
+                    cls.OUTPUT_RESULT_SUMMARY: str(output_dir / manifest["files"]["result_summary_markdown"]),
                 }
                 joined_path = output_dir / "analysis_joined.csv"
                 result[cls.PARAM_OUTPUT_JOINED] = str(joined_path) if joined_path.exists() else ""
