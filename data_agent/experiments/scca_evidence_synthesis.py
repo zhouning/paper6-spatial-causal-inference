@@ -209,106 +209,6 @@ def _chongqing_row(results_dir: Path) -> dict[str, str] | None:
     )
 
 
-def _geofm_row(results_dir: Path) -> dict[str, str] | None:
-    ablation = _read_csv(results_dir / "geofm_causal_ablation.csv")
-    availability = _read_json(results_dir / "geofm_availability_report.json")
-    if ablation.empty:
-        return None
-    observed = ablation[ablation["variant"] == "geometry_rs_context"]
-    geofm = ablation[ablation["variant"].astype(str).str.contains("alphaearth", case=False, na=False)]
-    observed_smd = _fmt_num(observed.iloc[0].get("max_post_smd")) if not observed.empty else "NA"
-    best_geofm = geofm.copy()
-    best_geofm["max_post_smd_num"] = pd.to_numeric(best_geofm["max_post_smd"], errors="coerce")
-    best_geofm = best_geofm.sort_values("max_post_smd_num").head(1)
-    geofm_variant = str(best_geofm.iloc[0].get("variant")) if not best_geofm.empty else "none"
-    geofm_smd = _fmt_num(best_geofm.iloc[0].get("max_post_smd")) if not best_geofm.empty else "NA"
-    guidance = str(availability.get("claim_guidance") or "geofm_no_clear_gain")
-    return _row(
-        case="geofm_alphaearth_ablation",
-        data_type="real GeoFM candidate-feature ablation",
-        exposure="high-rise building threshold >= 10 floors",
-        outcome="summer land surface temperature",
-        context_source="AlphaEarth embeddings compared with conventional RS/terrain context",
-        best_adjustment="geometry_rs_context outperformed AlphaEarth variants on balance",
-        effect_estimate=f"observed RS SMD {observed_smd}; best AlphaEarth variant {geofm_variant} SMD {geofm_smd}",
-        balance_status=f"claim guidance = {guidance}",
-        robustness_status="negative ablation under the current Chongqing sampling design",
-        evidence_grade="negative_ablation",
-        grade_rule_ids="negative_ablation",
-        grade_reasons="AlphaEarth embedding variants did not improve balance in the current run.",
-        limitation="Only 199 complete AlphaEarth rows were available in this run, so the result is a bounded negative diagnostic.",
-        manuscript_use="Use to state that GeoFM is a candidate context source with no clear gain in the current evidence.",
-    )
-
-
-def _scca_case_rows(results_dir: Path) -> list[dict[str, str]]:
-    summary = _read_csv(results_dir / "scca_robustness_summary" / "case_robustness_summary.csv")
-    if summary.empty:
-        return []
-    metadata = {
-        "snow8": {
-            "data_type": "historical cholera subdistrict case",
-            "exposure": "South London water-company exposure",
-            "outcome": "cholera mortality",
-            "context_source": "subdistrict socioeconomic and spatial-balance variables",
-            "use": "Use as a bounded historical SCCA replication case.",
-        },
-        "soho": {
-            "data_type": "historical household pump-proximity case",
-            "exposure": "Broad Street pump exposure/proximity",
-            "outcome": "household cholera deaths",
-            "context_source": "street-network and local context variables",
-            "use": "Use as a bounded mechanism-focused SCCA case.",
-        },
-        "county_social_capital": {
-            "data_type": "external county-level validation case",
-            "exposure": "county social-association measure",
-            "outcome": "average age at death",
-            "context_source": "county socioeconomic and geometry context variables",
-            "use": (
-                "Use only as a non-spatial robustness baseline; supersede it with the "
-                "spatial notebook row when spatial diagnostics are available."
-            ),
-        },
-    }
-    rows: list[dict[str, str]] = []
-    for _, record in summary.iterrows():
-        case = str(record.get("case"))
-        info = metadata.get(case, {})
-        interpretation = str(record.get("robustness_interpretation"))
-        assessment = assess_scca_evidence_grade(
-            credibility_decision=str(record.get("original_decision")),
-            robustness_interpretation=interpretation,
-            max_balance_corr=0.828 if case == "snow8" else 0.543 if case == "soho" else None,
-        )
-        grade, rule_ids, grade_reasons = _assessment_text(assessment)
-        rows.append(
-            _row(
-                case=case,
-                data_type=info.get("data_type", "SCCA case study"),
-                exposure=info.get("exposure", "case-specific exposure"),
-                outcome=info.get("outcome", "case-specific outcome"),
-                context_source=info.get("context_source", "case-specific spatial context"),
-                best_adjustment=f"SCCA robustness interpretation = {interpretation}",
-                effect_estimate=f"main coefficient = {_fmt_num(record.get('main_coef'))}",
-                balance_status=(
-                    "ablation direction stable = "
-                    f"{record.get('ablation_direction_stable')}; placebo weaker = {record.get('placebo_weaker_than_main')}"
-                ),
-                robustness_status=(
-                    "bootstrap sign stability = "
-                    f"{_fmt_num(record.get('bootstrap_sign_stability'))}; ERF direction = {record.get('erf_monotonic_direction')}"
-                ),
-                evidence_grade=grade,
-                grade_rule_ids=rule_ids,
-                grade_reasons=grade_reasons,
-                limitation=str(record.get("main_limitation")),
-                manuscript_use=info.get("use", "Use as SCCA cross-case evidence."),
-            )
-        )
-    return rows
-
-
 def _county_spatial_notebook_row(results_dir: Path) -> dict[str, str] | None:
     summary_path = results_dir / "county_social_capital_spatial_notebook_summary.json"
     if not summary_path.exists():
@@ -396,71 +296,6 @@ def _county_spatial_notebook_row(results_dir: Path) -> dict[str, str] | None:
         ),
     )
 
-
-def _llm_row(results_dir: Path) -> dict[str, str] | None:
-    validation = _read_csv(results_dir / "llm_dag_validation.csv")
-    if validation.empty:
-        return None
-    f1_columns = [column for column in validation.columns if column.lower() in {"f1", "edge_f1", "mean_f1"}]
-    if f1_columns:
-        f1_value = _fmt_num(validation[f1_columns[0]].mean())
-    elif "structured_proxy_f1" in validation:
-        f1_value = _fmt_num(validation["structured_proxy_f1"].mean())
-    else:
-        f1_value = "reported separately"
-    return _row(
-        case="llm_dag_validation",
-        data_type="offline auxiliary validation",
-        exposure="causal prompt structures",
-        outcome="reference-DAG edge recovery metrics",
-        context_source="structured prompt templates",
-        best_adjustment="not an SCCA adjustment source",
-        effect_estimate=f"mean F1 = {f1_value}",
-        balance_status="not_applicable",
-        robustness_status="offline proxy only",
-        evidence_grade="auxiliary_only",
-        grade_rule_ids="auxiliary_only",
-        grade_reasons="Offline DAG validation does not estimate treatment effects.",
-        limitation="Does not identify treatment effects or validate SCCA adjustment sets.",
-        manuscript_use="Exclude from core evidence; mention only as optional interpretive tooling if needed.",
-    )
-
-
-def _world_model_row(results_dir: Path) -> dict[str, str] | None:
-    report = _read_json(results_dir / "world_model_holdout_validation_manifest.json")
-    metrics = _read_csv(results_dir / "world_model_holdout_metrics.csv")
-    if not report and metrics.empty:
-        return None
-    if not metrics.empty:
-        horizon1 = metrics[metrics.get("horizon") == 1] if "horizon" in metrics else pd.DataFrame()
-        persistence = horizon1[horizon1.get("baseline") == "persistence"] if not horizon1.empty and "baseline" in horizon1 else pd.DataFrame()
-        wm = horizon1[horizon1.get("baseline") == "world_model_baseline"] if not horizon1.empty and "baseline" in horizon1 else pd.DataFrame()
-        effect = (
-            f"horizon-1 RMSE persistence {_fmt_num(persistence.iloc[0].get('rmse'))}, "
-            f"world model {_fmt_num(wm.iloc[0].get('rmse'))}"
-            if not persistence.empty and not wm.empty
-            else "holdout metrics reported separately"
-        )
-    else:
-        effect = "holdout metrics reported separately"
-    return _row(
-        case="world_model_holdout_validation",
-        data_type="offline auxiliary simulation validation",
-        exposure="scenario-conditioning proxy",
-        outcome="embedding-space transition prediction",
-        context_source="AlphaEarth-like embedding fixtures",
-        best_adjustment="not an SCCA adjustment source",
-        effect_estimate=effect,
-        balance_status="not_applicable",
-        robustness_status="persistence baseline beat world-model baseline in the offline fixture",
-        evidence_grade="auxiliary_only",
-        grade_rule_ids="auxiliary_only",
-        grade_reasons="Scenario simulation is not identified treatment-effect evidence.",
-        limitation="Scenario simulation only; no real held-out causal validation.",
-        manuscript_use="Exclude from core SCCA evidence; use only to bound future simulation claims.",
-    )
-
-
 def build_scca_evidence_table(
     results_dir: str | Path = DEFAULT_RESULTS_DIR,
 ) -> pd.DataFrame:
@@ -470,30 +305,17 @@ def build_scca_evidence_table(
     for optional_row in (
         _synthetic_row(root),
         _chongqing_row(root),
-        _geofm_row(root),
-        _llm_row(root),
-        _world_model_row(root),
+        _county_spatial_notebook_row(root),
     ):
         if optional_row is not None:
             rows.append(optional_row)
-    rows.extend(_scca_case_rows(root))
-    county_spatial = _county_spatial_notebook_row(root)
-    if county_spatial is not None:
-        rows = [row for row in rows if row.get("case") != "county_social_capital"]
-        rows.append(county_spatial)
     table = pd.DataFrame(rows, columns=SYNTHESIS_COLUMNS)
     if table.empty:
         return table
     order = {
         "synthetic_benchmark_audit": 0,
         "chongqing_uhi": 1,
-        "snow8": 2,
-        "soho": 3,
-        "county_social_capital": 4,
-        "county_social_capital_spatial_notebook": 5,
-        "geofm_alphaearth_ablation": 6,
-        "llm_dag_validation": 7,
-        "world_model_holdout_validation": 8,
+        "county_social_capital_spatial_notebook": 2,
     }
     table["_order"] = table["case"].map(order).fillna(99)
     return table.sort_values(["_order", "case"]).drop(columns=["_order"]).reset_index(drop=True)
@@ -506,8 +328,9 @@ def render_scca_evidence_report(table: pd.DataFrame) -> str:
         "",
         "This report is the evidence boundary for the revised Paper 6 manuscript.",
         f"The grade rule version is `{RULE_VERSION}`.",
-        "The main paper should use `core_support` and `bounded_support` rows as SCCA evidence,",
-        "treat `negative_ablation` rows as boundary findings, and keep `auxiliary_only` rows out of the core claim.",
+        "The main paper should use the Chongqing row as the main empirical case,",
+        "the synthetic row as estimator stress-test evidence,",
+        "and the county row as a GIS/notebook reproducibility and spatial-diagnostic boundary check.",
         "",
         "## Evidence Rows",
         "",

@@ -2,7 +2,7 @@
 
 ## Title
 
-A Three-Angle Framework for Spatio-Temporal Causal Inference: Integrating Statistical Methods, LLM Reasoning, and World Model Simulation
+Spatial Context Causal Adjustment: A Diagnostic Workflow for Geographic Observational Studies
 
 ## Authors
 
@@ -19,7 +19,7 @@ Email: jingxiang@pku.edu.cn
 
 ## Suggested Keywords
 
-causal inference; geospatial foundation models; large language models; world models; spatial confounding; treatment effect estimation; GIScience
+spatial causal inference; spatial confounding; causal adjustment; evidence grading; remote sensing; GIS workflow
 
 ## Declaration of Competing Interest
 
@@ -27,7 +27,7 @@ The authors declare that they have no known competing financial interests or per
 
 ## Data and Code Availability
 
-All embedding and remote sensing data are derived from publicly available geospatial data sources. Source code and test data generators will be made available in an anonymized repository during review and in a public repository upon acceptance.
+Remote-sensing and terrain covariates used in the Chongqing case are derived from public geospatial data sources. Source code, test data generators, generated result tables, diagnostic reports, and selected sample data needed for reproduction will be made available in an anonymized repository during review and in a public repository upon acceptance where licensing permits.
 
 ## Funding
 

@@ -2,7 +2,7 @@
 
 This folder is a clean submission workspace for:
 
-**A Three-Angle Framework for Spatio-Temporal Causal Inference: Integrating Statistical Methods, LLM Reasoning, and World Model Simulation**
+**Spatial Context Causal Adjustment: A Diagnostic Workflow for Geographic Observational Studies**
 
 Target journal: International Journal of Geographical Information Science (IJGIS), Taylor & Francis.
 
@@ -47,5 +47,4 @@ pdflatex '-interaction=nonstopmode' '-output-directory=../06_build' 01_manuscrip
 
 ## Before Submission
 
-The current manuscript is organized for IJGIS but should not be treated as submission-ready until the checklist in `04_admin/ijgis_submission_checklist.md` is resolved. The main technical risk is that the manuscript's GeoFM/AlphaEarth framing is stronger than the current real-world case study evidence.
-Use `05_internal_review/ijgis_required_experiments.md` as the work plan for closing that evidence gap.
+The current manuscript is organized for IJGIS but should not be treated as submission-ready until the checklist in `04_admin/ijgis_submission_checklist.md` is resolved. The main scientific boundary is now explicit: Chongqing is the main empirical case, the synthetic benchmark is an estimator stress test, and the county social-capital run is a GIS/notebook reproducibility and spatial-diagnostic check rather than a second substantive theory test.

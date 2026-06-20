@@ -88,15 +88,14 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
         "manuscript_use",
     }
     assert required_columns.issubset(synthesis.columns)
-    assert {
+    expected_cases = {
+        "synthetic_benchmark_audit",
         "chongqing_uhi",
-        "geofm_alphaearth_ablation",
-        "snow8",
-        "soho",
         "county_social_capital_spatial_notebook",
-    }.issubset(set(synthesis["case"]))
+    }
+    assert set(synthesis["case"]) == expected_cases
     assert "county_social_capital" not in set(synthesis["case"])
-    assert "negative_ablation" in set(synthesis["evidence_grade"])
+    assert set(synthesis["evidence_grade"]) == {"core_support", "bounded_support"}
     assert synthesis.loc[
         synthesis["case"] == "county_social_capital_spatial_notebook",
         "evidence_grade",
@@ -109,13 +108,11 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
         synthesis["case"] == "county_social_capital_spatial_notebook",
         "robustness_status",
     ].str.contains("residual Moran I").any()
-    assert synthesis.loc[
-        synthesis["case"] == "geofm_alphaearth_ablation", "manuscript_use"
-    ].str.contains("no clear gain").any()
 
     report_text = expected["report_md"].read_text(encoding="utf-8")
     assert "county_social_capital_spatial_notebook" in report_text
     assert "county_social_capital\n" not in report_text
+    assert report_text.count("### ") == len(expected_cases)
 
     payload = json.loads(expected["manifest_json"].read_text(encoding="utf-8"))
     assert payload["n_rows"] == len(synthesis)

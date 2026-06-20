@@ -22,10 +22,11 @@ No supplementary material has been created yet for this IJGIS package. Use this 
    - Sentinel-2 and DEM feature extraction details.
    - Matching design, caliper choice, and exclusion rate.
 
-4. Cross-angle integration details
-   - Input-output schemas for the 14 tool functions.
-   - Scenario ID mapping and calibration equations.
-   - Examples of Angle A to Angle B to Angle C handoff records.
+4. County GIS/notebook reproducibility check
+   - Data-field mapping for the county social-capital example.
+   - Exposure trimming and sample-count reconciliation.
+   - Spatial diagnostics, spatial-lag sensitivity, and output-manifest fields.
+   - QGIS, ArcGIS-facing table, and notebook output inventory.
 
 5. Reproducibility
    - Code repository link.

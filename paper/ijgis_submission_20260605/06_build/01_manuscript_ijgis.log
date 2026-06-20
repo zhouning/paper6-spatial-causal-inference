@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.1)  20 JUN 2026 23:10
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.3.1)  21 JUN 2026 00:00
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -720,23 +720,23 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 
 {/usr/local/texlive/2026basic/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2
 ]
-[3] [4] [5] [6] [7] [8] [9] [10] [11] [12] [13] [14] [15]
+[3] [4] [5] [6] [7] [8] [9] [10] [11] [12] [13]
 (../06_build/01_manuscript_ijgis.aux)
  ***********
 LaTeX2e <2025-11-01>
 L3 programming layer <2026-01-19>
  ***********
 Package rerunfilecheck Info: File `01_manuscript_ijgis.out' has not changed.
-(rerunfilecheck)             Checksum: 7448E8334B134C1F3F0EA7ACCB6E062E;4589.
+(rerunfilecheck)             Checksum: 2276E3060509A92109D4C602466F6692;4145.
  ) 
 Here is how much of TeX's memory you used:
- 23073 strings out of 469006
- 433923 string characters out of 5454814
- 831149 words of memory out of 5000000
- 51342 multiletter control sequences out of 15000+600000
+ 23048 strings out of 469006
+ 433405 string characters out of 5454814
+ 825020 words of memory out of 5000000
+ 51327 multiletter control sequences out of 15000+600000
  640220 words of font info for 88 fonts, out of 8000000 for 9000
  319 hyphenation exceptions out of 8191
- 84i,12n,104p,1478b,863s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 84i,12n,104p,1472b,863s stack positions out of 10000i,1000n,20000p,200000b,200000s
  </Users/zhouning/Library/texlive/2026basic/texmf-var/fonts/pk/ljfour/jknappe
 n/ec/tcrm0600.600pk> </Users/zhouning/Library/texlive/2026basic/texmf-var/fonts
 /pk/ljfour/jknappen/ec/tcrm0800.600pk></usr/local/texlive/2026basic/texmf-dist/
@@ -764,11 +764,11 @@ msfonts/cm/cmsy8.pfb></usr/local/texlive/2026basic/texmf-dist/fonts/type1/publi
 c/amsfonts/cm/cmti10.pfb></usr/local/texlive/2026basic/texmf-dist/fonts/type1/p
 ublic/amsfonts/cm/cmti9.pfb></usr/local/texlive/2026basic/texmf-dist/fonts/type
 1/public/amsfonts/cm/cmtt10.pfb>
-Output written on ../06_build/01_manuscript_ijgis.pdf (15 pages, 327382 bytes).
+Output written on ../06_build/01_manuscript_ijgis.pdf (13 pages, 317892 bytes).
 
 PDF statistics:
- 372 PDF objects out of 1000 (max. 8388607)
- 303 compressed objects within 4 object streams
- 69 named destinations out of 1000 (max. 500000)
- 229 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 342 PDF objects out of 1000 (max. 8388607)
+ 276 compressed objects within 3 object streams
+ 59 named destinations out of 1000 (max. 500000)
+ 205 words of extra memory for PDF output out of 10000 (max. 10000000)
 

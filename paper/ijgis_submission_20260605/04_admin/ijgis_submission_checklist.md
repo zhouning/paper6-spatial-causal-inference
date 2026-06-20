@@ -17,12 +17,11 @@
 
 ## Scientific Readiness Checks
 
-- [x] Soften the central GeoFM/AlphaEarth claim in the draft manuscript.
-- [ ] Resolve the GeoFM/AlphaEarth evidence gap with a real GeoFM ablation, or keep all GeoFM claims explicitly provisional.
+- [x] Remove non-core context-source claims from the main manuscript claim.
+- [x] Remove the multi-component framework framing from the main manuscript claim.
 - [ ] Add a direct comparison against conventional spatial fixed effects, coordinate controls, and remote-sensing covariates.
 - [ ] Add sensitivity analysis for unobserved confounding.
 - [ ] Add spatial dependence handling, such as spatial block bootstrap, clustered uncertainty, or Moran-style residual diagnostics.
-- [ ] Strengthen Angle B evaluation beyond illustrative LLM reasoning.
 - [ ] Rerun synthetic experiments as a multi-seed benchmark and replace single-run claims.
 - [ ] Fix or honestly report synthetic failures observed in stale output files.
 - [ ] Clarify that synthetic scenarios validate implementation behavior, not external validity.

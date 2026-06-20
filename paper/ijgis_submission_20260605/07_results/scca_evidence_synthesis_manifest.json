@@ -1,16 +1,14 @@
 {
-  "synthesis_csv": "paper\\ijgis_submission_20260605\\07_results\\scca_evidence_synthesis.csv",
-  "report_md": "paper\\ijgis_submission_20260605\\07_results\\scca_evidence_synthesis_report.md",
-  "manifest_json": "paper\\ijgis_submission_20260605\\07_results\\scca_evidence_synthesis_manifest.json",
-  "grade_rules_json": "paper\\ijgis_submission_20260605\\07_results\\scca_evidence_grade_rules.json",
-  "grade_rules_md": "paper\\ijgis_submission_20260605\\07_results\\scca_evidence_grade_rules.md",
-  "results_dir": "paper\\ijgis_submission_20260605\\07_results",
-  "n_rows": 8,
+  "synthesis_csv": "paper/ijgis_submission_20260605/07_results/scca_evidence_synthesis.csv",
+  "report_md": "paper/ijgis_submission_20260605/07_results/scca_evidence_synthesis_report.md",
+  "manifest_json": "paper/ijgis_submission_20260605/07_results/scca_evidence_synthesis_manifest.json",
+  "grade_rules_json": "paper/ijgis_submission_20260605/07_results/scca_evidence_grade_rules.json",
+  "grade_rules_md": "paper/ijgis_submission_20260605/07_results/scca_evidence_grade_rules.md",
+  "results_dir": "paper/ijgis_submission_20260605/07_results",
+  "n_rows": 3,
   "grade_counts": {
-    "bounded_support": 4,
-    "auxiliary_only": 2,
-    "core_support": 1,
-    "negative_ablation": 1
+    "bounded_support": 2,
+    "core_support": 1
   },
   "rule_version": "scca-evidence-grade-rules-2026-06-20"
 }
