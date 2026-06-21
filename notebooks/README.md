@@ -11,9 +11,11 @@ The county notebook uses the committed county spatial data:
 - `data/CountyData.shp`
 - `data/States.shp`
 
-The Chongqing notebook uses the committed main-case analysis sample:
+The Chongqing notebook expects a local permission-controlled main-case analysis
+sample. This file is not committed because it contains building-level
+coordinates and derived attributes:
 
-- `paper/ijgis_submission_20260605/07_results/chongqing_uhi_analysis_sample.csv`
+- `chongqing_uhi_analysis_sample.csv`
 
 ## Start
 
@@ -47,7 +49,8 @@ Then open:
   - writes GIS-ready point outputs as CSV, GeoPackage, and GeoJSON
   - writes notebook-side PNG charts and an interactive Folium HTML point map
 - `run_chongqing_uhi_demo.py`:
-  - runs the same Chongqing workflow non-interactively for Docker smoke testing
+  - runs the same Chongqing workflow non-interactively when an input CSV is
+    supplied through the Python API
 
 ## Output location
 

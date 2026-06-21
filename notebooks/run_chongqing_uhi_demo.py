@@ -271,6 +271,12 @@ def run_demo(
     output_dir = Path(output_dir)
     input_csv = Path(input_csv)
     output_dir.mkdir(parents=True, exist_ok=True)
+    if not input_csv.exists():
+        raise FileNotFoundError(
+            "Chongqing UHI input CSV is not tracked in GitHub because it contains "
+            "building-level coordinates and derived attributes. Supply an approved "
+            "local file with run_demo(input_csv=Path(...))."
+        )
     frame = pd.read_csv(input_csv)
 
     analysis_manifest = run_chongqing_uhi_analysis(

@@ -4,7 +4,7 @@ This repository is the standalone reproduction package for Paper6:
 
 **Spatial Context Causal Adjustment (SCCA) for geographic observational studies: a reproducible workflow for constructing spatial-context adjustment sets, checking balance and common support, running spatial robustness diagnostics, and reporting bounded causal evidence.**
 
-The repository is organized for IJGIS-style peer review. It contains the IJGIS submission package, manuscript sources, Paper6 code, tests, experiment scripts, generated outputs, selected Chongqing sample data, and auxiliary materials from earlier exploratory phases.
+The repository is organized for IJGIS-style peer review. It contains the IJGIS submission package, manuscript sources, Paper6 code, tests, experiment scripts, generated outputs, public/example data, and auxiliary materials from earlier exploratory phases. Chongqing raw geospatial inputs and building-level analysis samples are treated as restricted local inputs and are not tracked in the public GitHub tree.
 
 ## Repository Map
 
@@ -13,7 +13,8 @@ The repository is organized for IJGIS-style peer review. It contains the IJGIS s
 - `data_agent/` - Paper6 reproduction subset of the GIS Data Agent codebase.
 - `data_agent/experiments/` - SCCA, causal, and auxiliary validation experiment runners plus generated outputs.
 - `data_agent/uploads/anonymous/` - diagnostic files referenced by historical experiment JSON outputs.
-- `data/raw/01数据样例/` - raw Chongqing DEM, CLCD, and building-footprint sample data used by Paper6 real-data experiments.
+- `data/` - public county example shapefiles used by the GIS/notebook reproducibility case.
+- `examples/data/` - cross-platform county social-capital CSV derived from the county example data.
 - `scripts/` - case-study, AlphaEarth feasibility, and manuscript-generation helper scripts.
 - `demos/` - small causal and auxiliary simulation demos.
 - `docs/background/` - supporting technical notes for AlphaEarth, world-model exploration, and SCCA redesign.
@@ -41,11 +42,12 @@ The real-data UHI and LULC/LST experiments can be run with:
 
 Those commands use local Chongqing sample data and will try Google Earth Engine for MODIS LST. If Earth Engine is not authenticated, the scripts fall back to synthetic LST for a runnable smoke reproduction; see `REPRODUCIBILITY.md` for details.
 
-Run the strengthened Chongqing UHI ablation and spatial-robustness suite from
-the cached GEE analysis sample:
+Run the strengthened Chongqing UHI ablation and spatial-robustness suite from a
+local Chongqing analysis sample. The sample must be supplied outside GitHub
+because it contains building-level coordinates and derived attributes:
 
 ```powershell
-.\.venv\Scripts\python.exe -c "import pandas as pd; from data_agent.experiments.chongqing_uhi_analysis import run_chongqing_uhi_analysis; df = pd.read_csv('paper/ijgis_submission_20260605/07_results/chongqing_uhi_analysis_sample.csv'); run_chongqing_uhi_analysis(df, n_bootstrap=500, n_spatial_bootstrap=500)"
+.\.venv\Scripts\python.exe -c "import pandas as pd; from data_agent.experiments.chongqing_uhi_analysis import run_chongqing_uhi_analysis; df = pd.read_csv(r'D:\path\to\local\chongqing_uhi_analysis_sample.csv'); run_chongqing_uhi_analysis(df, n_bootstrap=500, n_spatial_bootstrap=500)"
 ```
 
 This writes:
@@ -171,6 +173,13 @@ A committed county-level smoke-test dataset is available at:
 examples/data/county_social_capital.csv
 ```
 
+This county example is third-party training/demo data, not author-generated
+data. The shapefile metadata credits Esri, U.S. Census Bureau, NOAA/NOS/NGS,
+CDC WONDER/NCHS, County Health Rankings 2019 through ArcGIS Living Atlas, the
+University of Wisconsin Population Health Institute, and the Robert Wood Johnson
+Foundation. Its use is governed by the Esri Master License and is restricted to
+training, demonstration, and educational purposes.
+
 Run the same example from Windows, macOS, or Linux:
 
 ```bash
@@ -222,4 +231,4 @@ Integration wrappers now exist at:
 
 ## Review Note
 
-This repository is intended as a private reviewer reproduction package. It deliberately includes selected raw geospatial sample files and model weights. Before making the repository public, confirm the redistribution permissions for all raw data under `data/raw/`.
+This repository is intended as a reviewer reproduction package that can also be made public after data-rights review. Chongqing raw geospatial inputs and building-level analysis samples are excluded from GitHub because they include precise geometry/coordinate information and require a separate permission/security review. If a reviewer needs to rerun the Chongqing case from raw inputs, provide those files through an approved controlled route rather than this public repository.

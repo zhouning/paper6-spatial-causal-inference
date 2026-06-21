@@ -16,11 +16,17 @@ For Linux/macOS, replace `.\.venv\Scripts\python.exe` with `./.venv/bin/python`.
 
 ## 2. Included Data and Weights
 
-Local raw data are stored in:
+The public GitHub tree includes code, generated outputs, synthetic generators,
+public/example county data, and model weights where redistribution is permitted.
+It does not include the Chongqing raw geospatial inputs or building-level UHI
+analysis sample.
 
-- `data/raw/01数据样例/01重庆市DEM数据2020年/`
-- `data/raw/01数据样例/03重庆市遥感影像解译数据2020年/`
-- `data/raw/01数据样例/04重庆市中心城区建筑物轮廓数据2021年/`
+Restricted Chongqing inputs are expected only in a local approved workspace:
+
+- Chongqing DEM 2020
+- Chongqing CLCD 2020
+- Chongqing central building footprints with floor attributes, 2021
+- `chongqing_uhi_analysis_sample.csv`, an analysis-ready building-level table
 
 World-model weights are stored in:
 
@@ -69,11 +75,11 @@ Run high-rise building to UHI:
 ```
 
 The strengthened IJGIS-required Chongqing UHI ablation and robustness outputs
-can be regenerated from the committed GEE analysis sample without re-querying
-Earth Engine:
+can be regenerated from a local, permission-controlled analysis sample without
+re-querying Earth Engine:
 
 ```powershell
-.\.venv\Scripts\python.exe -c "import pandas as pd; from data_agent.experiments.chongqing_uhi_analysis import run_chongqing_uhi_analysis; df = pd.read_csv('paper/ijgis_submission_20260605/07_results/chongqing_uhi_analysis_sample.csv'); run_chongqing_uhi_analysis(df, n_bootstrap=500, n_spatial_bootstrap=500)"
+.\.venv\Scripts\python.exe -c "import pandas as pd; from data_agent.experiments.chongqing_uhi_analysis import run_chongqing_uhi_analysis; df = pd.read_csv(r'D:\path\to\local\chongqing_uhi_analysis_sample.csv'); run_chongqing_uhi_analysis(df, n_bootstrap=500, n_spatial_bootstrap=500)"
 ```
 
 Expected outputs:
@@ -91,7 +97,11 @@ Run built-up land to LST:
 .\.venv\Scripts\python.exe -m data_agent.experiments.run_causal --lulc
 ```
 
-These experiments use the included Chongqing building, DEM, and CLCD sample files. If Google Earth Engine is authenticated, MODIS LST is sampled remotely. If GEE is unavailable, the current scripts generate synthetic LST values so the pipeline remains executable as a smoke reproduction. For final IJGIS submission, the GEE-authenticated real-data run should be reported.
+These experiments use local Chongqing building, DEM, and CLCD files that are not
+tracked in GitHub. If Google Earth Engine is authenticated, MODIS LST is sampled
+remotely. If GEE is unavailable, the current scripts generate synthetic LST
+values so the pipeline remains executable as a smoke reproduction. For final
+IJGIS submission, the GEE-authenticated real-data run should be reported.
 
 ## 6. Figure Generation
 

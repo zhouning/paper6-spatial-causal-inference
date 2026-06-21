@@ -34,6 +34,8 @@ data_agent/weights/raw_data/
 *.aux.xml.tmp
 *.ovr.tmp
 *.gpkg-journal
+data/raw/
+paper/ijgis_submission_20260605/07_results/chongqing_uhi_analysis_sample.csv
 paper/ijgis_submission_20260605/07_results/examples/county_social_capital_notebook_demo/
 paper/ijgis_submission_20260605/07_results/examples/county_social_capital_notebook_demo_smoke/
 paper/ijgis_submission_20260605/07_results/examples/chongqing_uhi_notebook_demo/

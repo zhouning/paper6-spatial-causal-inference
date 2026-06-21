@@ -9,6 +9,10 @@ tooling tests, notebooks, ArcGIS Pro, and QGIS integration work.
 example used to smoke-test the ArcGIS toolbox and the notebook/QGIS adapter
 boundary.
 
+This is third-party training/demo data, not author-generated data. It is a
+plain-table derivative of the `data/CountyData.*` example shapefile so the same
+workflow can run without ArcPy on Windows, macOS, and Linux.
+
 - Rows: 3108
 - Unit ID: `FIPS`
 - Exposure: `SocialAssoc`
@@ -40,3 +44,18 @@ Windows, macOS, and Linux without ArcPy. ArcGIS Pro users can import it into a
 file geodatabase before running `arcgis_toolbox/GeoCausalSCCA.pyt`; notebook and
 QGIS users can read it directly.
 
+## Source and Use Terms
+
+The source shapefile metadata in `data/CountyData.shp.xml` credits Esri, the
+U.S. Census Bureau, NOAA/NOS/NGS, CDC WONDER/NCHS, County Health Rankings 2019,
+ArcGIS Living Atlas of the World, the University of Wisconsin Population Health
+Institute, and the Robert Wood Johnson Foundation. The average-age-at-death and
+cause-of-death variables are derived from CDC WONDER Underlying Cause of Death
+data. Smoking, obesity, physical inactivity, social capital, and air pollution
+variables are from 2019 County Health Rankings through ArcGIS Living Atlas.
+
+Use is governed by the Esri Master License and is restricted to training,
+demonstration, and educational purposes. The metadata states that the data
+cannot be sold or used for marketing without Esri's express written consent.
+Keep the source metadata with redistributed copies and verify the source terms
+before any public archival data release.

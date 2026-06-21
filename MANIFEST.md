@@ -12,7 +12,8 @@ Created from the author's local Paper6 workspace on 2026-06-07 for Paper6 review
 - Paper6 tests: `data_agent/test_causal_inference.py`, `data_agent/test_causal_world_model.py`, `data_agent/test_llm_causal.py`, `data_agent/test_world_model.py`
 - experiment scripts and outputs: `data_agent/experiments/`
 - historical diagnostic outputs referenced by JSON files: `data_agent/uploads/anonymous/`
-- raw Chongqing sample data required by current real-data experiments: `data/raw/01数据样例/`
+- public county example shapefiles: `data/CountyData.*`, `data/States.*`
+- public/example county social-capital CSV: `examples/data/county_social_capital.csv`
 - case-study, AlphaEarth validation, and local AlphaEarth encoder helper scripts: `scripts/`
 - supporting technical notes: `docs/background/`
 - small demos: `demos/`
@@ -25,6 +26,7 @@ Created from the author's local Paper6 workspace on 2026-06-07 for Paper6 review
 - large user-upload caches from the parent project
 - Python caches, local test scratch directories, and LaTeX intermediate files
 - Earth Engine raw AlphaEarth cache directory `data_agent/weights/raw_data/`
+- restricted Chongqing raw geospatial data and building-level analysis samples, including `data/raw/` and `paper/ijgis_submission_20260605/07_results/chongqing_uhi_analysis_sample.csv`
 
 ## Current Main Paper Files
 
