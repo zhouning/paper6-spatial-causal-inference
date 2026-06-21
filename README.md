@@ -1,193 +1,93 @@
-# Paper6 Spatial Causal Inference
+# GeoCausal SCCA: Spatial Context Causal Adjustment
 
-This repository is the standalone reproduction package for Paper6:
+This repository is the Paper6 reproduction package and open-source software boundary for:
 
 **Spatial Context Causal Adjustment (SCCA) for geographic observational studies: a reproducible workflow for constructing spatial-context adjustment sets, checking balance and common support, running spatial robustness diagnostics, and reporting bounded causal evidence.**
 
-The repository is organized for IJGIS-style peer review. It contains the IJGIS submission package, manuscript sources, Paper6 code, tests, experiment scripts, generated outputs, public/example data, and auxiliary materials from earlier exploratory phases. Chongqing raw geospatial inputs and building-level analysis samples are treated as restricted local inputs and are not tracked in the public GitHub tree.
+SCCA is not presented as a new causal estimator. It is an engineering-grade diagnostic framework that wraps standard causal estimators with spatial context design, spatial diagnostics, robustness checks, and evidence grading so that geographic observational studies can be audited and reproduced.
 
-## Repository Map
+## What This Repository Provides
 
-- `paper/ijgis_submission_20260605/` - IJGIS-oriented submission package, including manuscript source, figures, internal review notes, checklist, and compiled PDF.
-- `paper/figures/` - publication figure PDFs generated for the manuscript.
-- `data_agent/` - Paper6 reproduction subset of the GIS Data Agent codebase.
-- `data_agent/experiments/` - SCCA, causal, and auxiliary validation experiment runners plus generated outputs.
-- `data_agent/uploads/anonymous/` - diagnostic files referenced by historical experiment JSON outputs.
-- `data/` - public county example shapefiles used by the GIS/notebook reproducibility case.
-- `examples/data/` - cross-platform county social-capital CSV derived from the county example data.
-- `scripts/` - case-study, AlphaEarth feasibility, and manuscript-generation helper scripts.
-- `demos/` - small causal and auxiliary simulation demos.
-- `docs/background/` - supporting technical notes for AlphaEarth, world-model exploration, and SCCA redesign.
-- `checksums/` - machine-readable SHA-256 file inventory.
+- `geocausal/`: the first open-source GeoCausal SCCA package boundary with YAML-first CLI, Python adapter API, spatial input loading, and machine-readable outputs.
+- `data_agent/scca/`: the SCCA method modules used by the paper, including profiling, context construction, design selection, estimators, diagnostics, robustness, spatial diagnostics, reporting, and evidence rules.
+- `arcgis_toolbox/`: ArcGIS Pro toolbox wrapper and county social-capital workflow notes.
+- `qgis_provider/`: QGIS Processing provider skeleton for running GeoCausal SCCA.
+- `examples/`: cross-platform county social-capital configuration and CSV input for a runnable smoke case.
+- `data/`: CountyData and States shapefiles used for GIS joins, map rendering, and ArcGIS/QGIS demonstrations.
+- `paper/ijgis_submission_20260605/`: IJGIS-oriented manuscript package, generated results, reports, figures, and internal review materials.
+
+## SCCA Workflow
+
+The current SCCA implementation follows a reproducible seven-stage workflow:
+
+1. Profile the geographic observational table and candidate variables.
+2. Build spatial context features from user-supplied context columns and geometry/coordinate information when available.
+3. Select the adjustment design and document the spatial-context adjustment set.
+4. Estimate treatment effects and exposure-response functions with transparent baseline models.
+5. Check balance, common support, overlap, and model diagnostics.
+6. Run spatial robustness checks, including context ablation, placebo exposures, bootstrap sensitivity, residual spatial diagnostics, and spatial lag/SLX-style adjusted estimates where inputs permit.
+7. Write evidence outputs, credibility grades, reports, and manifests that can be inspected by reviewers or loaded into GIS tools.
 
 ## Quick Start
 
 Use Python 3.11+ from the repository root.
 
-```powershell
+```bash
 python -m venv .venv
-.\.venv\Scripts\python.exe -m pip install -U pip
-.\.venv\Scripts\python.exe -m pip install -r requirements.txt
-.\.venv\Scripts\python.exe -m pytest data_agent/test_causal_inference.py data_agent/test_causal_world_model.py data_agent/test_llm_causal.py data_agent/test_world_model.py
-.\.venv\Scripts\python.exe -m data_agent.experiments.run_causal --synthetic-only
-.\.venv\Scripts\python.exe -m data_agent.experiments.fig_causal
+source .venv/bin/activate
+python -m pip install -U pip
+python -m pip install -r requirements.txt
 ```
 
-The real-data UHI and LULC/LST experiments can be run with:
+On Windows, replace `source .venv/bin/activate` with:
 
 ```powershell
-.\.venv\Scripts\python.exe -m data_agent.experiments.run_causal --uhi
-.\.venv\Scripts\python.exe -m data_agent.experiments.run_causal --lulc
+.\.venv\Scripts\Activate.ps1
 ```
 
-Those commands use local Chongqing sample data and will try Google Earth Engine for MODIS LST. If Earth Engine is not authenticated, the scripts fall back to synthetic LST for a runnable smoke reproduction; see `REPRODUCIBILITY.md` for details.
+Run focused GeoCausal/SCCA tests:
 
-Run the strengthened Chongqing UHI ablation and spatial-robustness suite from a
-local Chongqing analysis sample. The sample must be supplied outside GitHub
-because it contains building-level coordinates and derived attributes:
-
-```powershell
-.\.venv\Scripts\python.exe -c "import pandas as pd; from data_agent.experiments.chongqing_uhi_analysis import run_chongqing_uhi_analysis; df = pd.read_csv(r'D:\path\to\local\chongqing_uhi_analysis_sample.csv'); run_chongqing_uhi_analysis(df, n_bootstrap=500, n_spatial_bootstrap=500)"
+```bash
+python -m pytest \
+  data_agent/test_geocausal_config.py \
+  data_agent/test_geocausal_io.py \
+  data_agent/test_geocausal_pipeline.py \
+  data_agent/test_geocausal_adapters.py \
+  data_agent/test_geocausal_spatial_outputs.py \
+  data_agent/test_scca_evidence_rules.py \
+  data_agent/test_scca_spatial_diagnostics.py
 ```
 
-This writes:
+## Run The County SCCA Example
 
-- `paper/ijgis_submission_20260605/07_results/chongqing_uhi_ablation.csv`
-- `paper/ijgis_submission_20260605/07_results/chongqing_uhi_balance.csv`
-- `paper/ijgis_submission_20260605/07_results/chongqing_uhi_matched_counts.csv`
-- `paper/ijgis_submission_20260605/07_results/chongqing_spatial_bootstrap.csv`
-- `paper/ijgis_submission_20260605/07_results/chongqing_placebo_thresholds.csv`
-- `paper/ijgis_submission_20260605/07_results/chongqing_residual_spatial_diagnostics.csv`
-- `paper/ijgis_submission_20260605/07_results/chongqing_uhi_analysis_manifest.json`
-
-Run the IJGIS-required multi-seed synthetic benchmark:
-
-```powershell
-.\.venv\Scripts\python.exe -m data_agent.experiments.run_causal --synthetic-multiseed-only --n-seeds 30
-```
-
-This writes:
-
-- `paper/ijgis_submission_20260605/07_results/synthetic_multiseed_summary.csv`
-- `paper/ijgis_submission_20260605/07_results/synthetic_multiseed_details.json`
-
-Run the expanded synthetic benchmark audit that stress-tests all six estimators
-under multiple settings:
-
-```powershell
-.\.venv\Scripts\python.exe -m data_agent.experiments.run_causal --synthetic-audit-only --n-seeds 30
-```
-
-This writes:
-
-- `paper/ijgis_submission_20260605/07_results/synthetic_benchmark_audit/synthetic_benchmark_audit_summary.csv`
-- `paper/ijgis_submission_20260605/07_results/synthetic_benchmark_audit/synthetic_benchmark_audit_details.json`
-- `paper/ijgis_submission_20260605/07_results/synthetic_benchmark_audit/synthetic_benchmark_audit_report.md`
-- `paper/ijgis_submission_20260605/07_results/synthetic_benchmark_audit/scenario_fragility_summary.csv`
-
-Write the unified SCCA evidence synthesis used to frame the manuscript:
-
-```powershell
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.scca_evidence_synthesis --output-dir paper\ijgis_submission_20260605\07_results
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.scca_method_comparison --output-dir paper\ijgis_submission_20260605\07_results
-```
-
-This writes:
-
-- `paper/ijgis_submission_20260605/07_results/scca_evidence_synthesis.csv`
-- `paper/ijgis_submission_20260605/07_results/scca_evidence_synthesis_report.md`
-- `paper/ijgis_submission_20260605/07_results/scca_evidence_synthesis_manifest.json`
-- `paper/ijgis_submission_20260605/07_results/scca_evidence_grade_rules.json`
-- `paper/ijgis_submission_20260605/07_results/scca_evidence_grade_rules.md`
-- `paper/ijgis_submission_20260605/07_results/scca_method_comparison.csv`
-- `paper/ijgis_submission_20260605/07_results/scca_method_comparison_report.md`
-
-Run the IJGIS-required world-model holdout and scenario-calibration validation:
-
-```powershell
-.\.venv\Scripts\python.exe -m data_agent.experiments.world_model_holdout_validation --output-dir paper\ijgis_submission_20260605\07_results
-```
-
-This writes:
-
-- `paper/ijgis_submission_20260605/07_results/world_model_holdout_metrics.csv`
-- `paper/ijgis_submission_20260605/07_results/world_model_scenario_calibration.csv`
-- `paper/ijgis_submission_20260605/07_results/world_model_holdout_validation_manifest.json`
-- `paper/ijgis_submission_20260605/07_results/world_model_holdout_validation_report.md`
-
-The default run is a deterministic offline proxy validation. If a real
-AlphaEarth temporal panel is available through local cache or Earth Engine, the
-module can be re-run with `--use-real-panel` to upgrade the evidence mode.
-
-Run the first Spatial Context Causal Adjustment (SCCA) redesign experiment on the South London Snow cholera data:
-
-```powershell
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_snow8 --csv-path "D:\北大MEM\01-课程学习\02-技术核心课\数据可视化技术及应用\snow\snow8\subdistricts.csv"
-```
-
-The outputs are written to `paper/ijgis_submission_20260605/07_results/scca_snow8/`.
-
-Run the Soho Broad Street pump SCCA mechanism experiment:
-
-```powershell
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_soho --csv-path "D:\北大MEM\01-课程学习\02-技术核心课\数据可视化技术及应用\snow\snow1\deaths_nd_by_house.csv"
-```
-
-The outputs are written to `paper/ijgis_submission_20260605/07_results/scca_soho/`.
-
-Run the county social-capital SCCA external validation experiment:
-
-```powershell
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_county_social_capital --workbook-path "D:\鍖楀ぇMEM\01-璇剧▼瀛︿範\02-鎶€鏈牳蹇冭\鏁版嵁鍙鍖栨妧鏈強搴旂敤\CausalInferAnalysis\CausalInferAnalysis\CountyData_TableToExcel.xlsx"
-```
-
-The outputs are written to `paper/ijgis_submission_20260605/07_results/scca_county_social_capital/`. This case is an external continuous-exposure validation with state-level robustness, not a full county-adjacency spatial diagnostic.
-
-Run the SCCA robustness suite after the three case-study runs:
-
-```powershell
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_snow8_robustness --csv-path "D:\鍖楀ぇMEM\01-璇剧▼瀛︿範\02-鎶€鏈牳蹇冭\鏁版嵁鍙鍖栨妧鏈強搴旂敤\snow\snow8\subdistricts.csv"
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_soho_robustness --csv-path "D:\鍖楀ぇMEM\01-璇剧▼瀛︿範\02-鎶€鏈牳蹇冭\鏁版嵁鍙鍖栨妧鏈強搴旂敤\snow\snow1\deaths_nd_by_house.csv"
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_county_social_capital_robustness --workbook-path "D:\鍖楀ぇMEM\01-璇剧▼瀛︿範\02-鎶€鏈牳蹇冭\鏁版嵁鍙鍖栨妧鏈強搴旂敤\CausalInferAnalysis\CausalInferAnalysis\CountyData_TableToExcel.xlsx"
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_robustness_summary
-```
-
-The robustness outputs are written beside each SCCA case directory and summarized under `paper/ijgis_submission_20260605/07_results/scca_robustness_summary/`.
-
-## GeoCausal SCCA MVP
-
-Paper6 exposes SCCA as the first open-source framework boundary under `geocausal/`. V1 is YAML-first: start from a template configuration, diagnose inputs, run the analysis, and render the report through the module CLI.
-
-```powershell
-D:\adk\.venv\Scripts\python.exe -m geocausal.cli init --template scca --output analysis.yaml
-D:\adk\.venv\Scripts\python.exe -m geocausal.cli diagnose analysis.yaml
-D:\adk\.venv\Scripts\python.exe -m geocausal.cli run analysis.yaml
-D:\adk\.venv\Scripts\python.exe -m geocausal.cli report results/example_case
-```
-
-The MVP input boundary supports CSV, GeoPackage, GeoJSON, and Shapefile datasets. A completed run writes `effect_estimates.csv`, `erf_curve.csv`, `context_ablation.csv`, `placebo_tests.csv`, `bootstrap_robustness.csv`, `bootstrap_summary.json`, `erf_stability.json`, `robustness_report.md`, and `manifest.json`.
-
-A committed county-level smoke-test dataset is available at:
-
-```text
-examples/data/county_social_capital.csv
-```
-
-This county example is third-party training/demo data, not author-generated
-data. The shapefile metadata credits Esri, U.S. Census Bureau, NOAA/NOS/NGS,
-CDC WONDER/NCHS, County Health Rankings 2019 through ArcGIS Living Atlas, the
-University of Wisconsin Population Health Institute, and the Robert Wood Johnson
-Foundation. Its use is governed by the Esri Master License and is restricted to
-training, demonstration, and educational purposes.
-
-Run the same example from Windows, macOS, or Linux:
+The committed county social-capital example is the fastest end-to-end GeoCausal SCCA run:
 
 ```bash
 python -m geocausal.cli diagnose examples/county_social_capital_example.yaml
 python -m geocausal.cli run examples/county_social_capital_example.yaml
+python -m geocausal.cli report paper/ijgis_submission_20260605/07_results/examples/county_social_capital_example
 ```
 
-Programmatic callers can skip YAML and use the adapter API directly:
+The example studies county-level social association (`SocialAssoc`) and average age at death (`AveAgeDeath`) with demographic, health, socioeconomic, and spatial context covariates. It writes results under:
+
+```text
+paper/ijgis_submission_20260605/07_results/examples/county_social_capital_example/
+```
+
+The included shapefile `data/CountyData.shp` can be joined by `FIPS` to GeoCausal outputs such as `target_exposures.csv` and `analysis_joined.csv` for map rendering in ArcGIS Pro, QGIS, or a web GIS frontend.
+
+## YAML And Python APIs
+
+Start a new SCCA configuration from the CLI:
+
+```bash
+python -m geocausal.cli init --template scca --output analysis.yaml
+python -m geocausal.cli diagnose analysis.yaml
+python -m geocausal.cli run analysis.yaml
+python -m geocausal.cli report results/example_case
+```
+
+Programmatic callers can use the adapter API:
 
 ```python
 from pathlib import Path
@@ -218,17 +118,82 @@ build_analysis_joined_table(
 )
 ```
 
-Integration wrappers now exist at:
+## Output Contract
 
-- `arcgis_toolbox/GeoCausalSCCA.pyt` for ArcGIS Pro
-- `qgis_provider/geocausal_scca_algorithm.py` as the QGIS Processing skeleton
+A completed SCCA run is designed to be machine-readable as well as reviewer-readable. Key outputs include:
+
+- `data_profile.json`, `variable_candidates.csv`, `context_features.csv`, `context_feature_manifest.json`
+- `design_plan.json`, `effect_estimates.csv`, `erf_curve.csv`, `target_exposures.csv`
+- `balance_summary.csv`, `overlap_summary.json`, `model_diagnostics.json`
+- `spatial_robustness.csv`, `context_ablation.csv`, `placebo_tests.csv`
+- `bootstrap_robustness.csv`, `bootstrap_summary.json`, `erf_stability.json`
+- `credibility_report.json`, `robustness_report.md`, `analysis_report.md`, `manifest.json`
+
+These files are intentionally stable because they are consumed by notebooks, ArcGIS/QGIS workflows, GIS Data Agent integration surfaces, and paper result tables.
+
+## Reproduction Cases
+
+The new-version paper centers on SCCA as a spatial causal workflow and evaluates it through multiple cases:
+
+- **Chongqing UHI case**: building-height exposure, LST outcome, land-cover/elevation/urban context adjustment, balance checks, spatial bootstrap, placebo thresholds, and residual spatial diagnostics. Raw Chongqing geospatial inputs and building-level samples are restricted local inputs and are not tracked on GitHub.
+- **Snow cholera case**: South London subdistrict cholera data for spatial-context causal reasoning and robustness diagnostics.
+- **Soho Broad Street pump mechanism case**: household-level mechanism-oriented SCCA demonstration.
+- **US CountyData case**: county social capital and longevity example with CSV, shapefile, ArcGIS comparison, and map-ready joins.
+- **Synthetic and audit cases**: multi-seed benchmarks, estimator stress tests, GeoFM/AlphaEarth ablation, LLM DAG validation, and world-model holdout validation used as supporting evidence rather than the main SCCA software boundary.
+
+Representative commands:
+
+```bash
+python -m data_agent.experiments.run_scca_snow8 --csv-path /path/to/subdistricts.csv
+python -m data_agent.experiments.run_scca_soho --csv-path /path/to/deaths_nd_by_house.csv
+python -m data_agent.experiments.run_scca_county_social_capital --workbook-path /path/to/CountyData_TableToExcel.xlsx
+python -m data_agent.experiments.run_scca_robustness_summary
+```
+
+For the restricted Chongqing UHI analysis sample:
+
+```bash
+python -c "import pandas as pd; from data_agent.experiments.chongqing_uhi_analysis import run_chongqing_uhi_analysis; df = pd.read_csv('/path/to/chongqing_uhi_analysis_sample.csv'); run_chongqing_uhi_analysis(df, n_bootstrap=500, n_spatial_bootstrap=500)"
+```
+
+Expected Chongqing result files are written under `paper/ijgis_submission_20260605/07_results/` and include:
+
+- `chongqing_uhi_ablation.csv`
+- `chongqing_uhi_balance.csv`
+- `chongqing_uhi_matched_counts.csv`
+- `chongqing_spatial_bootstrap.csv`
+- `chongqing_placebo_thresholds.csv`
+- `chongqing_residual_spatial_diagnostics.csv`
+- `chongqing_uhi_analysis_manifest.json`
+- `chongqing_uhi_analysis_report.md`
+
+## GIS Integrations
+
+- ArcGIS Pro toolbox: `arcgis_toolbox/GeoCausalSCCA.pyt`
+- ArcGIS county workflow notes: `arcgis_toolbox/ArcGIS_Pro_使用手册_县域社会资本示例.md`
+- QGIS Processing provider skeleton: `qgis_provider/geocausal_scca_algorithm.py`
+- Map-ready county shapefile: `data/CountyData.shp`
+- Cross-platform county CSV: `examples/data/county_social_capital.csv`
+
+The intended GIS pattern is:
+
+1. Run SCCA from YAML, Python, ArcGIS Pro, QGIS, or GIS Data Agent.
+2. Join output tables back to geometry by a stable unit identifier such as `FIPS`.
+3. Render estimated effects, target exposures, support flags, balance summaries, and credibility diagnostics as map layers or linked tables.
+
+## Data And Licensing Notes
+
+Chongqing raw geospatial inputs and building-level analysis samples are excluded from GitHub because they include precise geometry/coordinate information and require separate permission and sensitivity review. See `DATA_AVAILABILITY.md` and `REPRODUCIBILITY.md`.
+
+The county example uses third-party training/demo data, not author-generated data. The shapefile metadata credits Esri, U.S. Census Bureau, NOAA/NOS/NGS, CDC WONDER/NCHS, County Health Rankings 2019 through ArcGIS Living Atlas, the University of Wisconsin Population Health Institute, and the Robert Wood Johnson Foundation. Use is governed by the source terms documented in `DATA_AVAILABILITY.md`.
 
 ## Paper Entry Points
 
-- Main IJGIS TeX: `paper/ijgis_submission_20260605/01_manuscript/01_manuscript_ijgis.tex`
-- Compiled IJGIS PDF: `paper/ijgis_submission_20260605/06_build/01_manuscript_ijgis.pdf`
-- Required experiment plan before formal submission: `paper/ijgis_submission_20260605/05_internal_review/ijgis_required_experiments.md`
-
-## Review Note
-
-This repository is intended as a reviewer reproduction package that can also be made public after data-rights review. Chongqing raw geospatial inputs and building-level analysis samples are excluded from GitHub because they include precise geometry/coordinate information and require a separate permission/security review. If a reviewer needs to rerun the Chongqing case from raw inputs, provide those files through an approved controlled route rather than this public repository.
+- IJGIS package overview: `paper/ijgis_submission_20260605/README.md`
+- Main manuscript TeX: `paper/ijgis_submission_20260605/01_manuscript/01_manuscript_ijgis.tex`
+- Compiled manuscript PDF: `paper/ijgis_submission_20260605/06_build/01_manuscript_ijgis.pdf`
+- SCCA evidence synthesis: `paper/ijgis_submission_20260605/07_results/scca_evidence_synthesis_report.md`
+- SCCA method comparison: `paper/ijgis_submission_20260605/07_results/scca_method_comparison_report.md`
+- County ArcGIS comparison: `paper/ijgis_submission_20260605/07_results/geocausal_county_arcgis_comparison/arcgis_geocausal_comparison.md`
+- Reproducibility guide: `REPRODUCIBILITY.md`
+- Data availability notes: `DATA_AVAILABILITY.md`
