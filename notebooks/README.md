@@ -17,6 +17,10 @@ coordinates and derived attributes:
 
 - `chongqing_uhi_analysis_sample.csv`
 
+On the author's Windows workstation, the default ignored local path remains:
+
+- `paper/ijgis_submission_20260605/07_results/chongqing_uhi_analysis_sample.csv`
+
 ## Start
 
 From the repository root:
@@ -51,6 +55,8 @@ Then open:
 - `run_chongqing_uhi_demo.py`:
   - runs the same Chongqing workflow non-interactively when an input CSV is
     supplied through the Python API
+  - uses the original local Chongqing sample during local tests when the ignored
+    file is present; otherwise tests fall back to a synthetic fixture
 
 ## Output location
 

@@ -28,6 +28,16 @@ Restricted Chongqing inputs are expected only in a local approved workspace:
 - Chongqing central building footprints with floor attributes, 2021
 - `chongqing_uhi_analysis_sample.csv`, an analysis-ready building-level table
 
+For local Windows testing, the original ignored analysis sample can remain at:
+
+```text
+paper/ijgis_submission_20260605/07_results/chongqing_uhi_analysis_sample.csv
+```
+
+The notebook smoke test uses this local file when it exists. Clean public clones
+without the file use a synthetic fixture instead, so tests do not require
+redistributing restricted Chongqing data.
+
 World-model weights are stored in:
 
 - `data_agent/weights/latent_dynamics_v1.pt`

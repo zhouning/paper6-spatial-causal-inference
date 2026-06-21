@@ -4,6 +4,15 @@ import numpy as np
 import pandas as pd
 
 
+LOCAL_CHONGQING_SAMPLE = (
+    Path(__file__).resolve().parent.parent
+    / "paper"
+    / "ijgis_submission_20260605"
+    / "07_results"
+    / "chongqing_uhi_analysis_sample.csv"
+)
+
+
 def _notebook_fixture(row_count: int = 256) -> pd.DataFrame:
     rng = np.random.default_rng(7)
     rows = []
@@ -43,11 +52,27 @@ def _notebook_fixture(row_count: int = 256) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def _input_csv_for_notebook_contract(tmp_path: Path) -> tuple[Path, int, int, int]:
+    if LOCAL_CHONGQING_SAMPLE.exists():
+        frame = pd.read_csv(LOCAL_CHONGQING_SAMPLE, usecols=["treatment"])
+        treatment = pd.to_numeric(frame["treatment"], errors="coerce")
+        return (
+            LOCAL_CHONGQING_SAMPLE,
+            int(len(frame)),
+            int(treatment.sum()),
+            int((treatment == 0).sum()),
+        )
+
+    input_csv = tmp_path / "chongqing_uhi_fixture.csv"
+    frame = _notebook_fixture()
+    frame.to_csv(input_csv, index=False)
+    return input_csv, int(len(frame)), 128, 128
+
+
 def test_chongqing_uhi_notebook_demo_contract(tmp_path):
     from notebooks.run_chongqing_uhi_demo import run_demo
 
-    input_csv = tmp_path / "chongqing_uhi_fixture.csv"
-    _notebook_fixture().to_csv(input_csv, index=False)
+    input_csv, expected_rows, expected_treated, expected_control = _input_csv_for_notebook_contract(tmp_path)
 
     summary = run_demo(
         output_dir=tmp_path / "chongqing_uhi_notebook_demo",
@@ -61,9 +86,9 @@ def test_chongqing_uhi_notebook_demo_contract(tmp_path):
     assert Path(summary["narrative_summary_markdown"]).exists()
 
     result = summary["result_summary"]
-    assert result["row_count"] == 256
-    assert result["treatment_count"] == 128
-    assert result["control_count"] == 128
+    assert result["row_count"] == expected_rows
+    assert result["treatment_count"] == expected_treated
+    assert result["control_count"] == expected_control
     assert result["ablation_rows"] >= 8
     assert result["balance_rows"] > 0
     assert result["bootstrap_rows"] == 16
@@ -91,7 +116,7 @@ def test_chongqing_uhi_notebook_demo_contract(tmp_path):
 
     spatial = summary["spatial_manifest"]
     assert Path(spatial["points_csv"]).exists()
-    assert spatial["point_count"] == 256
+    assert spatial["point_count"] == expected_rows
     assert Path(spatial["geojson"]).exists()
     assert Path(spatial["gpkg"]).exists()
 
