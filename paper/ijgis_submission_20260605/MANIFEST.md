@@ -4,7 +4,7 @@
 
 | File | Role | Source |
 | --- | --- | --- |
-| `01_manuscript/01_manuscript_ijgis.tex` | IJGIS main manuscript source | `docs/paper6_causal_inference_paper.tex` |
+| `01_manuscript/01_manuscript_ijgis.tex` | IJGIS main manuscript source | current IJGIS manuscript |
 | `01_manuscript/figures/fig_causal_psm_balance.pdf` | Figure asset | `docs/figures/fig_causal_psm_balance.pdf` |
 | `01_manuscript/figures/fig_causal_did_trends.pdf` | Figure asset | `docs/figures/fig_causal_did_trends.pdf` |
 | `01_manuscript/figures/fig_causal_erf_curve.pdf` | Figure asset | `docs/figures/fig_causal_erf_curve.pdf` |
@@ -27,9 +27,3 @@
 | File | Role |
 | --- | --- |
 | `06_build/01_manuscript_ijgis.pdf` | Compiled verification PDF, regenerated from `01_manuscript/01_manuscript_ijgis.tex` |
-
-## Traceability
-
-| File | Role |
-| --- | --- |
-| `90_source_snapshot/paper6_causal_inference_paper_20260406_original.tex` | Unmodified source snapshot copied from `docs/` |

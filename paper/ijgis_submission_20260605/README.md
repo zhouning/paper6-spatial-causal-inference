@@ -16,7 +16,6 @@ Created: 2026-06-05
 - `04_admin/` - Title page, declarations, and submission checklist.
 - `05_internal_review/` - Internal IJGIS readiness notes and known risks.
 - `05_internal_review/ijgis_required_experiments.md` - Required experiments and step-by-step execution plan before submission.
-- `90_source_snapshot/` - Original source snapshot copied from `docs/` for traceability.
 
 ## Current Upload Candidates
 

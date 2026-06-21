@@ -4,7 +4,6 @@
 
 - [x] Main LaTeX source copied into clean IJGIS submission workspace.
 - [x] All currently referenced PDF figures copied into `01_manuscript/figures/`.
-- [x] Original source snapshot preserved in `90_source_snapshot/`.
 - [x] Cover letter draft created.
 - [x] Title page and declarations draft created.
 - [x] Internal IJGIS readiness notes created.

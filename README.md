@@ -9,7 +9,6 @@ The repository is organized for IJGIS-style peer review. It contains the IJGIS s
 ## Repository Map
 
 - `paper/ijgis_submission_20260605/` - IJGIS-oriented submission package, including manuscript source, figures, internal review notes, checklist, and compiled PDF.
-- `paper/source_docs/` - earlier Paper6 source drafts and Chinese/English document exports.
 - `paper/figures/` - publication figure PDFs generated for the manuscript.
 - `data_agent/` - Paper6 reproduction subset of the GIS Data Agent codebase.
 - `data_agent/experiments/` - SCCA, causal, and auxiliary validation experiment runners plus generated outputs.

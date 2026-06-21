@@ -7,7 +7,6 @@ Created from the author's local Paper6 workspace on 2026-06-07 for Paper6 review
 ## Included
 
 - IJGIS submission package: `paper/ijgis_submission_20260605/`
-- earlier Paper6 drafts and document exports: `paper/source_docs/`
 - manuscript figures: `paper/figures/`
 - Paper6 code subset: `data_agent/`
 - Paper6 tests: `data_agent/test_causal_inference.py`, `data_agent/test_causal_world_model.py`, `data_agent/test_llm_causal.py`, `data_agent/test_world_model.py`
