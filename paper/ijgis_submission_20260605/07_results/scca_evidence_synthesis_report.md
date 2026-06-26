@@ -32,6 +32,18 @@ and the county row as a GIS/notebook reproducibility and spatial-diagnostic boun
 - Limitation: MODIS LST scale, building-level treatment assignment, and spatial interference limit causal strength.
 - Manuscript use: Use as the main real-data SCCA ablation; report the modest positive balanced estimate.
 
+### epa_nonattainment_airdata
+
+- Grade: `bounded_support`
+- Best adjustment: GeoCausal SCCA annual county-year panel with semi-synthetic known-effect checks
+- Effect/diagnostic: policy-structure semi-synthetic coefficient = -1.000; semi-synthetic median absolute error = 0.000
+- Balance: 4880 county-year rows, 2005-2024
+- Robustness: 3 semi-synthetic scenarios; spatial caution scenarios = spatial_confounding, spillover, stable_known_effect
+- Grade rules: `weak_credibility; bounded_robustness; material_residual_moran`
+- Grade reasons: Credibility diagnostics indicate weak or failed support.; Robustness checks support only a bounded interpretation.; Residual spatial autocorrelation is both statistically significant and materially large (Moran's I=0.876, p=0.010).
+- Limitation: This run uses a deterministic known-effect outcome on real EPA policy geography; it is not an observational causal policy estimate until AQS AirData acquisition succeeds.
+- Manuscript use: Use as a public spatiotemporal benchmark; rely on the semi-synthetic known-effect layer for validation, while treating observational AirData validation as pending.
+
 ### county_social_capital_spatial_notebook
 
 - Grade: `bounded_support`
@@ -46,5 +58,5 @@ and the county row as a GIS/notebook reproducibility and spatial-diagnostic boun
 
 ## Grade Counts
 
-- `bounded_support`: 2
+- `bounded_support`: 3
 - `core_support`: 1

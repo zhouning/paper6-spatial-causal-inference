@@ -1,0 +1,19 @@
+{
+  "status": "ok",
+  "models": [
+    "neighbor_adjusted",
+    "coordinate_knn_k2",
+    "coordinate_knn_k4",
+    "coordinate_knn_k6",
+    "coordinate_knn_k8"
+  ],
+  "direct_effect_proxy_main": -0.9999999999195451,
+  "spillover_effect_proxy_main": 5.5423665656917365e-11,
+  "spillover_share_abs_main": 5.542366565830468e-11,
+  "spillover_share_abs_min": 2.0009660593199226e-11,
+  "spillover_share_abs_max": 9.541056832675788e-11,
+  "spillover_to_direct_ratio_min": -9.541056833586105e-11,
+  "spillover_to_direct_ratio_max": 6.900857662071929e-11,
+  "interpretation": "spillover_signal_not_established",
+  "note": "This decomposition is a spatial sensitivity summary based on neighbor-average exposure models; it is not a formal causal interference identification result."
+}

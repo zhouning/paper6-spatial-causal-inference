@@ -1,0 +1,16 @@
+column,role,dtype,missing,unique
+county_year_id,unit_id,object,0,4880
+county_fips,subgroup,int64,0,244
+year,available,int64,0,20
+pollutant_code,available,int64,0,1
+annual_mean,outcome,float64,0,4867
+baseline_annual_mean,baseline_outcome,float64,0,4879
+nonattainment,available,int64,0,2
+nonattainment_lag1,exposure,float64,0,2
+neighbor_nonattainment_lag1,context,float64,0,18
+monitor_count,confounder,float64,0,1
+observation_count,available,int64,0,1
+year_index,confounder,int64,0,20
+x,context,float64,0,244
+y,context,float64,0,244
+synthetic_outcome,available,float64,0,4867

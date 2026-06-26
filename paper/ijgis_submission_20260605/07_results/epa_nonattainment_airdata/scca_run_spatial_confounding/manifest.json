@@ -1,0 +1,191 @@
+{
+  "geocausal_version": "0.1.0",
+  "generated_at_utc": "2026-06-26T00:40:24.587943Z",
+  "case_name": "epa_nonattainment_airdata",
+  "study": "epa_nonattainment_airdata",
+  "config_path": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results\\epa_nonattainment_airdata\\epa_policy_structure_semisynthetic_spatial_confounding.yaml",
+  "input_path": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results\\epa_nonattainment_airdata\\semi_synthetic\\spatial_confounding.csv",
+  "input_format": "csv",
+  "row_count": 4880,
+  "column_count": 15,
+  "preprocessing": {},
+  "exposure": "nonattainment_lag1",
+  "outcome": "annual_mean",
+  "unit_id": "county_year_id",
+  "baseline_outcome": "baseline_annual_mean",
+  "confounders": [
+    "baseline_annual_mean",
+    "monitor_count",
+    "year_index"
+  ],
+  "context_columns": [
+    "x",
+    "y",
+    "neighbor_nonattainment_lag1"
+  ],
+  "targets": {
+    "outcome_values": []
+  },
+  "credibility_decision": "weak_or_failed_support",
+  "robustness_interpretation": "bounded_support",
+  "evidence_grade": "bounded_support",
+  "evidence_grade_rule_ids": [
+    "weak_credibility",
+    "bounded_robustness",
+    "material_residual_moran"
+  ],
+  "evidence_grade_reasons": [
+    "Credibility diagnostics indicate weak or failed support.",
+    "Robustness checks support only a bounded interpretation.",
+    "Residual spatial autocorrelation is both statistically significant and materially large (Moran's I=0.816, p=0.010)."
+  ],
+  "rule_version": "scca-evidence-grade-rules-2026-06-20",
+  "result_summary": {
+    "baseline_adjusted_ols": {
+      "status": "unstable",
+      "coef": -0.999999999972544,
+      "p_value": 0.0,
+      "ci_lower": -1.0000000001068252,
+      "ci_upper": -0.9999999998382626,
+      "n": 4880.0
+    },
+    "spatial_neighbor_adjusted_ols": {
+      "status": "ok",
+      "coef": -0.9999999999195456,
+      "neighbor_exposure_coef": 5.542388770152229e-11,
+      "neighbor_exposure_p_value": 0.3444828695187284,
+      "coef_delta": 5.299827243732125e-11,
+      "relative_change": 5.299827243877637e-11,
+      "sign_stable": true,
+      "n": 4880.0
+    },
+    "spatial_slx_model": {
+      "status": "unstable",
+      "model": "SLX",
+      "direct_effect": null,
+      "direct_p_value": null,
+      "indirect_effect": null,
+      "indirect_p_value": null,
+      "total_effect": null,
+      "total_se": null,
+      "total_p_value": null,
+      "total_ci_lower": null,
+      "total_ci_upper": null,
+      "r_squared": null,
+      "lag_covariate_count": null,
+      "lag_covariates_significant": null,
+      "coefficient_count": null,
+      "n": 4880.0,
+      "interpretation": null
+    },
+    "spatial_diagnostics": {
+      "graph_method": "coordinate_knn",
+      "edge_count": 20740,
+      "exposure_moran_i": -0.07945112125714242,
+      "exposure_moran_p_value": 0.01,
+      "residual_moran_i": 0.8156062180205063,
+      "residual_moran_p_value": 0.01,
+      "interpretation": "spatial_caution"
+    },
+    "spatial_block_bootstrap": {
+      "status": "ok",
+      "n_replicates_requested": 50,
+      "n_replicates_valid": 50,
+      "failure_count": 0,
+      "coef_mean": -1.0000000000107656,
+      "coef_median": -1.0000000000074722,
+      "coef_std": 7.411408638281902e-11,
+      "ci_lower_2_5": -1.0000000001492544,
+      "ci_upper_97_5": -0.9999999998780216,
+      "sign_stability": 1.0
+    },
+    "spatial_graph_sensitivity": {
+      "status": "ok",
+      "n_graphs_requested": 4,
+      "n_graphs_valid": 4,
+      "graph_specs": [
+        "coordinate_knn_k2",
+        "coordinate_knn_k4",
+        "coordinate_knn_k6",
+        "coordinate_knn_k8"
+      ],
+      "neighbor_adjusted_coef_min": -1.0000000001465965,
+      "neighbor_adjusted_coef_max": -0.9999999999195457,
+      "neighbor_adjusted_coef_range": 2.2705082258767106e-10,
+      "neighbor_adjusted_relative_change_max": 1.7405255015512862e-10,
+      "neighbor_adjusted_sign_stability": true
+    },
+    "spatial_spillover_decomposition": {
+      "status": "ok",
+      "models": [
+        "neighbor_adjusted",
+        "coordinate_knn_k2",
+        "coordinate_knn_k4",
+        "coordinate_knn_k6",
+        "coordinate_knn_k8"
+      ],
+      "direct_effect_proxy_main": -0.9999999999195457,
+      "spillover_effect_proxy_main": 5.542388770152229e-11,
+      "spillover_share_abs_main": 5.5423887702909575e-11,
+      "spillover_share_abs_min": 2.000910548168699e-11,
+      "spillover_share_abs_max": 9.541278877280674e-11,
+      "spillover_to_direct_ratio_min": -9.541278878191034e-11,
+      "spillover_to_direct_ratio_max": 6.900874315417295e-11,
+      "interpretation": "spillover_signal_not_established",
+      "note": "This decomposition is a spatial sensitivity summary based on neighbor-average exposure models; it is not a formal causal interference identification result."
+    },
+    "spatial_exposure_mapping": {
+      "status": "ok",
+      "model": "neighbor_exposure_model",
+      "direct_effect": -0.9999999999195457,
+      "spillover_coefficient": 5.542388770152229e-11,
+      "mean_indirect_effect": 5.542388770152229e-11,
+      "median_indirect_effect": 1.458523360566376e-11,
+      "mean_total_effect": -0.9999999998641219,
+      "median_total_effect": -0.9999999999049605,
+      "indirect_effect_p10": 1.458523360566376e-11,
+      "indirect_effect_p90": 1.7793984998909793e-10,
+      "incoming_weight_sum_mean": 1.0000000000000004,
+      "incoming_weight_sum_min": 0.2631578947368421,
+      "incoming_weight_sum_max": 3.210526315789475,
+      "interpretation": "exposure_mapping_sensitivity",
+      "note": "Effects are implied by the fitted neighbor-exposure model and row-standardized spatial graph. They are an exposure-mapping sensitivity analysis, not a fully identified network experiment."
+    }
+  },
+  "warnings": [],
+  "files": {
+    "data_profile": "data_profile.json",
+    "variable_candidates": "variable_candidates.csv",
+    "context_features": "context_features.csv",
+    "context_manifest": "context_feature_manifest.json",
+    "design_plan": "design_plan.json",
+    "effect_estimates": "effect_estimates.csv",
+    "erf_curve": "erf_curve.csv",
+    "model_diagnostics": "model_diagnostics.json",
+    "balance_summary": "balance_summary.csv",
+    "overlap_summary": "overlap_summary.json",
+    "spatial_robustness": "spatial_robustness.csv",
+    "credibility_report": "credibility_report.json",
+    "analysis_report": "analysis_report.md",
+    "manifest": "manifest.json",
+    "spatial_diagnostics": "spatial_diagnostics.json",
+    "spatial_bootstrap_robustness": "spatial_bootstrap_robustness.csv",
+    "spatial_bootstrap_summary": "spatial_bootstrap_summary.json",
+    "spatial_graph_sensitivity": "spatial_graph_sensitivity.csv",
+    "spatial_graph_sensitivity_summary": "spatial_graph_sensitivity_summary.json",
+    "spatial_slx_estimates": "spatial_slx_estimates.csv",
+    "spatial_slx_summary": "spatial_slx_summary.json",
+    "spatial_spillover_decomposition": "spatial_spillover_decomposition.csv",
+    "spatial_spillover_summary": "spatial_spillover_summary.json",
+    "spatial_exposure_mapping": "spatial_exposure_mapping.csv",
+    "spatial_exposure_mapping_summary": "spatial_exposure_mapping_summary.json",
+    "context_ablation": "context_ablation.csv",
+    "placebo_tests": "placebo_tests.csv",
+    "bootstrap_robustness": "bootstrap_robustness.csv",
+    "bootstrap_summary": "bootstrap_summary.json",
+    "erf_stability": "erf_stability.json",
+    "robustness_report": "robustness_report.md",
+    "robustness_manifest": "robustness_manifest.json",
+    "result_summary_markdown": "result_summary.md"
+  }
+}

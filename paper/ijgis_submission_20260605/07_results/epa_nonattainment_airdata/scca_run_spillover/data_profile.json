@@ -1,0 +1,154 @@
+{
+  "study": "epa_nonattainment_airdata",
+  "n_rows": 4880,
+  "n_columns": 15,
+  "columns": {
+    "county_year_id": {
+      "role": "unit_id",
+      "dtype": "object",
+      "missing": 0,
+      "non_null": 4880,
+      "unique": 4880
+    },
+    "county_fips": {
+      "role": "subgroup",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 4880,
+      "unique": 244,
+      "min": 1071.0,
+      "max": 55133.0,
+      "mean": 28121.450819672133
+    },
+    "year": {
+      "role": "available",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 4880,
+      "unique": 20,
+      "min": 2005.0,
+      "max": 2024.0,
+      "mean": 2014.5
+    },
+    "pollutant_code": {
+      "role": "available",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 4880,
+      "unique": 1,
+      "min": 88101.0,
+      "max": 88101.0,
+      "mean": 88101.0
+    },
+    "annual_mean": {
+      "role": "outcome",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 4880,
+      "unique": 4875,
+      "min": 2.859949512650529,
+      "max": 11.312141274069475,
+      "mean": 8.172075270784545
+    },
+    "baseline_annual_mean": {
+      "role": "baseline_outcome",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 4880,
+      "unique": 4879,
+      "min": 3.995980400439648,
+      "max": 11.382893864015482,
+      "mean": 8.693748133782202
+    },
+    "nonattainment": {
+      "role": "available",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 4880,
+      "unique": 2,
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.5192622950819672
+    },
+    "nonattainment_lag1": {
+      "role": "exposure",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 4880,
+      "unique": 2,
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.5116803278688524
+    },
+    "neighbor_nonattainment_lag1": {
+      "role": "context",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 4880,
+      "unique": 18,
+      "min": 0.0,
+      "max": 1.0,
+      "mean": 0.49165422521467594
+    },
+    "monitor_count": {
+      "role": "confounder",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 4880,
+      "unique": 1,
+      "min": 1.0,
+      "max": 1.0,
+      "mean": 1.0
+    },
+    "observation_count": {
+      "role": "available",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 4880,
+      "unique": 1,
+      "min": 365.0,
+      "max": 365.0,
+      "mean": 365.0
+    },
+    "year_index": {
+      "role": "confounder",
+      "dtype": "int64",
+      "missing": 0,
+      "non_null": 4880,
+      "unique": 20,
+      "min": 0.0,
+      "max": 19.0,
+      "mean": 9.5
+    },
+    "x": {
+      "role": "context",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 4880,
+      "unique": 244,
+      "min": -2759749.409825878,
+      "max": 1916845.2272774505,
+      "mean": 620739.8975374952
+    },
+    "y": {
+      "role": "context",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 4880,
+      "unique": 244,
+      "min": 1047768.995782681,
+      "max": 5273027.779340254,
+      "mean": 1891918.6927262344
+    },
+    "synthetic_outcome": {
+      "role": "available",
+      "dtype": "float64",
+      "missing": 0,
+      "non_null": 4880,
+      "unique": 4875,
+      "min": 2.859949512650529,
+      "max": 11.312141274069475,
+      "mean": 8.172075270784545
+    }
+  }
+}

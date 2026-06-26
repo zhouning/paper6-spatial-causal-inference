@@ -1,0 +1,16 @@
+{
+  "status": "ok",
+  "n_graphs_requested": 4,
+  "n_graphs_valid": 4,
+  "graph_specs": [
+    "coordinate_knn_k2",
+    "coordinate_knn_k4",
+    "coordinate_knn_k6",
+    "coordinate_knn_k8"
+  ],
+  "neighbor_adjusted_coef_min": -1.0000000001465934,
+  "neighbor_adjusted_coef_max": -0.9999999999195419,
+  "neighbor_adjusted_coef_range": 2.2705148872148584e-10,
+  "neighbor_adjusted_relative_change_max": 1.9042700750428843e-10,
+  "neighbor_adjusted_sign_stability": true
+}

@@ -1,0 +1,67 @@
+{
+  "original_n": 4880,
+  "covariates": [
+    "baseline_annual_mean",
+    "monitor_count",
+    "year_index",
+    "x",
+    "y",
+    "neighbor_nonattainment_lag1"
+  ],
+  "context_columns": [
+    "x",
+    "y",
+    "neighbor_nonattainment_lag1"
+  ],
+  "gps_weight_min": 0.0496141065303985,
+  "gps_weight_max": 147.04202013371892,
+  "gps_weight_mean": 1.0,
+  "gps_fit_n": 4880,
+  "gps_fallback_reason": null,
+  "erf_n": 4880,
+  "erf_grid_n": 50,
+  "estimators": {
+    "baseline_adjusted_ols": {
+      "status": "unstable",
+      "n": 4880,
+      "complete_n": 4880,
+      "dropped_n": 0,
+      "warnings": [
+        "Design matrix rank is lower than the number of columns."
+      ]
+    },
+    "difference_outcome_ols": {
+      "status": "unstable",
+      "n": 4880,
+      "complete_n": 4880,
+      "dropped_n": 0,
+      "warnings": [
+        "Design matrix rank is lower than the number of columns."
+      ]
+    },
+    "generalized_propensity_erf": {
+      "status": "ok",
+      "n": 4880,
+      "complete_n": 4880,
+      "dropped_n": 0,
+      "warnings": []
+    },
+    "spatial_neighbor_adjusted_ols": {
+      "status": "ok",
+      "n": 4880,
+      "complete_n": 4880,
+      "dropped_n": 0,
+      "warnings": [],
+      "neighbor_exposure_coef": 5.5423665656917365e-11,
+      "neighbor_exposure_p_value": 0.36442321813708833,
+      "spatial_adjustment_sensitivity": {
+        "baseline_exposure_coef": -0.9999999999564141,
+        "spatial_adjusted_exposure_coef": -0.9999999999195451,
+        "coef_delta": 3.6868952335566973e-11,
+        "relative_change": 3.686895233717394e-11,
+        "sign_stable": true
+      }
+    }
+  },
+  "spatial_adjusted_estimator": "spatial_neighbor_adjusted_ols"
+}

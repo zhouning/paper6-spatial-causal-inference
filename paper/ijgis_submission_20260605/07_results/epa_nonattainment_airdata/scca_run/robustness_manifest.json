@@ -1,0 +1,23 @@
+{
+  "case": "epa_nonattainment_airdata",
+  "original_decision": "weak_or_failed_support",
+  "main_coef": -0.9999999999561664,
+  "robustness_interpretation": "bounded_support",
+  "ablation_direction_stable": true,
+  "placebo_weaker_than_main": true,
+  "bootstrap_sign_stability": 1.0,
+  "erf_monotonic_direction": "decreasing",
+  "main_limitation": "Exposure boundary mass is high (0.512).; Maximum exposure-balance correlation is high (0.915).; Leave-one-subgroup-out spatial robustness is not estimable.; Core estimator status is unstable: baseline_adjusted_ols, difference_outcome_ols.; Residual spatial autocorrelation detected (Moran's I=0.876, p=0.010).",
+  "reasons": [
+    "Ablation, placebo, bootstrap, and ERF checks support the current interpretation."
+  ],
+  "files": {
+    "context_ablation": "context_ablation.csv",
+    "placebo_tests": "placebo_tests.csv",
+    "bootstrap_robustness": "bootstrap_robustness.csv",
+    "bootstrap_summary": "bootstrap_summary.json",
+    "erf_stability": "erf_stability.json",
+    "robustness_report": "robustness_report.md",
+    "robustness_manifest": "robustness_manifest.json"
+  }
+}

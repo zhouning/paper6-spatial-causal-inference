@@ -1,0 +1,6 @@
+{
+  "status": "unstable",
+  "model": "SLX",
+  "n": 4880,
+  "warning": "SLX design matrix is rank deficient."
+}

@@ -1,0 +1,14 @@
+{
+  "study": "epa_nonattainment_airdata",
+  "design": "binary_exposure_adjusted_regression",
+  "n_rows": 4880,
+  "unique_exposure_values": 2,
+  "exposure": "nonattainment_lag1",
+  "outcome": "annual_mean",
+  "baseline_outcome": "baseline_annual_mean",
+  "estimators": [
+    "baseline_adjusted_ols",
+    "difference_outcome_ols"
+  ],
+  "warnings": []
+}

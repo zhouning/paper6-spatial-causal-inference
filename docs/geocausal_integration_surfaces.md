@@ -154,6 +154,24 @@ For a reproducible toolbox smoke test, import
 `examples/data/county_social_capital.csv` into a file geodatabase table and use
 the fields documented in `examples/data/README.md`.
 
+
+### Commercial Benchmark Positioning
+
+The ArcGIS Pro toolbox is also the natural surface for benchmarking SCCA against
+ArcGIS Pro's Causal Inference Analysis tool. This comparison is a product
+positioning layer, not a second causal engine. ArcGIS defines the commercial
+baseline vocabulary: continuous exposure, outcome, confounders, exposure
+trimming, propensity scores, balancing weights, exposure-response functions, and
+target exposure or target outcome fields. SCCA should match those operational
+concepts where possible while preserving its own open output contract.
+
+The SCCA differentiators are the outputs ArcGIS-style causal tools usually do
+not foreground: residual Moran diagnostics, neighboring-exposure sensitivity,
+SLX-style spatial sensitivity, graph-sensitivity checks, spatial block
+bootstrap, and machine-readable evidence grades. The county social-capital case
+is the primary ArcGIS-facing parity benchmark because it exercises the same
+continuous-exposure workflow and records both ArcGIS-compatible sample
+accounting and SCCA-only spatial downgrades.
 ## QGIS Path
 
 The QGIS Processing provider follows the same adapter pattern:
