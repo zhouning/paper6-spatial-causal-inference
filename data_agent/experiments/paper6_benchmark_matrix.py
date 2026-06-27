@@ -17,6 +17,8 @@ DEFAULT_OUTPUT_DIR = DEFAULT_RESULTS_DIR / "paper6_multi_dataset_benchmark_matri
 OUTPUT_FILES = {
     "matrix_csv": "paper6_multi_dataset_benchmark_matrix.csv",
     "report_md": "paper6_multi_dataset_benchmark_matrix.md",
+    "surpass_scorecard_csv": "paper6_arcgis_surpass_scorecard.csv",
+    "surpass_scorecard_report_md": "paper6_arcgis_surpass_scorecard.md",
     "manifest_json": "paper6_multi_dataset_benchmark_matrix_manifest.json",
 }
 MATRIX_COLUMNS = [
@@ -50,6 +52,17 @@ MATRIX_COLUMNS = [
     "score_min",
     "score_max",
     "evidence_summary",
+    "next_action",
+]
+SCORECARD_COLUMNS = [
+    "criterion_id",
+    "category",
+    "status",
+    "metric_value",
+    "arcgis_reference",
+    "threshold",
+    "evidence_case",
+    "interpretation",
     "next_action",
 ]
 
@@ -273,6 +286,245 @@ def build_paper6_benchmark_matrix(
     return matrix
 
 
+def _scorecard_row(
+    *,
+    criterion_id: str,
+    category: str,
+    status: str,
+    metric_value: float | int | None = None,
+    arcgis_reference: float | int | None = None,
+    threshold: str | float | int | None = None,
+    evidence_case: str | None = None,
+    interpretation: str,
+    next_action: str,
+) -> dict[str, Any]:
+    return {
+        "criterion_id": criterion_id,
+        "category": category,
+        "status": status,
+        "metric_value": metric_value,
+        "arcgis_reference": arcgis_reference,
+        "threshold": threshold,
+        "evidence_case": evidence_case,
+        "interpretation": interpretation,
+        "next_action": next_action,
+    }
+
+
+def _row_float(row: pd.Series | None, column: str) -> float | None:
+    if row is None:
+        return None
+    return _finite_float(row.get(column))
+
+
+def _case_row(matrix: pd.DataFrame, case_id: str) -> pd.Series | None:
+    if matrix.empty or "case_id" not in matrix.columns:
+        return None
+    rows = matrix.loc[matrix["case_id"] == case_id]
+    return None if rows.empty else rows.iloc[0]
+
+
+def build_arcgis_surpass_scorecard(
+    matrix: pd.DataFrame,
+    *,
+    required_arcgis_real_rows: int = 3,
+    arcgis_style_erf_near_parity_mae: float = 0.05,
+    default_erf_gap_mae: float = 0.25,
+    known_truth_absolute_error_tolerance: float = 1e-6,
+) -> pd.DataFrame:
+    rows: list[dict[str, Any]] = []
+    county = _case_row(matrix, "county_arcgis_builtin")
+    arcgis_balance = _row_float(county, "arcgis_balance")
+    calibrated_balance = _row_float(county, "geocausal_calibrated_balance")
+    balance_status = (
+        "surpasses_arcgis"
+        if calibrated_balance is not None and arcgis_balance is not None and calibrated_balance < arcgis_balance
+        else "missing_evidence"
+        if calibrated_balance is None or arcgis_balance is None
+        else "open_gap"
+    )
+    rows.append(
+        _scorecard_row(
+            criterion_id="county_calibrated_balance",
+            category="direct_arcgis_metric",
+            status=balance_status,
+            metric_value=calibrated_balance,
+            arcgis_reference=arcgis_balance,
+            threshold="lower than ArcGIS weighted correlation",
+            evidence_case="county_arcgis_builtin",
+            interpretation="GeoCausal calibrated ArcGIS-style weights beat the ArcGIS balance score on the county benchmark."
+            if balance_status == "surpasses_arcgis"
+            else "GeoCausal calibrated balance has not beaten the ArcGIS balance reference.",
+            next_action="Replicate the calibrated-balance win on additional real ArcGIS comparisons.",
+        )
+    )
+
+    arcgis_style_erf = _row_float(county, "arcgis_style_erf_response_mae")
+    erf_status = (
+        "near_parity"
+        if arcgis_style_erf is not None and arcgis_style_erf <= arcgis_style_erf_near_parity_mae
+        else "missing_evidence"
+        if arcgis_style_erf is None
+        else "open_gap"
+    )
+    rows.append(
+        _scorecard_row(
+            criterion_id="county_arcgis_style_erf",
+            category="direct_arcgis_metric",
+            status=erf_status,
+            metric_value=arcgis_style_erf,
+            threshold=f"MAE <= {arcgis_style_erf_near_parity_mae}",
+            evidence_case="county_arcgis_builtin",
+            interpretation="ArcGIS-style open ERF closely reproduces the ArcGIS ERF curve."
+            if erf_status == "near_parity"
+            else "ArcGIS-style ERF is not yet close enough to the ArcGIS reference.",
+            next_action="Keep this as parity benchmark output while improving the default GeoCausal ERF.",
+        )
+    )
+
+    default_erf = _row_float(county, "default_erf_response_mae")
+    default_erf_status = (
+        "open_gap"
+        if default_erf is not None and default_erf > default_erf_gap_mae
+        else "missing_evidence"
+        if default_erf is None
+        else "acceptable"
+    )
+    rows.append(
+        _scorecard_row(
+            criterion_id="county_default_erf_gap",
+            category="direct_arcgis_metric",
+            status=default_erf_status,
+            metric_value=default_erf,
+            threshold=f"MAE <= {default_erf_gap_mae}",
+            evidence_case="county_arcgis_builtin",
+            interpretation="Default GeoCausal ERF is still numerically far from the ArcGIS ERF reference."
+            if default_erf_status == "open_gap"
+            else "Default GeoCausal ERF is within the configured ArcGIS-reference gap threshold.",
+            next_action="Tune the default ERF smoother/bandwidth or promote the open ArcGIS-style ERF as the default benchmark mode.",
+        )
+    )
+
+    arcgis_rows = 0
+    if not matrix.empty and "arcgis_available" in matrix.columns:
+        arcgis_rows = int((matrix["arcgis_available"] == True).sum())  # noqa: E712
+    coverage_status = "sufficient_evidence" if arcgis_rows >= required_arcgis_real_rows else "insufficient_evidence"
+    rows.append(
+        _scorecard_row(
+            criterion_id="direct_arcgis_real_dataset_coverage",
+            category="evidence_coverage",
+            status=coverage_status,
+            metric_value=arcgis_rows,
+            threshold=required_arcgis_real_rows,
+            evidence_case="all_arcgis_available_rows",
+            interpretation="Direct ArcGIS comparisons cover enough real datasets for a stronger claim."
+            if coverage_status == "sufficient_evidence"
+            else "Only a small number of real datasets have direct ArcGIS built-in comparisons.",
+            next_action="Add additional real ArcGIS comparisons before claiming broad superiority.",
+        )
+    )
+
+    synthetic_fragile = 0
+    if not matrix.empty and {"data_type", "synthetic_fragile_rows"}.issubset(matrix.columns):
+        synthetic_matrix = matrix.loc[matrix["data_type"] == "synthetic_known_truth"]
+        synthetic_fragile = int(
+            pd.to_numeric(synthetic_matrix["synthetic_fragile_rows"], errors="coerce").fillna(0).sum()
+        )
+    synthetic_status = "open_gap" if synthetic_fragile > 0 else "passes_known_truth"
+    rows.append(
+        _scorecard_row(
+            criterion_id="synthetic_fragility",
+            category="known_truth_robustness",
+            status=synthetic_status,
+            metric_value=synthetic_fragile,
+            threshold=0,
+            evidence_case="synthetic_known_truth_rows",
+            interpretation="Synthetic known-truth audit still contains fragile method/scenario rows."
+            if synthetic_status == "open_gap"
+            else "Synthetic known-truth audit has no fragile rows under the current summary.",
+            next_action="Prioritize fragile synthetic scenarios before claiming robust algorithmic superiority.",
+        )
+    )
+
+    epa = _case_row(matrix, "epa_nonattainment_airdata")
+    epa_error = _row_float(epa, "absolute_error")
+    epa_status = (
+        "passes_known_truth"
+        if epa_error is not None and epa_error <= known_truth_absolute_error_tolerance
+        else "missing_evidence"
+        if epa_error is None
+        else "open_gap"
+    )
+    rows.append(
+        _scorecard_row(
+            criterion_id="epa_known_truth_recovery",
+            category="policy_structure_known_truth",
+            status=epa_status,
+            metric_value=epa_error,
+            threshold=known_truth_absolute_error_tolerance,
+            evidence_case="epa_nonattainment_airdata",
+            interpretation="GeoCausal recovers the known EPA policy-structure semi-synthetic effect within tolerance."
+            if epa_status == "passes_known_truth"
+            else "EPA policy-structure known-effect recovery is not within tolerance or is unavailable.",
+            next_action="Replace the deterministic outcome with direct AQS AirData observational estimates when available.",
+        )
+    )
+
+    blocking_statuses = {"open_gap", "insufficient_evidence", "missing_evidence"}
+    blocking = [row for row in rows if row["status"] in blocking_statuses]
+    overall_status = "not_yet_claimable" if blocking else "claimable_with_current_evidence"
+    rows.append(
+        _scorecard_row(
+            criterion_id="overall_arcgis_surpass_readiness",
+            category="overall_gate",
+            status=overall_status,
+            metric_value=len(blocking),
+            threshold=0,
+            evidence_case="all_scorecard_rows",
+            interpretation="Evidence supports partial wins, but not a broad ArcGIS-superiority claim yet."
+            if blocking
+            else "No configured scorecard gates block a current ArcGIS-superiority claim.",
+            next_action="Add additional real ArcGIS comparisons and close open synthetic/default-ERF gaps."
+            if blocking
+            else "Maintain the gate as new datasets and metrics are added.",
+        )
+    )
+    return pd.DataFrame(rows, columns=SCORECARD_COLUMNS)
+
+def _render_surpass_scorecard_report(scorecard: pd.DataFrame) -> str:
+    lines = [
+        "# Paper 6 ArcGIS Surpass Scorecard",
+        "",
+        "This scorecard converts the benchmark matrix into explicit gates for judging ArcGIS replacement and superiority claims.",
+        "",
+    ]
+    if scorecard.empty:
+        lines.append("No scorecard rows were available.")
+        return "\n".join(lines) + "\n"
+
+    overall_rows = scorecard.loc[scorecard["criterion_id"] == "overall_arcgis_surpass_readiness"]
+    overall_status = "unknown" if overall_rows.empty else str(overall_rows.iloc[0]["status"])
+    blocking = scorecard[scorecard["status"].isin(["open_gap", "insufficient_evidence", "missing_evidence"])]
+    lines.extend(
+        [
+            f"- Overall status: `{overall_status}`",
+            f"- Blocking gates: `{len(blocking)}`",
+            f"- Surpassing gates: `{int((scorecard['status'] == 'surpasses_arcgis').sum())}`",
+            f"- Near-parity gates: `{int((scorecard['status'] == 'near_parity').sum())}`",
+            f"- Known-truth passes: `{int((scorecard['status'] == 'passes_known_truth').sum())}`",
+            "",
+            "## Blocking Gates",
+            "",
+        ]
+    )
+    if blocking.empty:
+        lines.append("- No blocking gates under the current configured scorecard.")
+    else:
+        for _, row in blocking.iterrows():
+            lines.append(f"- `{row['criterion_id']}`: `{row['status']}` - {row['next_action']}")
+    lines.extend(["", "## Scorecard", "", scorecard.to_markdown(index=False), ""])
+    return "\n".join(lines)
+
 def _render_report(matrix: pd.DataFrame) -> str:
     lines = [
         "# Paper 6 Multi-Dataset Benchmark Matrix",
@@ -327,15 +579,32 @@ def write_paper6_benchmark_matrix(
     )
     matrix_path = output_dir / OUTPUT_FILES["matrix_csv"]
     report_path = output_dir / OUTPUT_FILES["report_md"]
+    scorecard_path = output_dir / OUTPUT_FILES["surpass_scorecard_csv"]
+    scorecard_report_path = output_dir / OUTPUT_FILES["surpass_scorecard_report_md"]
     manifest_path = output_dir / OUTPUT_FILES["manifest_json"]
+    scorecard = build_arcgis_surpass_scorecard(matrix)
     matrix.to_csv(matrix_path, index=False)
     report_path.write_text(_render_report(matrix), encoding="utf-8")
+    scorecard.to_csv(scorecard_path, index=False)
+    scorecard_report_path.write_text(_render_surpass_scorecard_report(scorecard), encoding="utf-8")
     manifest = {
         "matrix_csv": str(matrix_path),
         "report_md": str(report_path),
         "manifest_json": str(manifest_path),
+        "surpass_scorecard_csv": str(scorecard_path),
+        "surpass_scorecard_report_md": str(scorecard_report_path),
         "n_rows": int(len(matrix)),
+        "scorecard_rows": int(len(scorecard)),
         "case_ids": matrix["case_id"].tolist() if not matrix.empty else [],
+        "surpass_scorecard_status": (
+            None
+            if scorecard.empty
+            else str(
+                scorecard.loc[
+                    scorecard["criterion_id"] == "overall_arcgis_surpass_readiness", "status"
+                ].iloc[0]
+            )
+        ),
         "inputs": {
             "arcgis_comparison_manifest": str(arcgis_comparison_manifest) if arcgis_comparison_manifest else None,
             "method_comparison_csv": str(method_comparison_csv) if method_comparison_csv else None,

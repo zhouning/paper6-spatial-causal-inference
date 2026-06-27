@@ -2,7 +2,10 @@
   "matrix_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_multi_dataset_benchmark_matrix.csv",
   "report_md": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_multi_dataset_benchmark_matrix.md",
   "manifest_json": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_multi_dataset_benchmark_matrix_manifest.json",
+  "surpass_scorecard_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_arcgis_surpass_scorecard.csv",
+  "surpass_scorecard_report_md": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_arcgis_surpass_scorecard.md",
   "n_rows": 10,
+  "scorecard_rows": 7,
   "case_ids": [
     "county_arcgis_builtin",
     "county_social_capital",
@@ -15,6 +18,7 @@
     "synthetic_PSM",
     "epa_nonattainment_airdata"
   ],
+  "surpass_scorecard_status": "not_yet_claimable",
   "inputs": {
     "arcgis_comparison_manifest": "D:\\tmp\\paper6_arcgis_builtin_causal_20260627\\geocausal_comparison_arcgis_style_erf_20260627\\arcgis_geocausal_comparison_manifest.json",
     "method_comparison_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\scca_method_comparison.csv",

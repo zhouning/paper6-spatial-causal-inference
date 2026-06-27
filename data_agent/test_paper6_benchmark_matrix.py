@@ -238,3 +238,70 @@ def test_paper6_benchmark_matrix_writer_includes_optional_epa_input(tmp_path):
     report = Path(manifest["report_md"]).read_text(encoding="utf-8")
     assert "Policy-structure semi-synthetic rows" in report
     assert "epa_nonattainment_airdata" in report
+
+def test_paper6_surpass_scorecard_marks_wins_gaps_and_next_priorities(tmp_path):
+    from data_agent.experiments.paper6_benchmark_matrix import (
+        build_arcgis_surpass_scorecard,
+        build_paper6_benchmark_matrix,
+    )
+
+    paths = _write_fixture_inputs(tmp_path)
+    matrix = build_paper6_benchmark_matrix(
+        arcgis_comparison_manifest=paths["arcgis_manifest"],
+        method_comparison_csv=paths["method_comparison"],
+        synthetic_scenario_summary_csv=paths["synthetic_summary"],
+        epa_benchmark_summary_json=paths["epa_summary"],
+    )
+
+    scorecard = build_arcgis_surpass_scorecard(matrix, required_arcgis_real_rows=2)
+
+    assert {
+        "county_calibrated_balance",
+        "county_arcgis_style_erf",
+        "county_default_erf_gap",
+        "direct_arcgis_real_dataset_coverage",
+        "synthetic_fragility",
+        "epa_known_truth_recovery",
+        "overall_arcgis_surpass_readiness",
+    }.issubset(set(scorecard["criterion_id"]))
+    balance = scorecard.loc[scorecard["criterion_id"] == "county_calibrated_balance"].iloc[0]
+    assert balance["status"] == "surpasses_arcgis"
+    assert balance["metric_value"] == 0.0453
+    assert balance["arcgis_reference"] == 0.0559
+    default_erf = scorecard.loc[scorecard["criterion_id"] == "county_default_erf_gap"].iloc[0]
+    assert default_erf["status"] == "open_gap"
+    coverage = scorecard.loc[scorecard["criterion_id"] == "direct_arcgis_real_dataset_coverage"].iloc[0]
+    assert coverage["status"] == "insufficient_evidence"
+    synthetic = scorecard.loc[scorecard["criterion_id"] == "synthetic_fragility"].iloc[0]
+    assert synthetic["status"] == "open_gap"
+    assert synthetic["metric_value"] == 12
+    epa = scorecard.loc[scorecard["criterion_id"] == "epa_known_truth_recovery"].iloc[0]
+    assert epa["status"] == "passes_known_truth"
+    overall = scorecard.loc[scorecard["criterion_id"] == "overall_arcgis_surpass_readiness"].iloc[0]
+    assert overall["status"] == "not_yet_claimable"
+    assert "additional real ArcGIS comparisons" in overall["next_action"]
+
+def test_paper6_benchmark_matrix_writer_outputs_surpass_scorecard(tmp_path):
+    from data_agent.experiments.paper6_benchmark_matrix import write_paper6_benchmark_matrix
+
+    paths = _write_fixture_inputs(tmp_path)
+
+    manifest = write_paper6_benchmark_matrix(
+        output_dir=tmp_path / "out_with_scorecard",
+        arcgis_comparison_manifest=paths["arcgis_manifest"],
+        method_comparison_csv=paths["method_comparison"],
+        synthetic_scenario_summary_csv=paths["synthetic_summary"],
+        epa_benchmark_summary_json=paths["epa_summary"],
+    )
+
+    scorecard_csv = Path(manifest["surpass_scorecard_csv"])
+    scorecard_report = Path(manifest["surpass_scorecard_report_md"])
+    assert scorecard_csv.exists()
+    assert scorecard_report.exists()
+    scorecard = pd.read_csv(scorecard_csv)
+    overall = scorecard.loc[scorecard["criterion_id"] == "overall_arcgis_surpass_readiness"].iloc[0]
+    assert overall["status"] == "not_yet_claimable"
+    report = scorecard_report.read_text(encoding="utf-8")
+    assert "Paper 6 ArcGIS Surpass Scorecard" in report
+    assert "not_yet_claimable" in report
+    assert "county_calibrated_balance" in report
