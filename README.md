@@ -141,6 +141,8 @@ Every successful `geocausal run` also writes an Open GIS analysis package under 
 
 This package is designed for ArcGIS-free use in Python, QGIS, notebooks, Excel, or BI tools while preserving the GIS causal-analysis concepts users expect: retained analysis rows, generalized propensity scores, balancing weights, balance diagnostics, a 200-point exposure-response curve, target-outcome outputs, spatial diagnostics, and evidence grading.
 
+See `docs/open_gis_analysis_package.md` for the ArcGIS-free quickstart, file semantics, QGIS/Python workflows, and acceptance checklist.
+
 ## Reproduction Cases
 
 The new-version paper centers on SCCA as a spatial causal workflow and evaluates it through multiple cases:

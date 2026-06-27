@@ -50,7 +50,9 @@ The shared core also writes an Open GIS analysis package for ArcGIS-free use:
 analysis rows, generalized propensity scores, balancing weights, balance
 summaries, a 200-point exposure-response curve, spatial diagnostics, and
 evidence grading through ordinary CSV/JSON/Markdown outputs. ArcGIS Pro is an
-optional adapter, not a runtime dependency for the causal evidence package.
+optional adapter, not a runtime dependency for the causal evidence package. The
+ArcGIS-free quickstart and acceptance checklist are maintained in
+`docs/open_gis_analysis_package.md`.
 
 ## Notebook Use
 

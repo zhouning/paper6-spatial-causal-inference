@@ -154,11 +154,12 @@ def _write_balance_summary(
         *[(column, "confounder") for column in spec.confounders],
         *[(column, "context") for column in spec.context_columns],
     ]
-    exposure = _series_or_nan(features, spec.exposure)
+    exposure = _series_or_nan(features, spec.exposure).reset_index(drop=True)
+    position_weights = pd.Series(weights).reset_index(drop=True)
     for variable, role in variables:
-        values = _series_or_nan(features, variable)
+        values = _series_or_nan(features, variable).reset_index(drop=True)
         raw = _weighted_correlation(exposure, values)
-        weighted = _weighted_correlation(exposure, values, weights)
+        weighted = _weighted_correlation(exposure, values, position_weights)
         abs_weighted = abs(weighted) if np.isfinite(weighted) else np.nan
         rows.append(
             {
