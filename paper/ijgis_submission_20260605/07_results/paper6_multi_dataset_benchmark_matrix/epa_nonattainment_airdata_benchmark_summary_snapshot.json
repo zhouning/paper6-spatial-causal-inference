@@ -1,0 +1,88 @@
+{
+    "benchmark_role":  "policy_structure_semisynthetic_until_airdata_download_recovers",
+    "airdata_status":  "AQS AirData downloads and API timed out from this environment; Green Book and Census inputs were acquired.",
+    "source_note":  "Sanitized snapshot derived from scca-epa-airdata-benchmark branch benchmark_summary.json for the Paper 6 multi-dataset matrix.",
+    "real_data":  {
+                      "effect_estimate":  -0.9999999999561664,
+                      "evidence_grade":  "bounded_support",
+                      "grade_rule_ids":  [
+                                             "weak_credibility",
+                                             "bounded_robustness",
+                                             "material_residual_moran"
+                                         ],
+                      "row_count":  4880,
+                      "panel_year_min":  2005,
+                      "panel_year_max":  2024,
+                      "true_effect":  -1.0,
+                      "absolute_error":  4.3833603413645505E-11
+                  },
+    "semi_synthetic":  {
+                           "scenario_count":  3,
+                           "median_absolute_error":  4.3586023679154096E-11,
+                           "mean_absolute_error":  3.8291888178794885E-11,
+                           "max_absolute_error":  4.3833603413645505E-11,
+                           "spatial_caution_scenarios":  [
+                                                             "spatial_confounding",
+                                                             "spillover",
+                                                             "stable_known_effect"
+                                                         ],
+                           "scenario_metrics":  [
+                                                    {
+                                                        "scenario":  "stable_known_effect",
+                                                        "effect_estimate":  -0.9999999999561664,
+                                                        "true_effect":  -1.0,
+                                                        "absolute_error":  4.3833603413645505E-11,
+                                                        "evidence_grade":  "bounded_support",
+                                                        "grade_rule_ids":  [
+                                                                               "weak_credibility",
+                                                                               "bounded_robustness",
+                                                                               "material_residual_moran"
+                                                                           ],
+                                                        "scenario_role":  "recoverable"
+                                                    },
+                                                    {
+                                                        "scenario":  "spatial_confounding",
+                                                        "effect_estimate":  -0.999999999972544,
+                                                        "true_effect":  -1.0,
+                                                        "absolute_error":  2.7456037443585046E-11,
+                                                        "evidence_grade":  "bounded_support",
+                                                        "grade_rule_ids":  [
+                                                                               "weak_credibility",
+                                                                               "bounded_robustness",
+                                                                               "material_residual_moran"
+                                                                           ],
+                                                        "scenario_role":  "spatial_confounding"
+                                                    },
+                                                    {
+                                                        "scenario":  "spillover",
+                                                        "effect_estimate":  -0.999999999956414,
+                                                        "true_effect":  -1.0,
+                                                        "absolute_error":  4.3586023679154096E-11,
+                                                        "evidence_grade":  "bounded_support",
+                                                        "grade_rule_ids":  [
+                                                                               "weak_credibility",
+                                                                               "fragile_robustness",
+                                                                               "material_residual_moran"
+                                                                           ],
+                                                        "scenario_role":  "neighbor_spillover"
+                                                    }
+                                                ]
+                       },
+    "policy_structure_semisynthetic":  {
+                                           "effect_estimate":  -0.9999999999561664,
+                                           "evidence_grade":  "bounded_support",
+                                           "grade_rule_ids":  [
+                                                                  "weak_credibility",
+                                                                  "bounded_robustness",
+                                                                  "material_residual_moran"
+                                                              ],
+                                           "row_count":  4880,
+                                           "panel_year_min":  2005,
+                                           "panel_year_max":  2024,
+                                           "true_effect":  -1.0,
+                                           "absolute_error":  4.3833603413645505E-11
+                                       },
+    "scca_manifest":  {
+                          "case_name":  "epa_nonattainment_airdata"
+                      }
+}

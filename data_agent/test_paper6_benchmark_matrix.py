@@ -1,0 +1,240 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pandas as pd
+
+
+def _write_fixture_inputs(tmp_path: Path) -> dict[str, Path]:
+    arcgis_manifest = tmp_path / "arcgis_comparison_manifest.json"
+    arcgis_manifest.write_text(
+        json.dumps(
+            {
+                "metrics": {
+                    "arcgis_final_n": 3044,
+                    "geocausal_joined_rows": 3044,
+                    "arcgis_mean_weighted_correlation": 0.0559,
+                    "geocausal_confounder_mean_abs_weighted_correlation": 0.1114,
+                    "geocausal_arcgis_style_calibrated_confounder_mean_abs_weighted_correlation": 0.0453,
+                    "erf_response_mae": 1.2736,
+                    "arcgis_style_erf_response_mae": 0.0429,
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    method_comparison = tmp_path / "scca_method_comparison.csv"
+    pd.DataFrame(
+        [
+            {
+                "comparison_id": "county_nonspatial_vs_spatial",
+                "case": "county_social_capital",
+                "baseline_method": "adjusted OLS",
+                "enhanced_method": "SCCA spatial diagnostics",
+                "baseline_effect": 0.18,
+                "enhanced_effect": 0.17,
+                "baseline_grade": "core_support",
+                "enhanced_grade": "bounded_support",
+            },
+            {
+                "comparison_id": "chongqing_raw_vs_full_scca",
+                "case": "chongqing_uhi",
+                "baseline_method": "raw difference",
+                "enhanced_method": "full SCCA matching",
+                "baseline_effect": 2.2,
+                "enhanced_effect": 0.9,
+                "baseline_grade": "bounded_support",
+                "enhanced_grade": "core_support",
+            },
+        ]
+    ).to_csv(method_comparison, index=False)
+    synthetic_summary = tmp_path / "scenario_fragility_summary.csv"
+    pd.DataFrame(
+        [
+            {
+                "scenario": "ERF",
+                "n_summary_rows": 4,
+                "n_robust": 2,
+                "n_bounded": 2,
+                "n_fragile": 0,
+                "min_score": 0.84,
+                "max_score": 0.91,
+            },
+            {
+                "scenario": "GCCM",
+                "n_summary_rows": 12,
+                "n_robust": 0,
+                "n_bounded": 0,
+                "n_fragile": 12,
+                "min_score": 0.06,
+                "max_score": 0.40,
+            },
+        ]
+    ).to_csv(synthetic_summary, index=False)
+    epa_summary = tmp_path / "epa_benchmark_summary.json"
+    epa_summary.write_text(
+        json.dumps(
+            {
+                "benchmark_role": "policy_structure_semisynthetic_until_airdata_download_recovers",
+                "airdata_status": "AQS AirData downloads timed out; Green Book and Census inputs were acquired.",
+                "real_data": {
+                    "effect_estimate": -0.9999999999561664,
+                    "evidence_grade": "bounded_support",
+                    "row_count": 4880,
+                    "panel_year_min": 2005,
+                    "panel_year_max": 2024,
+                    "true_effect": -1.0,
+                    "absolute_error": 4.3833603413645505e-11,
+                },
+                "semi_synthetic": {
+                    "scenario_count": 3,
+                    "median_absolute_error": 4.3586023679154096e-11,
+                    "mean_absolute_error": 3.8291888178794885e-11,
+                    "max_absolute_error": 4.3833603413645505e-11,
+                    "scenario_metrics": [
+                        {
+                            "scenario": "stable_known_effect",
+                            "absolute_error": 4.3833603413645505e-11,
+                            "evidence_grade": "bounded_support",
+                            "grade_rule_ids": [
+                                "weak_credibility",
+                                "bounded_robustness",
+                                "material_residual_moran",
+                            ],
+                        },
+                        {
+                            "scenario": "spatial_confounding",
+                            "absolute_error": 2.7456037443585046e-11,
+                            "evidence_grade": "bounded_support",
+                            "grade_rule_ids": [
+                                "weak_credibility",
+                                "bounded_robustness",
+                                "material_residual_moran",
+                            ],
+                        },
+                        {
+                            "scenario": "spillover",
+                            "absolute_error": 4.3586023679154096e-11,
+                            "evidence_grade": "bounded_support",
+                            "grade_rule_ids": [
+                                "weak_credibility",
+                                "fragile_robustness",
+                                "material_residual_moran",
+                            ],
+                        },
+                    ],
+                },
+                "policy_structure_semisynthetic": {
+                    "effect_estimate": -0.9999999999561664,
+                    "evidence_grade": "bounded_support",
+                    "row_count": 4880,
+                    "panel_year_min": 2005,
+                    "panel_year_max": 2024,
+                    "true_effect": -1.0,
+                    "absolute_error": 4.3833603413645505e-11,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    return {
+        "arcgis_manifest": arcgis_manifest,
+        "method_comparison": method_comparison,
+        "synthetic_summary": synthetic_summary,
+        "epa_summary": epa_summary,
+    }
+
+
+def test_paper6_benchmark_matrix_combines_arcgis_real_and_synthetic_rows(tmp_path):
+    from data_agent.experiments.paper6_benchmark_matrix import build_paper6_benchmark_matrix
+
+    paths = _write_fixture_inputs(tmp_path)
+
+    matrix = build_paper6_benchmark_matrix(
+        arcgis_comparison_manifest=paths["arcgis_manifest"],
+        method_comparison_csv=paths["method_comparison"],
+        synthetic_scenario_summary_csv=paths["synthetic_summary"],
+    )
+
+    assert set(matrix["case_id"]) == {
+        "county_arcgis_builtin",
+        "county_social_capital",
+        "chongqing_uhi",
+        "synthetic_ERF",
+        "synthetic_GCCM",
+    }
+    county = matrix.loc[matrix["case_id"] == "county_arcgis_builtin"].iloc[0]
+    assert county["arcgis_available"] is True
+    assert county["arcgis_style_erf_response_mae"] == 0.0429
+    assert county["geocausal_calibrated_balance"] == 0.0453
+    synthetic = matrix.loc[matrix["case_id"] == "synthetic_GCCM"].iloc[0]
+    assert synthetic["data_type"] == "synthetic_known_truth"
+    assert synthetic["synthetic_fragile_rows"] == 12
+    assert "prioritize" in synthetic["next_action"].lower()
+
+
+def test_paper6_benchmark_matrix_writes_csv_report_and_manifest(tmp_path):
+    from data_agent.experiments.paper6_benchmark_matrix import write_paper6_benchmark_matrix
+
+    paths = _write_fixture_inputs(tmp_path)
+    manifest = write_paper6_benchmark_matrix(
+        output_dir=tmp_path / "out",
+        arcgis_comparison_manifest=paths["arcgis_manifest"],
+        method_comparison_csv=paths["method_comparison"],
+        synthetic_scenario_summary_csv=paths["synthetic_summary"],
+    )
+
+    assert Path(manifest["matrix_csv"]).exists()
+    assert Path(manifest["report_md"]).exists()
+    assert Path(manifest["manifest_json"]).exists()
+    assert manifest["n_rows"] == 5
+    assert "county_arcgis_builtin" in manifest["case_ids"]
+    report = Path(manifest["report_md"]).read_text(encoding="utf-8")
+    assert "Paper 6 Multi-Dataset Benchmark Matrix" in report
+    assert "ArcGIS-style ERF MAE" in report
+    assert "synthetic_GCCM" in report
+
+def test_paper6_benchmark_matrix_includes_epa_policy_structure_semisynthetic_row(tmp_path):
+    from data_agent.experiments.paper6_benchmark_matrix import build_paper6_benchmark_matrix
+
+    paths = _write_fixture_inputs(tmp_path)
+
+    matrix = build_paper6_benchmark_matrix(
+        epa_benchmark_summary_json=paths["epa_summary"],
+    )
+
+    assert set(matrix["case_id"]) == {"epa_nonattainment_airdata"}
+    epa = matrix.iloc[0]
+    assert epa["data_type"] == "semi_synthetic_policy_structure"
+    assert epa["sample_rows"] == 4880
+    assert epa["panel_year_min"] == 2005
+    assert epa["panel_year_max"] == 2024
+    assert epa["scenario_count"] == 3
+    assert epa["synthetic_fragile_rows"] == 1
+    assert epa["enhanced_effect"] == -0.9999999999561664
+    assert epa["true_effect"] == -1.0
+    assert epa["absolute_error"] == 4.3833603413645505e-11
+    assert epa["median_absolute_error"] == 4.3586023679154096e-11
+    assert epa["enhanced_grade"] == "bounded_support"
+    assert "real epa policy geography" in epa["evidence_summary"].lower()
+
+def test_paper6_benchmark_matrix_writer_includes_optional_epa_input(tmp_path):
+    from data_agent.experiments.paper6_benchmark_matrix import write_paper6_benchmark_matrix
+
+    paths = _write_fixture_inputs(tmp_path)
+
+    manifest = write_paper6_benchmark_matrix(
+        output_dir=tmp_path / "out_with_epa",
+        arcgis_comparison_manifest=paths["arcgis_manifest"],
+        method_comparison_csv=paths["method_comparison"],
+        synthetic_scenario_summary_csv=paths["synthetic_summary"],
+        epa_benchmark_summary_json=paths["epa_summary"],
+    )
+
+    assert manifest["n_rows"] == 6
+    assert "epa_nonattainment_airdata" in manifest["case_ids"]
+    assert manifest["inputs"]["epa_benchmark_summary_json"] == str(paths["epa_summary"])
+    report = Path(manifest["report_md"]).read_text(encoding="utf-8")
+    assert "Policy-structure semi-synthetic rows" in report
+    assert "epa_nonattainment_airdata" in report
