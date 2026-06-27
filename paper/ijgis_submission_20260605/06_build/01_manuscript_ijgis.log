@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.4.25)  28 JUN 2026 00:12
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.4.25)  28 JUN 2026 01:08
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -695,7 +695,7 @@ Package rerunfilecheck Info: File `01_manuscript_ijgis.out' has not changed.
 Here is how much of TeX's memory you used:
  23099 strings out of 468830
  430641 string characters out of 5454207
- 832069 words of memory out of 5000000
+ 832070 words of memory out of 5000000
  51532 multiletter control sequences out of 15000+600000
  640220 words of font info for 88 fonts, out of 8000000 for 9000
  319 hyphenation exceptions out of 8191
@@ -723,7 +723,7 @@ mf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb><d:/texlive/2026/texmf-dist/fo
 nts/type1/public/amsfonts/cm/cmti10.pfb><d:/texlive/2026/texmf-dist/fonts/type1
 /public/amsfonts/cm/cmti9.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/am
 sfonts/cm/cmtt10.pfb>
-Output written on ../06_build/01_manuscript_ijgis.pdf (19 pages, 340051 bytes).
+Output written on ../06_build/01_manuscript_ijgis.pdf (19 pages, 340679 bytes).
 
 PDF statistics:
  443 PDF objects out of 1000 (max. 8388607)
