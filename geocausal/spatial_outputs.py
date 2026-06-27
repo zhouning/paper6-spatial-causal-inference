@@ -817,12 +817,101 @@ def _report_link_rows(files: dict[str, str], output_dir: Path) -> str:
     return "\n".join(rows) if rows else "<tr><td colspan=\"2\">No files generated.</td></tr>"
 
 
+def _report_analysis_manifest(spatial_manifest: dict[str, Any]) -> dict[str, Any]:
+    analysis_dir = spatial_manifest.get("analysis_dir")
+    if not analysis_dir:
+        return {}
+    return _load_json_if_exists(Path(str(analysis_dir)) / "manifest.json")
+
+
+def _report_evidence_cards(analysis_manifest: dict[str, Any]) -> str:
+    evidence_fields = (
+        ("case_name", "Case name"),
+        ("evidence_grade", "Evidence grade"),
+        ("credibility_decision", "Credibility decision"),
+        ("robustness_interpretation", "Robustness interpretation"),
+    )
+    cards: list[str] = []
+    for key, label in evidence_fields:
+        value = analysis_manifest.get(key)
+        if value is None or value == "":
+            continue
+        cards.append(
+            "<div class=\"metric evidence-metric\">"
+            f"{html_escape(label)}<strong>{html_escape(str(value))}</strong>"
+            "</div>"
+        )
+    if not cards:
+        return ""
+    return (
+        "<section><h2>Evidence summary</h2>"
+        "<div class=\"summary evidence-summary\">"
+        f"{''.join(cards)}"
+        "</div></section>"
+    )
+
+
+def _report_image_previews(visualizations: dict[str, str], output_dir: Path) -> str:
+    preview_fields = (
+        ("erf_curve_png", "Exposure-response curve"),
+        ("effect_estimates_png", "Effect estimates"),
+        ("spatial_slx_effects_png", "Spatial spillover effects"),
+        ("target_exposure_change_histogram_png", "Exposure change distribution"),
+        ("target_exposure_change_map_png", "Target exposure change map"),
+        ("spatial_indirect_effect_map_png", "Spatial indirect effect map"),
+    )
+    figures: list[str] = []
+    for key, title in preview_fields:
+        path_value = visualizations.get(key)
+        if not path_value:
+            continue
+        href = _report_href(path_value, output_dir)
+        filename = Path(path_value).name or str(path_value)
+        figures.append(
+            "<figure>"
+            f"<a href=\"{html_escape(href)}\"><img src=\"{html_escape(href)}\" "
+            f"alt=\"{html_escape(title)}\"></a>"
+            f"<figcaption>{html_escape(title)} "
+            f"<span>{html_escape(filename)}</span></figcaption>"
+            "</figure>"
+        )
+    if not figures:
+        return ""
+    return (
+        "<section><h2>Image previews</h2>"
+        "<div class=\"preview-grid\">"
+        f"{''.join(figures)}"
+        "</div></section>"
+    )
+
+
+def _report_map_preview(visualizations: dict[str, str], output_dir: Path) -> str:
+    path_value = visualizations.get("target_exposure_change_map_html")
+    title = "Interactive target exposure change map"
+    if not path_value:
+        path_value = visualizations.get("spatial_indirect_effect_map_html")
+        title = "Interactive spatial indirect effect map"
+    if not path_value:
+        return ""
+    href = _report_href(path_value, output_dir)
+    label = Path(path_value).name or str(path_value)
+    return (
+        "<section><h2>Interactive map</h2>"
+        "<div class=\"map-preview\">"
+        f"<iframe src=\"{html_escape(href)}\" title=\"{html_escape(title)}\"></iframe>"
+        f"<p><a href=\"{html_escape(href)}\">Open {html_escape(label)}</a></p>"
+        "</div></section>"
+    )
+
+
 def write_open_spatial_report(*, output_dir: str | Path, manifest: dict[str, Any]) -> str:
     output_dir = Path(output_dir)
     report_path = output_dir / "open_gis_spatial_report.html"
+    analysis_manifest = _report_analysis_manifest(manifest)
+    visualizations = {k: v for k, v in manifest.get("visualizations", {}).items() if v}
     sections = {
         "Spatial files": manifest.get("spatial_files", {}),
-        "Visualizations": manifest.get("visualizations", {}),
+        "Visualizations": visualizations,
         "QGIS styles": manifest.get("qgis_styles", {}),
         "Manifest": {"spatial_output_manifest": manifest.get("manifest", "")},
     }
@@ -847,6 +936,14 @@ def write_open_spatial_report(*, output_dir: str | Path, manifest: dict[str, Any
     .summary {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }}
     .metric {{ border: 1px solid #d5dbe3; padding: 12px; }}
     .metric strong {{ display: block; font-size: 22px; margin-top: 4px; }}
+    .evidence-metric strong {{ font-size: 18px; }}
+    .preview-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }}
+    figure {{ border: 1px solid #d5dbe3; margin: 0; padding: 10px; }}
+    img {{ display: block; width: 100%; height: auto; }}
+    figcaption {{ font-weight: 700; margin-top: 8px; }}
+    figcaption span {{ color: #52616b; display: block; font-size: 12px; font-weight: 400; margin-top: 2px; }}
+    .map-preview {{ border: 1px solid #d5dbe3; padding: 10px; }}
+    iframe {{ border: 0; display: block; height: 520px; width: 100%; }}
     table {{ border-collapse: collapse; width: 100%; }}
     th, td {{ border: 1px solid #d5dbe3; padding: 8px 10px; text-align: left; }}
     th {{ background: #f3f6f8; }}
@@ -864,6 +961,9 @@ def write_open_spatial_report(*, output_dir: str | Path, manifest: dict[str, Any
     <div class=\"metric\">Map field<strong>{html_escape(str(manifest.get("map_field", "")))}</strong></div>
     <div class=\"metric\">CRS<strong>{html_escape(str(manifest.get("crs", "")))}</strong></div>
   </section>
+  {_report_evidence_cards(analysis_manifest)}
+  {_report_map_preview(visualizations, output_dir)}
+  {_report_image_previews(visualizations, output_dir)}
   {chr(10).join(section_html)}
 </body>
 </html>

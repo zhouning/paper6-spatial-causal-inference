@@ -125,7 +125,7 @@ spatial_manifest = build_spatial_analysis_outputs(
 
 This writes GeoPackage, GeoJSON, Shapefile, chart PNGs, a static choropleth PNG,
 and an interactive Folium HTML map. The same builder is available from the CLI
-through `python -m geocausal.cli spatial-package ...`, including `open_gis_spatial_report.html` as a browser entry point. GeoPackage and GeoJSON
+through `python -m geocausal.cli spatial-package ...`, including `open_gis_spatial_report.html` as a browser entry point with evidence fields, embedded image previews, and an embedded Folium map. GeoPackage and GeoJSON
 preserve long analysis field names; Shapefile output is compatibility-only
 because DBF field names are limited to 10 characters.
 
