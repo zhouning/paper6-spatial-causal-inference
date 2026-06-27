@@ -102,7 +102,7 @@ python -m geocausal.cli arcgis-compare `
   --output-dir D:\tmp\paper6_arcgis_builtin_causal_20260627\geocausal_comparison_final
 ```
 
-Current real-data comparison from the same county smoke run:
+Current real-data comparison from the same county smoke run after adding the GeoCausal ArcGIS-style and calibrated balance layers:
 
 ```json
 {
@@ -115,8 +115,10 @@ Current real-data comparison from the same county smoke run:
   "erf_response_rmse": 1.3805616459314445,
   "arcgis_mean_weighted_correlation": 0.0559,
   "geocausal_confounder_mean_abs_weighted_correlation": 0.11135132300647173,
-  "geocausal_all_mean_abs_weighted_correlation": 0.09707161677961383,
-  "geocausal_max_abs_weighted_correlation": 0.2178475400766404
+  "geocausal_arcgis_style_confounder_mean_abs_weighted_correlation": 0.06306845829924364,
+  "geocausal_arcgis_style_calibrated_confounder_mean_abs_weighted_correlation": 0.04527880279569707,
+  "geocausal_arcgis_style_selected_num_bins": 25,
+  "geocausal_arcgis_style_selected_scale": 0.4
 }
 ```
 
@@ -124,6 +126,9 @@ Interpretation:
 
 - ArcGIS and GeoCausal retain the same `3044` analysis rows after 1%/99% exposure trimming.
 - ArcGIS and GeoCausal both produce a 200-row ERF table on the same exposure grid.
-- The current ArcGIS ERF and GeoCausal ERF differ by `1.27` years MAE on response values.
-- ArcGIS's built-in matching balance is stronger for the county confounders in this run: `0.0559` versus GeoCausal confounder mean absolute weighted correlation `0.1114`.
-- GeoCausal still adds open outputs, evidence grading, spatial diagnostics, SLX/spillover checks, QGIS/browser reports, and reproducible manifests that the ArcGIS built-in tool does not provide as a single open package.
+- The current ArcGIS ERF and GeoCausal ERF still differ by `1.27` years MAE on response values; ERF smoothing remains the next numerical parity target.
+- The original GeoCausal GPS weighting remains weaker on county confounder balance: `0.1114` versus ArcGIS official `0.0559`.
+- The new GeoCausal ArcGIS-style count matching closes most of that gap: `0.0631`, with `25` selected exposure bins matching ArcGIS's selected bin count.
+- The GeoCausal calibrated count-weight layer surpasses ArcGIS on this balance metric: `0.0453` versus ArcGIS `0.0559`; all 11 county confounders are below the `0.1` balance threshold in `arcgis_style_calibrated_balance_summary.csv`.
+- The calibrated layer is a GeoCausal-only refinement, so reports should show its calibration diagnostics alongside the gain: effective sample size is about `117`, nonzero weight count is `1544`, and maximum calibrated weight is about `3018` in the current county run.
+- GeoCausal also adds open outputs, evidence grading, spatial diagnostics, SLX/spillover checks, QGIS/browser reports, and reproducible manifests that the ArcGIS built-in tool does not provide as a single open package.

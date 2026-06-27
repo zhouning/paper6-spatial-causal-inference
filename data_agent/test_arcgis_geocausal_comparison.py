@@ -47,6 +47,24 @@ def _write_open_gis_fixture(tmp_path: Path) -> Path:
             {"variable": "ctx", "role": "context", "absolute_weighted_correlation": 0.20},
         ]
     ).to_csv(open_dir / "gis_balance_summary.csv", index=False)
+    pd.DataFrame(
+        [
+            {"num_bins": 7, "scale": 0.6, "mean_abs_weighted_correlation": 0.03, "selected": False},
+            {"num_bins": 7, "scale": 0.8, "mean_abs_weighted_correlation": 0.02, "selected": True},
+        ]
+    ).to_csv(open_dir / "arcgis_style_matching_grid.csv", index=False)
+    pd.DataFrame(
+        [
+            {"variable": "x1", "role": "confounder", "absolute_weighted_correlation": 0.01},
+            {"variable": "x2", "role": "confounder", "absolute_weighted_correlation": 0.03},
+        ]
+    ).to_csv(open_dir / "arcgis_style_balance_summary.csv", index=False)
+    pd.DataFrame(
+        [
+            {"variable": "x1", "role": "confounder", "absolute_weighted_correlation": 0.005},
+            {"variable": "x2", "role": "confounder", "absolute_weighted_correlation": 0.015},
+        ]
+    ).to_csv(open_dir / "arcgis_style_calibrated_balance_summary.csv", index=False)
     (open_dir / "gis_run_summary.json").write_text(
         json.dumps({"evidence_grade": "core_support"}), encoding="utf-8"
     )
@@ -72,16 +90,24 @@ def test_build_arcgis_geocausal_comparison_writes_metrics_and_report(tmp_path):
     assert round(manifest["metrics"]["erf_response_mae"], 4) == 0.6667
     assert round(manifest["metrics"]["erf_response_rmse"], 4) == 0.8165
     assert manifest["metrics"]["geocausal_confounder_mean_abs_weighted_correlation"] == 0.05
+    assert manifest["metrics"]["geocausal_arcgis_style_confounder_mean_abs_weighted_correlation"] == 0.02
+    assert manifest["metrics"]["geocausal_arcgis_style_selected_num_bins"] == 7
+    assert manifest["metrics"]["geocausal_arcgis_style_selected_scale"] == 0.8
+    assert manifest["metrics"]["geocausal_arcgis_style_calibrated_confounder_mean_abs_weighted_correlation"] == 0.01
 
     table = pd.read_csv(manifest["comparison_csv"])
     rows = dict(zip(table["metric"], table["status"]))
     assert rows["analysis_rows"] == "match"
     assert rows["erf_rows"] == "match"
     assert rows["mean_weighted_balance"] == "geocausal_lower"
+    assert rows["arcgis_style_mean_weighted_balance"] == "geocausal_lower"
+    assert rows["arcgis_style_calibrated_mean_weighted_balance"] == "geocausal_lower"
 
     report = Path(manifest["report_md"]).read_text(encoding="utf-8")
     assert "ArcGIS vs GeoCausal Benchmark" in report
     assert "ERF response MAE" in report
+    assert "GeoCausal ArcGIS-style confounder mean absolute weighted balance" in report
+    assert "GeoCausal ArcGIS-style calibrated confounder mean absolute weighted balance" in report
 
 
 def test_cli_arcgis_compare_prints_manifest(tmp_path, monkeypatch, capsys):

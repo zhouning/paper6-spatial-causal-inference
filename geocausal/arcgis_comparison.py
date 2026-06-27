@@ -118,6 +118,64 @@ def _balance_metrics(balance: pd.DataFrame) -> dict[str, float | None]:
     }
 
 
+def _arcgis_style_balance_metrics(balance: pd.DataFrame) -> dict[str, float | None]:
+    base = _balance_metrics(balance)
+    return {
+        "geocausal_arcgis_style_confounder_mean_abs_weighted_correlation": base[
+            "geocausal_confounder_mean_abs_weighted_correlation"
+        ],
+        "geocausal_arcgis_style_all_mean_abs_weighted_correlation": base[
+            "geocausal_all_mean_abs_weighted_correlation"
+        ],
+        "geocausal_arcgis_style_max_abs_weighted_correlation": base[
+            "geocausal_max_abs_weighted_correlation"
+        ],
+    }
+
+
+
+def _arcgis_style_calibrated_balance_metrics(balance: pd.DataFrame) -> dict[str, float | None]:
+    base = _balance_metrics(balance)
+    return {
+        "geocausal_arcgis_style_calibrated_confounder_mean_abs_weighted_correlation": base[
+            "geocausal_confounder_mean_abs_weighted_correlation"
+        ],
+        "geocausal_arcgis_style_calibrated_all_mean_abs_weighted_correlation": base[
+            "geocausal_all_mean_abs_weighted_correlation"
+        ],
+        "geocausal_arcgis_style_calibrated_max_abs_weighted_correlation": base[
+            "geocausal_max_abs_weighted_correlation"
+        ],
+    }
+def _arcgis_style_grid_metrics(grid: pd.DataFrame) -> dict[str, float | int | None]:
+    metrics: dict[str, float | int | None] = {
+        "geocausal_arcgis_style_grid_rows": int(len(grid)) if not grid.empty else None,
+        "geocausal_arcgis_style_selected_num_bins": None,
+        "geocausal_arcgis_style_selected_scale": None,
+        "geocausal_arcgis_style_selected_mean_abs_weighted_correlation": None,
+    }
+    if grid.empty:
+        return metrics
+    selected = pd.DataFrame()
+    if "selected" in grid.columns:
+        flags = grid["selected"].astype(str).str.lower().isin({"true", "1", "yes"})
+        selected = grid.loc[flags]
+    if selected.empty and "mean_abs_weighted_correlation" in grid.columns:
+        objective = pd.to_numeric(grid["mean_abs_weighted_correlation"], errors="coerce")
+        finite = objective.replace([np.inf, -np.inf], np.nan).dropna()
+        if not finite.empty:
+            selected = grid.loc[[int(finite.idxmin())]]
+    if selected.empty:
+        return metrics
+    row = selected.iloc[0]
+    metrics["geocausal_arcgis_style_selected_num_bins"] = int(row["num_bins"]) if "num_bins" in row else None
+    metrics["geocausal_arcgis_style_selected_scale"] = _finite_float(row.get("scale"))
+    metrics["geocausal_arcgis_style_selected_mean_abs_weighted_correlation"] = _finite_float(
+        row.get("mean_abs_weighted_correlation")
+    )
+    return metrics
+
+
 def _status_exact(left: Any, right: Any) -> str:
     return "match" if left == right and left is not None else "different"
 
@@ -193,6 +251,26 @@ def _comparison_rows(metrics: dict[str, Any]) -> list[dict[str, Any]]:
             ),
             interpretation="Lower mean absolute weighted exposure-confounder correlation is better.",
         ),
+        _metric_row(
+            "arcgis_style_mean_weighted_balance",
+            metrics.get("arcgis_mean_weighted_correlation"),
+            metrics.get("geocausal_arcgis_style_confounder_mean_abs_weighted_correlation"),
+            status=_status_lower_better(
+                metrics.get("arcgis_mean_weighted_correlation"),
+                metrics.get("geocausal_arcgis_style_confounder_mean_abs_weighted_correlation"),
+            ),
+            interpretation="Lower mean absolute weighted exposure-confounder correlation is better; GeoCausal side uses ArcGIS-style count matching.",
+        ),
+        _metric_row(
+            "arcgis_style_calibrated_mean_weighted_balance",
+            metrics.get("arcgis_mean_weighted_correlation"),
+            metrics.get("geocausal_arcgis_style_calibrated_confounder_mean_abs_weighted_correlation"),
+            status=_status_lower_better(
+                metrics.get("arcgis_mean_weighted_correlation"),
+                metrics.get("geocausal_arcgis_style_calibrated_confounder_mean_abs_weighted_correlation"),
+            ),
+            interpretation="Lower mean absolute weighted exposure-confounder correlation is better; GeoCausal side uses calibrated ArcGIS-style count weights.",
+        ),
     ]
 
 
@@ -211,6 +289,13 @@ def _render_report(rows: pd.DataFrame, metrics: dict[str, Any]) -> str:
         f"- ArcGIS mean weighted balance: `{metrics.get('arcgis_mean_weighted_correlation')}`",
         "- GeoCausal confounder mean absolute weighted balance: "
         f"`{metrics.get('geocausal_confounder_mean_abs_weighted_correlation')}`",
+        "- GeoCausal ArcGIS-style confounder mean absolute weighted balance: "
+        f"`{metrics.get('geocausal_arcgis_style_confounder_mean_abs_weighted_correlation')}`",
+        "- GeoCausal ArcGIS-style calibrated confounder mean absolute weighted balance: "
+        f"`{metrics.get('geocausal_arcgis_style_calibrated_confounder_mean_abs_weighted_correlation')}`",
+        "- GeoCausal ArcGIS-style selected bins/scale: "
+        f"`{metrics.get('geocausal_arcgis_style_selected_num_bins')}` / "
+        f"`{metrics.get('geocausal_arcgis_style_selected_scale')}`",
         "",
         "## Comparison Table",
         "",
@@ -242,6 +327,11 @@ def build_arcgis_geocausal_comparison(
     geocausal_joined = _read_csv(open_gis_dir / "analysis_joined.csv")
     geocausal_erf = _read_csv(open_gis_dir / "gis_erf_curve_200.csv")
     geocausal_balance = _read_csv(open_gis_dir / "gis_balance_summary.csv")
+    geocausal_arcgis_style_balance = _read_csv(open_gis_dir / "arcgis_style_balance_summary.csv")
+    geocausal_arcgis_style_calibrated_balance = _read_csv(
+        open_gis_dir / "arcgis_style_calibrated_balance_summary.csv"
+    )
+    geocausal_arcgis_style_grid = _read_csv(open_gis_dir / "arcgis_style_matching_grid.csv")
     geocausal_summary = _read_json(open_gis_dir / "gis_run_summary.json")
 
     metrics: dict[str, Any] = {
@@ -260,6 +350,9 @@ def build_arcgis_geocausal_comparison(
     }
     metrics.update(_erf_metrics(arcgis_erf, geocausal_erf))
     metrics.update(_balance_metrics(geocausal_balance))
+    metrics.update(_arcgis_style_balance_metrics(geocausal_arcgis_style_balance))
+    metrics.update(_arcgis_style_calibrated_balance_metrics(geocausal_arcgis_style_calibrated_balance))
+    metrics.update(_arcgis_style_grid_metrics(geocausal_arcgis_style_grid))
 
     rows = pd.DataFrame(_comparison_rows(metrics))
     comparison_path = output_dir / OUTPUT_FILES["comparison_csv"]

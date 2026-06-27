@@ -95,6 +95,9 @@ def test_qgis_open_gis_output_mapping_uses_manifest_package_files(tmp_path):
                 "analysis_joined": "analysis_joined.csv",
                 "gis_balance_summary": "gis_balance_summary.csv",
                 "gis_erf_curve_200": "gis_erf_curve_200.csv",
+                "arcgis_style_matching_grid": "arcgis_style_matching_grid.csv",
+                "arcgis_style_balance_summary": "arcgis_style_balance_summary.csv",
+                "arcgis_style_calibrated_balance_summary": "arcgis_style_calibrated_balance_summary.csv",
                 "gis_run_summary_json": "gis_run_summary.json",
                 "gis_run_summary_markdown": "gis_run_summary.md",
             },
@@ -108,6 +111,9 @@ def test_qgis_open_gis_output_mapping_uses_manifest_package_files(tmp_path):
     assert outputs[algorithm.OUTPUT_OPEN_GIS_JOINED] == str(package_dir / "analysis_joined.csv")
     assert outputs[algorithm.OUTPUT_OPEN_GIS_BALANCE] == str(package_dir / "gis_balance_summary.csv")
     assert outputs[algorithm.OUTPUT_OPEN_GIS_ERF_200] == str(package_dir / "gis_erf_curve_200.csv")
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_ARCGIS_STYLE_GRID] == str(package_dir / "arcgis_style_matching_grid.csv")
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_ARCGIS_STYLE_BALANCE] == str(package_dir / "arcgis_style_balance_summary.csv")
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_ARCGIS_STYLE_CALIBRATED_BALANCE] == str(package_dir / "arcgis_style_calibrated_balance_summary.csv")
     assert outputs[algorithm.OUTPUT_OPEN_GIS_SUMMARY_JSON] == str(package_dir / "gis_run_summary.json")
     assert outputs[algorithm.OUTPUT_OPEN_GIS_SUMMARY_MD] == str(package_dir / "gis_run_summary.md")
 

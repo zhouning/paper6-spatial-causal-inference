@@ -62,6 +62,9 @@ class GeoCausalSCCAAlgorithm:
     OUTPUT_OPEN_GIS_JOINED = "OUTPUT_OPEN_GIS_ANALYSIS_JOINED"
     OUTPUT_OPEN_GIS_BALANCE = "OUTPUT_OPEN_GIS_BALANCE_SUMMARY"
     OUTPUT_OPEN_GIS_ERF_200 = "OUTPUT_OPEN_GIS_ERF_200"
+    OUTPUT_OPEN_GIS_ARCGIS_STYLE_GRID = "OUTPUT_OPEN_GIS_ARCGIS_STYLE_GRID"
+    OUTPUT_OPEN_GIS_ARCGIS_STYLE_BALANCE = "OUTPUT_OPEN_GIS_ARCGIS_STYLE_BALANCE"
+    OUTPUT_OPEN_GIS_ARCGIS_STYLE_CALIBRATED_BALANCE = "OUTPUT_OPEN_GIS_ARCGIS_STYLE_CALIBRATED_BALANCE"
     OUTPUT_OPEN_GIS_SUMMARY_JSON = "OUTPUT_OPEN_GIS_SUMMARY_JSON"
     OUTPUT_OPEN_GIS_SUMMARY_MD = "OUTPUT_OPEN_GIS_SUMMARY_MD"
 
@@ -223,6 +226,16 @@ class GeoCausalSCCAAlgorithm:
             cls.OUTPUT_OPEN_GIS_JOINED: generated_path("analysis_joined", "analysis_joined.csv"),
             cls.OUTPUT_OPEN_GIS_BALANCE: generated_path("gis_balance_summary", "gis_balance_summary.csv"),
             cls.OUTPUT_OPEN_GIS_ERF_200: generated_path("gis_erf_curve_200", "gis_erf_curve_200.csv"),
+            cls.OUTPUT_OPEN_GIS_ARCGIS_STYLE_GRID: generated_path(
+                "arcgis_style_matching_grid", "arcgis_style_matching_grid.csv"
+            ),
+            cls.OUTPUT_OPEN_GIS_ARCGIS_STYLE_BALANCE: generated_path(
+                "arcgis_style_balance_summary", "arcgis_style_balance_summary.csv"
+            ),
+            cls.OUTPUT_OPEN_GIS_ARCGIS_STYLE_CALIBRATED_BALANCE: generated_path(
+                "arcgis_style_calibrated_balance_summary",
+                "arcgis_style_calibrated_balance_summary.csv",
+            ),
             cls.OUTPUT_OPEN_GIS_SUMMARY_JSON: generated_path("gis_run_summary_json", "gis_run_summary.json"),
             cls.OUTPUT_OPEN_GIS_SUMMARY_MD: generated_path("gis_run_summary_markdown", "gis_run_summary.md"),
         }
@@ -330,6 +343,9 @@ class GeoCausalSCCAAlgorithm:
                 self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_JOINED, "Open GIS Analysis Joined CSV"))
                 self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_BALANCE, "Open GIS Balance Summary CSV"))
                 self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_ERF_200, "Open GIS ERF 200 CSV"))
+                self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_ARCGIS_STYLE_GRID, "Open GIS ArcGIS-style Matching Grid CSV"))
+                self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_ARCGIS_STYLE_BALANCE, "Open GIS ArcGIS-style Balance CSV"))
+                self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_ARCGIS_STYLE_CALIBRATED_BALANCE, "Open GIS Calibrated Balance CSV"))
                 self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_SUMMARY_JSON, "Open GIS Summary JSON"))
                 self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_SUMMARY_MD, "Open GIS Summary Markdown"))
 

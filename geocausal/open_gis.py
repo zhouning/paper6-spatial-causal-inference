@@ -9,6 +9,7 @@ import pandas as pd
 
 from data_agent.scca.specs import SCCAPaths, StudySpec
 
+from .arcgis_style_matching import arcgis_style_matching_search
 from .config import GeoCausalConfig
 
 
@@ -209,6 +210,44 @@ def _write_erf_200(package_dir: Path, paths: SCCAPaths) -> tuple[Path, list[str]
     return output_path, warnings
 
 
+def _write_arcgis_style_matching_outputs(
+    *,
+    package_dir: Path,
+    features: pd.DataFrame,
+    spec: StudySpec,
+) -> tuple[pd.Series, pd.Series, pd.Series, Path, Path, Path, dict[str, Any], list[str]]:
+    result = arcgis_style_matching_search(
+        features,
+        exposure=spec.exposure,
+        confounders=spec.confounders,
+    )
+    grid_path = package_dir / "arcgis_style_matching_grid.csv"
+    balance_path = package_dir / "arcgis_style_balance_summary.csv"
+    calibrated_balance_path = package_dir / "arcgis_style_calibrated_balance_summary.csv"
+    result.grid.to_csv(grid_path, index=False, encoding="utf-8-sig")
+    result.balance_summary.to_csv(balance_path, index=False, encoding="utf-8-sig")
+    result.calibrated_balance_summary.to_csv(calibrated_balance_path, index=False, encoding="utf-8-sig")
+    selected = {
+        "selected_num_bins": result.selected_num_bins,
+        "selected_scale": result.selected_scale,
+        "selected_mean_abs_weighted_correlation": result.selected_mean_abs_weighted_correlation,
+        "calibrated_mean_abs_weighted_correlation": result.calibrated_mean_abs_weighted_correlation,
+        "calibration": result.calibration_summary,
+        "nonzero_weight_n": int((result.weights > 0).sum()),
+        "calibrated_nonzero_weight_n": int((result.calibrated_weights > 0).sum()),
+        "candidate_count": int(len(result.grid)),
+    }
+    return (
+        result.propensity_scores,
+        result.weights,
+        result.calibrated_weights,
+        grid_path,
+        balance_path,
+        calibrated_balance_path,
+        selected,
+        list(result.warnings),
+    )
+
 def write_open_gis_package(
     *,
     config: GeoCausalConfig,
@@ -234,16 +273,37 @@ def write_open_gis_package(
         spec=spec,
         weights=weights,
     )
+    (
+        arcgis_style_propensity,
+        arcgis_style_weights,
+        arcgis_style_calibrated_weights,
+        arcgis_style_grid_path,
+        arcgis_style_balance_path,
+        arcgis_style_calibrated_balance_path,
+        arcgis_style_summary,
+        arcgis_style_warnings,
+    ) = _write_arcgis_style_matching_outputs(
+        package_dir=package_dir,
+        features=features,
+        spec=spec,
+    )
+    joined["gc_arcgis_style_propensity_score"] = arcgis_style_propensity.reset_index(drop=True)
+    joined["gc_arcgis_style_matching_weight"] = arcgis_style_weights.reset_index(drop=True)
+    joined["gc_arcgis_style_calibrated_weight"] = arcgis_style_calibrated_weights.reset_index(drop=True)
+    joined.to_csv(joined_path, index=False, encoding="utf-8-sig")
     erf_path, erf_warnings = _write_erf_200(package_dir, paths)
 
     generated_files = {
         "analysis_joined": joined_path.name,
         "gis_balance_summary": balance_path.name,
         "gis_erf_curve_200": erf_path.name,
+        "arcgis_style_matching_grid": arcgis_style_grid_path.name,
+        "arcgis_style_balance_summary": arcgis_style_balance_path.name,
+        "arcgis_style_calibrated_balance_summary": arcgis_style_calibrated_balance_path.name,
         "gis_run_summary_json": "gis_run_summary.json",
         "gis_run_summary_markdown": "gis_run_summary.md",
     }
-    warnings = [*joined_warnings, *erf_warnings]
+    warnings = [*joined_warnings, *erf_warnings, *arcgis_style_warnings]
     summary = {
         "package_name": "Open GIS Analysis Package",
         "package_dir": PACKAGE_DIR_NAME,
@@ -257,6 +317,7 @@ def write_open_gis_package(
         "evidence_grade": manifest.get("evidence_grade"),
         "evidence_grade_reasons": manifest.get("evidence_grade_reasons", []),
         "result_summary": manifest.get("result_summary", {}),
+        "arcgis_style_matching": arcgis_style_summary,
         "generated_files": generated_files,
         "warnings": warnings,
     }
