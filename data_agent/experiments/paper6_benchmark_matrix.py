@@ -5,7 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Sequence
 
 import numpy as np
 import pandas as pd
@@ -118,13 +118,39 @@ def _empty_row(case_id: str, data_type: str, benchmark_source: str) -> dict[str,
     return row
 
 
-def _arcgis_county_row(manifest_path: str | Path | None) -> dict[str, Any] | None:
+def _arcgis_comparison_case_id(manifest_path: str | Path | None, manifest: dict[str, Any]) -> str:
+    arcgis_manifest = _read_json(manifest.get("arcgis_manifest_path"))
+    parameters = arcgis_manifest.get("parameters") if isinstance(arcgis_manifest, dict) else None
+    if isinstance(parameters, dict) and parameters.get("output_stem"):
+        return str(parameters["output_stem"])
+    path_stem = Path(str(manifest_path)).stem.lower() if manifest_path is not None else "arcgis_comparison"
+    if path_stem in {"arcgis_comparison_manifest", "arcgis_geocausal_comparison_manifest"}:
+        return "county_arcgis_builtin"
+    return path_stem.replace("_comparison_manifest", "").replace("arcgis_geocausal_comparison", "arcgis_builtin")
+
+
+def _arcgis_balance_threshold(manifest: dict[str, Any]) -> float | None:
+    arcgis_manifest = _read_json(manifest.get("arcgis_manifest_path"))
+    parameters = arcgis_manifest.get("parameters") if isinstance(arcgis_manifest, dict) else None
+    if not isinstance(parameters, dict):
+        return None
+    return _finite_float(parameters.get("balance_threshold"))
+
+
+def _arcgis_comparison_row(manifest_path: str | Path | None) -> dict[str, Any] | None:
     manifest = _read_json(manifest_path)
     metrics = manifest.get("metrics") if isinstance(manifest, dict) else None
     if not isinstance(metrics, dict) or not metrics:
         return None
+    balance_threshold = _arcgis_balance_threshold(manifest)
+    evidence_summary = "ArcGIS built-in comparison against GeoCausal Open GIS package."
+    if balance_threshold is not None and abs(balance_threshold - 0.1) > 1e-12:
+        evidence_summary = (
+            "ArcGIS built-in comparison against GeoCausal Open GIS package "
+            f"with balance_threshold={balance_threshold}."
+        )
     row = _empty_row(
-        "county_arcgis_builtin",
+        _arcgis_comparison_case_id(manifest_path, manifest),
         "real_arcgis_benchmark",
         str(manifest_path),
     )
@@ -141,11 +167,31 @@ def _arcgis_county_row(manifest_path: str | Path | None) -> dict[str, Any] | Non
             ),
             "default_erf_response_mae": _finite_float(metrics.get("erf_response_mae")),
             "arcgis_style_erf_response_mae": _finite_float(metrics.get("arcgis_style_erf_response_mae")),
-            "evidence_summary": "ArcGIS built-in comparison against GeoCausal Open GIS package.",
+            "evidence_summary": evidence_summary,
             "next_action": "Replicate ArcGIS comparison on additional real datasets.",
         }
     )
     return row
+
+
+def _arcgis_comparison_rows(
+    arcgis_comparison_manifest: str | Path | None,
+    arcgis_comparison_manifests: Sequence[str | Path] | None,
+) -> list[dict[str, Any]]:
+    paths: list[str | Path] = []
+    if arcgis_comparison_manifest is not None:
+        paths.append(arcgis_comparison_manifest)
+    if arcgis_comparison_manifests is not None:
+        paths.extend(path for path in arcgis_comparison_manifests if path is not None)
+    rows: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for path in paths:
+        row = _arcgis_comparison_row(path)
+        if row is None or row["case_id"] in seen:
+            continue
+        rows.append(row)
+        seen.add(str(row["case_id"]))
+    return rows
 
 
 def _method_rows(method_comparison_csv: str | Path | None) -> list[dict[str, Any]]:
@@ -266,14 +312,13 @@ def _epa_policy_structure_row(epa_benchmark_summary_json: str | Path | None) -> 
 def build_paper6_benchmark_matrix(
     *,
     arcgis_comparison_manifest: str | Path | None = None,
+    arcgis_comparison_manifests: Sequence[str | Path] | None = None,
     method_comparison_csv: str | Path | None = None,
     synthetic_scenario_summary_csv: str | Path | None = None,
     epa_benchmark_summary_json: str | Path | None = None,
 ) -> pd.DataFrame:
     rows: list[dict[str, Any]] = []
-    arcgis_row = _arcgis_county_row(arcgis_comparison_manifest)
-    if arcgis_row is not None:
-        rows.append(arcgis_row)
+    rows.extend(_arcgis_comparison_rows(arcgis_comparison_manifest, arcgis_comparison_manifests))
     rows.extend(_method_rows(method_comparison_csv))
     rows.extend(_synthetic_rows(synthetic_scenario_summary_csv))
     epa_row = _epa_policy_structure_row(epa_benchmark_summary_json)
@@ -406,8 +451,10 @@ def build_arcgis_surpass_scorecard(
     )
 
     arcgis_rows = 0
+    direct_arcgis = pd.DataFrame()
     if not matrix.empty and "arcgis_available" in matrix.columns:
-        arcgis_rows = int((matrix["arcgis_available"] == True).sum())  # noqa: E712
+        direct_arcgis = matrix.loc[matrix["arcgis_available"] == True].copy()  # noqa: E712
+        arcgis_rows = int(len(direct_arcgis))
     coverage_status = "sufficient_evidence" if arcgis_rows >= required_arcgis_real_rows else "insufficient_evidence"
     rows.append(
         _scorecard_row(
@@ -421,6 +468,37 @@ def build_arcgis_surpass_scorecard(
             if coverage_status == "sufficient_evidence"
             else "Only a small number of real datasets have direct ArcGIS built-in comparisons.",
             next_action="Add additional real ArcGIS comparisons before claiming broad superiority.",
+        )
+    )
+
+    balance_win_count = 0
+    balance_total = 0
+    if not direct_arcgis.empty:
+        arcgis_balance_values = pd.to_numeric(direct_arcgis["arcgis_balance"], errors="coerce")
+        calibrated_values = pd.to_numeric(direct_arcgis["geocausal_calibrated_balance"], errors="coerce")
+        valid = pd.DataFrame({"arcgis": arcgis_balance_values, "geocausal": calibrated_values}).dropna()
+        balance_total = int(len(valid))
+        balance_win_count = int((valid["geocausal"] < valid["arcgis"]).sum())
+    balance_win_status = (
+        "surpasses_arcgis"
+        if balance_total > 0 and balance_win_count == balance_total
+        else "missing_evidence"
+        if balance_total == 0
+        else "open_gap"
+    )
+    rows.append(
+        _scorecard_row(
+            criterion_id="direct_arcgis_calibrated_balance_wins",
+            category="direct_arcgis_metric",
+            status=balance_win_status,
+            metric_value=balance_win_count,
+            arcgis_reference=balance_total,
+            threshold="GeoCausal calibrated balance lower on every direct ArcGIS row",
+            evidence_case="all_arcgis_available_rows",
+            interpretation="GeoCausal calibrated balance beats ArcGIS on every direct ArcGIS comparison row."
+            if balance_win_status == "surpasses_arcgis"
+            else "GeoCausal calibrated balance does not yet beat ArcGIS on every direct comparison row.",
+            next_action="Keep adding real ArcGIS comparisons and preserve the calibrated-balance win rate.",
         )
     )
 
@@ -565,6 +643,7 @@ def write_paper6_benchmark_matrix(
     *,
     output_dir: str | Path = DEFAULT_OUTPUT_DIR,
     arcgis_comparison_manifest: str | Path | None = None,
+    arcgis_comparison_manifests: Sequence[str | Path] | None = None,
     method_comparison_csv: str | Path | None = None,
     synthetic_scenario_summary_csv: str | Path | None = None,
     epa_benchmark_summary_json: str | Path | None = None,
@@ -573,6 +652,7 @@ def write_paper6_benchmark_matrix(
     output_dir.mkdir(parents=True, exist_ok=True)
     matrix = build_paper6_benchmark_matrix(
         arcgis_comparison_manifest=arcgis_comparison_manifest,
+        arcgis_comparison_manifests=arcgis_comparison_manifests,
         method_comparison_csv=method_comparison_csv,
         synthetic_scenario_summary_csv=synthetic_scenario_summary_csv,
         epa_benchmark_summary_json=epa_benchmark_summary_json,
@@ -607,6 +687,9 @@ def write_paper6_benchmark_matrix(
         ),
         "inputs": {
             "arcgis_comparison_manifest": str(arcgis_comparison_manifest) if arcgis_comparison_manifest else None,
+            "arcgis_comparison_manifests": [str(path) for path in arcgis_comparison_manifests]
+            if arcgis_comparison_manifests
+            else None,
             "method_comparison_csv": str(method_comparison_csv) if method_comparison_csv else None,
             "synthetic_scenario_summary_csv": str(synthetic_scenario_summary_csv)
             if synthetic_scenario_summary_csv
@@ -621,7 +704,7 @@ def write_paper6_benchmark_matrix(
 def main() -> None:
     parser = argparse.ArgumentParser(description="Write Paper 6 multi-dataset benchmark matrix.")
     parser.add_argument("--output-dir", default=str(DEFAULT_OUTPUT_DIR))
-    parser.add_argument("--arcgis-comparison-manifest")
+    parser.add_argument("--arcgis-comparison-manifest", action="append")
     parser.add_argument(
         "--method-comparison-csv",
         default=str(DEFAULT_RESULTS_DIR / "scca_method_comparison.csv"),
@@ -634,7 +717,7 @@ def main() -> None:
     args = parser.parse_args()
     manifest = write_paper6_benchmark_matrix(
         output_dir=args.output_dir,
-        arcgis_comparison_manifest=args.arcgis_comparison_manifest,
+        arcgis_comparison_manifests=args.arcgis_comparison_manifest,
         method_comparison_csv=args.method_comparison_csv,
         synthetic_scenario_summary_csv=args.synthetic_scenario_summary_csv,
         epa_benchmark_summary_json=args.epa_benchmark_summary_json,

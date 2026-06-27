@@ -4,10 +4,11 @@
   "manifest_json": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_multi_dataset_benchmark_matrix_manifest.json",
   "surpass_scorecard_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_arcgis_surpass_scorecard.csv",
   "surpass_scorecard_report_md": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_arcgis_surpass_scorecard.md",
-  "n_rows": 10,
-  "scorecard_rows": 7,
+  "n_rows": 11,
+  "scorecard_rows": 8,
   "case_ids": [
     "county_arcgis_builtin",
+    "soho_arcgis_builtin_relaxed",
     "county_social_capital",
     "chongqing_uhi",
     "synthetic_CausalForest",
@@ -20,7 +21,11 @@
   ],
   "surpass_scorecard_status": "not_yet_claimable",
   "inputs": {
-    "arcgis_comparison_manifest": "D:\\tmp\\paper6_arcgis_builtin_causal_20260627\\geocausal_comparison_arcgis_style_erf_20260627\\arcgis_geocausal_comparison_manifest.json",
+    "arcgis_comparison_manifest": null,
+    "arcgis_comparison_manifests": [
+      "D:\\tmp\\paper6_arcgis_builtin_causal_20260627\\geocausal_comparison_arcgis_style_erf_20260627\\arcgis_geocausal_comparison_manifest.json",
+      "paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\soho_arcgis_relaxed_comparison_snapshot.json"
+    ],
     "method_comparison_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\scca_method_comparison.csv",
     "synthetic_scenario_summary_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\synthetic_benchmark_audit\\scenario_fragility_summary.csv",
     "epa_benchmark_summary_json": "paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\epa_nonattainment_airdata_benchmark_summary_snapshot.json"

@@ -24,6 +24,36 @@ def _write_fixture_inputs(tmp_path: Path) -> dict[str, Path]:
         ),
         encoding="utf-8",
     )
+    soho_arcgis_run_manifest = tmp_path / "soho_arcgis_causal_manifest_relaxed.json"
+    soho_arcgis_run_manifest.write_text(
+        json.dumps(
+            {
+                "parameters": {
+                    "output_stem": "soho_arcgis_builtin_relaxed",
+                    "balance_threshold": 0.2,
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    soho_arcgis_manifest = tmp_path / "soho_arcgis_comparison_manifest.json"
+    soho_arcgis_manifest.write_text(
+        json.dumps(
+            {
+                "arcgis_manifest_path": str(soho_arcgis_run_manifest),
+                "metrics": {
+                    "arcgis_final_n": 1814,
+                    "geocausal_joined_rows": 1814,
+                    "arcgis_mean_weighted_correlation": 0.1778,
+                    "geocausal_confounder_mean_abs_weighted_correlation": 0.3354,
+                    "geocausal_arcgis_style_calibrated_confounder_mean_abs_weighted_correlation": 0.1109,
+                    "erf_response_mae": 0.4119,
+                    "arcgis_style_erf_response_mae": 0.1481,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
     method_comparison = tmp_path / "scca_method_comparison.csv"
     pd.DataFrame(
         [
@@ -140,6 +170,7 @@ def _write_fixture_inputs(tmp_path: Path) -> dict[str, Path]:
     )
     return {
         "arcgis_manifest": arcgis_manifest,
+        "soho_arcgis_manifest": soho_arcgis_manifest,
         "method_comparison": method_comparison,
         "synthetic_summary": synthetic_summary,
         "epa_summary": epa_summary,
@@ -305,3 +336,31 @@ def test_paper6_benchmark_matrix_writer_outputs_surpass_scorecard(tmp_path):
     assert "Paper 6 ArcGIS Surpass Scorecard" in report
     assert "not_yet_claimable" in report
     assert "county_calibrated_balance" in report
+
+def test_paper6_benchmark_matrix_accepts_multiple_arcgis_comparison_manifests(tmp_path):
+    from data_agent.experiments.paper6_benchmark_matrix import (
+        build_arcgis_surpass_scorecard,
+        build_paper6_benchmark_matrix,
+    )
+
+    paths = _write_fixture_inputs(tmp_path)
+
+    matrix = build_paper6_benchmark_matrix(
+        arcgis_comparison_manifests=[paths["arcgis_manifest"], paths["soho_arcgis_manifest"]],
+    )
+
+    assert set(matrix["case_id"]) == {"county_arcgis_builtin", "soho_arcgis_builtin_relaxed"}
+    soho = matrix.loc[matrix["case_id"] == "soho_arcgis_builtin_relaxed"].iloc[0]
+    assert soho["sample_rows"] == 1814
+    assert soho["arcgis_available"] is True
+    assert soho["arcgis_balance"] == 0.1778
+    assert soho["geocausal_calibrated_balance"] == 0.1109
+    assert "balance_threshold=0.2" in soho["evidence_summary"]
+
+    scorecard = build_arcgis_surpass_scorecard(matrix, required_arcgis_real_rows=3)
+    coverage = scorecard.loc[scorecard["criterion_id"] == "direct_arcgis_real_dataset_coverage"].iloc[0]
+    assert coverage["metric_value"] == 2
+    wins = scorecard.loc[scorecard["criterion_id"] == "direct_arcgis_calibrated_balance_wins"].iloc[0]
+    assert wins["status"] == "surpasses_arcgis"
+    assert wins["metric_value"] == 2
+    assert wins["arcgis_reference"] == 2
