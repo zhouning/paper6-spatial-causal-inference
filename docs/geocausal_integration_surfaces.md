@@ -41,6 +41,17 @@ summaries, SLX direct/indirect/total effect summaries, exposure-mapping
 summaries, `manifest.json`, and `result_summary.md` when those diagnostics are
 estimable from the supplied data.
 
+The shared core also writes an Open GIS analysis package for ArcGIS-free use:
+`open_gis_analysis_package/analysis_joined.csv`,
+`open_gis_analysis_package/gis_balance_summary.csv`,
+`open_gis_analysis_package/gis_erf_curve_200.csv`,
+`open_gis_analysis_package/gis_run_summary.json`, and
+`open_gis_analysis_package/gis_run_summary.md`. These files expose retained
+analysis rows, generalized propensity scores, balancing weights, balance
+summaries, a 200-point exposure-response curve, spatial diagnostics, and
+evidence grading through ordinary CSV/JSON/Markdown outputs. ArcGIS Pro is an
+optional adapter, not a runtime dependency for the causal evidence package.
+
 ## Notebook Use
 
 Notebook users can prepare a CSV or GeoPackage, construct `AnalysisRequest`, and

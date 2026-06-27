@@ -172,7 +172,11 @@ def _ols_effect(
 
 def _gps_weights(features: pd.DataFrame, spec: StudySpec, covariates: list[str]) -> tuple[pd.Series, dict[str, object]]:
     weights = pd.Series(1.0, index=features.index, dtype=float)
-    diagnostics: dict[str, object] = {"gps_fit_n": 0, "gps_fallback_reason": None}
+    diagnostics: dict[str, object] = {
+        "gps_fit_n": 0,
+        "gps_fallback_reason": None,
+        "density": pd.Series(np.nan, index=features.index, dtype=float),
+    }
     if spec.exposure not in features.columns:
         diagnostics["gps_fallback_reason"] = f"Exposure column '{spec.exposure}' is missing."
         return weights, diagnostics
@@ -207,6 +211,9 @@ def _gps_weights(features: pd.DataFrame, spec: StudySpec, covariates: list[str])
         conditional = np.maximum(density, np.finfo(float).eps)
         raw = 1.0 / conditional
         raw = np.where(np.isfinite(raw), raw, np.nan)
+        density_series = pd.Series(np.nan, index=features.index, dtype=float)
+        density_series.loc[frame.index] = conditional
+        diagnostics["density"] = density_series
         mean = np.nanmean(raw)
         if not np.isfinite(mean) or mean <= 0:
             diagnostics["gps_fallback_reason"] = "GPS raw weights have no finite positive mean."
@@ -363,6 +370,25 @@ def estimate_effects(
         estimates.append({"estimator": "difference_outcome_ols", **difference})
 
     weights, gps_diagnostics = _gps_weights(features, spec, covariates)
+    gps_density = gps_diagnostics.get("density")
+    gps_diagnostics = {key: value for key, value in gps_diagnostics.items() if key != "density"}
+    if isinstance(gps_density, pd.Series):
+        gps_density = gps_density.reindex(features.index).astype(float)
+    else:
+        gps_density = pd.Series(np.nan, index=features.index, dtype=float)
+    unit_ids = (
+        features[spec.unit_id].astype(str)
+        if spec.unit_id in features.columns
+        else pd.Series([str(index) for index in features.index], index=features.index)
+    )
+    pd.DataFrame(
+        {
+            "unit_id": unit_ids,
+            "gc_propensity_score": gps_density,
+            "gc_balancing_weight": weights.reindex(features.index).astype(float),
+        },
+        index=features.index,
+    ).to_csv(paths.generalized_propensity_scores, index=False)
     erf, erf_result = _erf_curve(features, spec, weights)
     gps_result = {
         "status": erf_result["status"],

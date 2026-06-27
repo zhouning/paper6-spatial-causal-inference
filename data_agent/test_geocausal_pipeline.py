@@ -249,6 +249,58 @@ output:
     assert set(targets["method"]) == {"adjusted_ols_prediction", "erf_delta_anchor"}
 
 
+def test_run_analysis_writes_open_gis_parity_package(tmp_path):
+    _fixture_frame().to_csv(tmp_path / "fixture.csv", index=False)
+    config = load_config(_write_fixture_config(tmp_path))
+
+    manifest = run_analysis(config)
+
+    output_dir = config.resolve_output_dir()
+    package_dir = output_dir / "open_gis_analysis_package"
+    expected_files = {
+        "analysis_joined.csv",
+        "gis_balance_summary.csv",
+        "gis_erf_curve_200.csv",
+        "gis_run_summary.json",
+        "gis_run_summary.md",
+    }
+    assert expected_files.issubset({path.name for path in package_dir.iterdir()})
+    assert manifest["files"]["open_gis_analysis_package"] == "open_gis_analysis_package"
+    assert manifest["open_gis_package"]["package_dir"] == "open_gis_analysis_package"
+
+    joined = pd.read_csv(package_dir / "analysis_joined.csv")
+    assert {
+        "gc_unit_id",
+        "gc_exposure",
+        "gc_outcome",
+        "gc_propensity_score",
+        "gc_balancing_weight",
+        "gc_included",
+        "gc_trim_status",
+    }.issubset(joined.columns)
+    assert len(joined) == manifest["row_count"]
+    assert joined["gc_included"].all()
+    assert joined["gc_balancing_weight"].notna().all()
+
+    balance = pd.read_csv(package_dir / "gis_balance_summary.csv")
+    assert {"baseline", "confounder", "context"}.issubset(set(balance["variable"]))
+    assert {
+        "raw_correlation",
+        "weighted_correlation",
+        "absolute_weighted_correlation",
+        "balanced_at_0_1",
+    }.issubset(balance.columns)
+
+    erf_200 = pd.read_csv(package_dir / "gis_erf_curve_200.csv")
+    assert len(erf_200) == 200
+    assert {"exposure", "response", "source"}.issubset(erf_200.columns)
+    assert set(erf_200["source"]) == {"interpolated_from_erf_curve"}
+
+    summary = json.loads((package_dir / "gis_run_summary.json").read_text(encoding="utf-8"))
+    assert summary["case_name"] == "geocausal_fixture"
+    assert summary["generated_files"]["analysis_joined"] == "analysis_joined.csv"
+    assert summary["evidence_grade"] in {"core_support", "bounded_support", "fragile_support"}
+    assert "Open GIS" in (package_dir / "gis_run_summary.md").read_text(encoding="utf-8")
 def test_run_analysis_bootstrap_falls_back_to_input_coordinates(tmp_path):
     _fixture_frame().to_csv(tmp_path / "fixture.csv", index=False)
     config = load_config(_write_fixture_config(tmp_path, include_bootstrap_group=False))

@@ -131,6 +131,16 @@ A completed SCCA run is designed to be machine-readable as well as reviewer-read
 
 These files are intentionally stable because they are consumed by notebooks, ArcGIS/QGIS workflows, GIS Data Agent integration surfaces, and paper result tables.
 
+Every successful `geocausal run` also writes an Open GIS analysis package under the run output directory:
+
+- `open_gis_analysis_package/analysis_joined.csv`
+- `open_gis_analysis_package/gis_balance_summary.csv`
+- `open_gis_analysis_package/gis_erf_curve_200.csv`
+- `open_gis_analysis_package/gis_run_summary.json`
+- `open_gis_analysis_package/gis_run_summary.md`
+
+This package is designed for ArcGIS-free use in Python, QGIS, notebooks, Excel, or BI tools while preserving the GIS causal-analysis concepts users expect: retained analysis rows, generalized propensity scores, balancing weights, balance diagnostics, a 200-point exposure-response curve, target-outcome outputs, spatial diagnostics, and evidence grading.
+
 ## Reproduction Cases
 
 The new-version paper centers on SCCA as a spatial causal workflow and evaluates it through multiple cases:
