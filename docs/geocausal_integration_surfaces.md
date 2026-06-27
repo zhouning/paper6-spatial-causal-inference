@@ -155,6 +155,12 @@ The toolbox only handles ArcGIS UI parameters, ArcPy data export, and optional
 copying of CSV outputs back to ArcGIS tables. It delegates algorithm execution to
 `geocausal.adapters.AnalysisRequest` and reuses the same
 `build_analysis_joined_table` helper to create an ArcGIS-ready analysis table.
+
+For direct comparison against Esri's built-in Causal Inference Analysis tool,
+run `python -m geocausal.cli arcgis-causal` through ArcGIS Pro `propy.bat`. The
+benchmark wrapper and county smoke command are documented in
+`docs/arcgis_builtin_causal_benchmark.md`.
+
 It also validates requested fields before opening the ArcPy cursor and reports
 the core spatial-diagnostic and SLX summaries in the geoprocessing messages.
 
