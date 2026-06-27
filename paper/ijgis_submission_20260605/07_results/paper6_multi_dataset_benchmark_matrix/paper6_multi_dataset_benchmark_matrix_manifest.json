@@ -1,11 +1,11 @@
 {
-  "matrix_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_multi_dataset_benchmark_matrix.csv",
-  "report_md": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_multi_dataset_benchmark_matrix.md",
-  "manifest_json": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_multi_dataset_benchmark_matrix_manifest.json",
-  "surpass_scorecard_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_arcgis_surpass_scorecard.csv",
-  "surpass_scorecard_report_md": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_arcgis_surpass_scorecard.md",
+  "matrix_csv": "paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_multi_dataset_benchmark_matrix.csv",
+  "report_md": "paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_multi_dataset_benchmark_matrix.md",
+  "manifest_json": "paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_multi_dataset_benchmark_matrix_manifest.json",
+  "surpass_scorecard_csv": "paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_arcgis_surpass_scorecard.csv",
+  "surpass_scorecard_report_md": "paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_arcgis_surpass_scorecard.md",
   "n_rows": 12,
-  "scorecard_rows": 8,
+  "scorecard_rows": 9,
   "case_ids": [
     "county_arcgis_builtin",
     "soho_arcgis_builtin_relaxed",

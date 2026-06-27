@@ -19,6 +19,7 @@ def _write_fixture_inputs(tmp_path: Path) -> dict[str, Path]:
                     "geocausal_arcgis_style_calibrated_confounder_mean_abs_weighted_correlation": 0.0453,
                     "erf_response_mae": 1.2736,
                     "arcgis_style_erf_response_mae": 0.0429,
+                    "arcgis_style_calibrated_erf_response_mae": 0.0300,
                 }
             }
         ),
@@ -49,6 +50,7 @@ def _write_fixture_inputs(tmp_path: Path) -> dict[str, Path]:
                     "geocausal_arcgis_style_calibrated_confounder_mean_abs_weighted_correlation": 0.1109,
                     "erf_response_mae": 0.4119,
                     "arcgis_style_erf_response_mae": 0.1481,
+                    "arcgis_style_calibrated_erf_response_mae": 0.1200,
                 },
             }
         ),
@@ -198,6 +200,7 @@ def test_paper6_benchmark_matrix_combines_arcgis_real_and_synthetic_rows(tmp_pat
     county = matrix.loc[matrix["case_id"] == "county_arcgis_builtin"].iloc[0]
     assert county["arcgis_available"] is True
     assert county["arcgis_style_erf_response_mae"] == 0.0429
+    assert county["arcgis_style_calibrated_erf_response_mae"] == 0.03
     assert county["geocausal_calibrated_balance"] == 0.0453
     synthetic = matrix.loc[matrix["case_id"] == "synthetic_GCCM"].iloc[0]
     assert synthetic["data_type"] == "synthetic_known_truth"
@@ -289,6 +292,7 @@ def test_paper6_surpass_scorecard_marks_wins_gaps_and_next_priorities(tmp_path):
     assert {
         "county_calibrated_balance",
         "county_arcgis_style_erf",
+        "county_arcgis_style_calibrated_erf",
         "county_default_erf_gap",
         "direct_arcgis_real_dataset_coverage",
         "synthetic_fragility",
@@ -300,6 +304,9 @@ def test_paper6_surpass_scorecard_marks_wins_gaps_and_next_priorities(tmp_path):
     assert balance["metric_value"] == 0.0453
     assert balance["arcgis_reference"] == 0.0559
     default_erf = scorecard.loc[scorecard["criterion_id"] == "county_default_erf_gap"].iloc[0]
+    calibrated_erf = scorecard.loc[scorecard["criterion_id"] == "county_arcgis_style_calibrated_erf"].iloc[0]
+    assert calibrated_erf["status"] == "near_parity"
+    assert calibrated_erf["metric_value"] == 0.03
     assert default_erf["status"] == "open_gap"
     coverage = scorecard.loc[scorecard["criterion_id"] == "direct_arcgis_real_dataset_coverage"].iloc[0]
     assert coverage["status"] == "insufficient_evidence"
@@ -355,6 +362,7 @@ def test_paper6_benchmark_matrix_accepts_multiple_arcgis_comparison_manifests(tm
     assert soho["arcgis_available"] is True
     assert soho["arcgis_balance"] == 0.1778
     assert soho["geocausal_calibrated_balance"] == 0.1109
+    assert soho["arcgis_style_calibrated_erf_response_mae"] == 0.12
     assert "balance_threshold=0.2" in soho["evidence_summary"]
 
     scorecard = build_arcgis_surpass_scorecard(matrix, required_arcgis_real_rows=3)

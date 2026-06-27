@@ -168,6 +168,7 @@ output:
     balance = pd.read_csv(package_dir / "arcgis_style_balance_summary.csv")
     calibrated_balance = pd.read_csv(package_dir / "arcgis_style_calibrated_balance_summary.csv")
     arcgis_style_erf = pd.read_csv(package_dir / "gis_arcgis_style_erf_curve_200.csv")
+    calibrated_arcgis_style_erf = pd.read_csv(package_dir / "gis_arcgis_style_calibrated_erf_curve_200.csv")
     run_summary = json.loads((package_dir / "gis_run_summary.json").read_text(encoding="utf-8"))
 
     assert {
@@ -181,11 +182,19 @@ output:
     assert {"confounder_a", "confounder_b"} == set(calibrated_balance["variable"])
     assert len(arcgis_style_erf) == 200
     assert {"exposure", "response", "source"}.issubset(arcgis_style_erf.columns)
+    assert len(calibrated_arcgis_style_erf) == 200
+    assert {"exposure", "response", "source"}.issubset(calibrated_arcgis_style_erf.columns)
     assert summary["generated_files"]["arcgis_style_matching_grid"] == "arcgis_style_matching_grid.csv"
     assert summary["generated_files"]["arcgis_style_calibrated_balance_summary"] == "arcgis_style_calibrated_balance_summary.csv"
     assert summary["generated_files"]["gis_arcgis_style_erf_curve_200"] == "gis_arcgis_style_erf_curve_200.csv"
+    assert (
+        summary["generated_files"]["gis_arcgis_style_calibrated_erf_curve_200"]
+        == "gis_arcgis_style_calibrated_erf_curve_200.csv"
+    )
     assert run_summary["arcgis_style_erf"]["bandwidth"] > 0
     assert run_summary["arcgis_style_erf"]["n_grid"] == 200
+    assert run_summary["arcgis_style_calibrated_erf"]["bandwidth"] > 0
+    assert run_summary["arcgis_style_calibrated_erf"]["n_grid"] == 200
     assert run_summary["arcgis_style_matching"]["calibrated_mean_abs_weighted_correlation"] <= run_summary["arcgis_style_matching"]["selected_mean_abs_weighted_correlation"]
     assert run_summary["arcgis_style_matching"]["selected_num_bins"] == int(
         grid.loc[grid["selected"] == 1, "num_bins"].iloc[0]

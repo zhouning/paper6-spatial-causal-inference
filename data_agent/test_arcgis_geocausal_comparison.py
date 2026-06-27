@@ -44,6 +44,9 @@ def _write_open_gis_fixture(tmp_path: Path) -> Path:
         {"exposure": [1.0, 2.0, 3.0], "response": [10.2, 12.1, 13.8]}
     ).to_csv(open_dir / "gis_arcgis_style_erf_curve_200.csv", index=False)
     pd.DataFrame(
+        {"exposure": [1.0, 2.0, 3.0], "response": [10.1, 12.0, 13.9]}
+    ).to_csv(open_dir / "gis_arcgis_style_calibrated_erf_curve_200.csv", index=False)
+    pd.DataFrame(
         [
             {"variable": "x1", "role": "confounder", "absolute_weighted_correlation": 0.04},
             {"variable": "x2", "role": "confounder", "absolute_weighted_correlation": 0.06},
@@ -95,6 +98,9 @@ def test_build_arcgis_geocausal_comparison_writes_metrics_and_report(tmp_path):
     assert manifest["metrics"]["geocausal_arcgis_style_erf_rows"] == 3
     assert round(manifest["metrics"]["arcgis_style_erf_response_mae"], 4) == 0.1667
     assert round(manifest["metrics"]["arcgis_style_erf_response_rmse"], 4) == 0.1732
+    assert manifest["metrics"]["geocausal_arcgis_style_calibrated_erf_rows"] == 3
+    assert round(manifest["metrics"]["arcgis_style_calibrated_erf_response_mae"], 4) == 0.0667
+    assert round(manifest["metrics"]["arcgis_style_calibrated_erf_response_rmse"], 4) == 0.0816
     assert manifest["metrics"]["geocausal_confounder_mean_abs_weighted_correlation"] == 0.05
     assert manifest["metrics"]["geocausal_arcgis_style_confounder_mean_abs_weighted_correlation"] == 0.02
     assert manifest["metrics"]["geocausal_arcgis_style_selected_num_bins"] == 7
@@ -106,6 +112,7 @@ def test_build_arcgis_geocausal_comparison_writes_metrics_and_report(tmp_path):
     assert rows["analysis_rows"] == "match"
     assert rows["erf_rows"] == "match"
     assert rows["arcgis_style_erf_response_mae"] == "computed"
+    assert rows["arcgis_style_calibrated_erf_response_mae"] == "computed"
     assert rows["mean_weighted_balance"] == "geocausal_lower"
     assert rows["arcgis_style_mean_weighted_balance"] == "geocausal_lower"
     assert rows["arcgis_style_calibrated_mean_weighted_balance"] == "geocausal_lower"
@@ -114,6 +121,7 @@ def test_build_arcgis_geocausal_comparison_writes_metrics_and_report(tmp_path):
     assert "ArcGIS vs GeoCausal Benchmark" in report
     assert "ERF response MAE" in report
     assert "ArcGIS-style ERF response MAE" in report
+    assert "ArcGIS-style calibrated ERF response MAE" in report
     assert "GeoCausal ArcGIS-style confounder mean absolute weighted balance" in report
     assert "GeoCausal ArcGIS-style calibrated confounder mean absolute weighted balance" in report
 
