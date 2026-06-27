@@ -381,3 +381,85 @@ def test_paper6_benchmark_matrix_accepts_multiple_arcgis_comparison_manifests(tm
     assert wins["status"] == "surpasses_arcgis"
     assert wins["metric_value"] == 2
     assert wins["arcgis_reference"] == 2
+
+
+def test_paper6_scorecard_uses_preferred_synthetic_fragility_gate(tmp_path):
+    from data_agent.experiments.paper6_benchmark_matrix import (
+        build_arcgis_surpass_scorecard,
+        build_paper6_benchmark_matrix,
+    )
+
+    synthetic_summary = tmp_path / "scenario_fragility_summary.csv"
+    pd.DataFrame(
+        [
+            {
+                "scenario": "PSM",
+                "n_summary_rows": 20,
+                "n_robust": 4,
+                "n_bounded": 0,
+                "n_fragile": 16,
+                "min_score": 0.12,
+                "max_score": 0.98,
+                "preferred_variant": "ols_adjusted",
+                "preferred_fragility": "robust",
+                "preferred_fragile_rows": 0,
+                "diagnostic_fragile_rows": 16,
+            }
+        ]
+    ).to_csv(synthetic_summary, index=False)
+
+    matrix = build_paper6_benchmark_matrix(
+        synthetic_scenario_summary_csv=synthetic_summary,
+    )
+
+    psm = matrix.loc[matrix["case_id"] == "synthetic_PSM"].iloc[0]
+    assert psm["synthetic_fragile_rows"] == 16
+    assert psm["synthetic_preferred_variant"] == "ols_adjusted"
+    assert psm["synthetic_preferred_fragile_rows"] == 0
+    assert psm["synthetic_diagnostic_fragile_rows"] == 16
+    assert "diagnostic" in psm["evidence_summary"].lower()
+
+    scorecard = build_arcgis_surpass_scorecard(matrix, required_arcgis_real_rows=0)
+    synthetic = scorecard.loc[scorecard["criterion_id"] == "synthetic_fragility"].iloc[0]
+    assert synthetic["status"] == "passes_known_truth"
+    assert synthetic["metric_value"] == 0
+    assert synthetic["arcgis_reference"] == 16
+
+
+def test_paper6_scorecard_overall_next_action_tracks_remaining_blockers(tmp_path):
+    from data_agent.experiments.paper6_benchmark_matrix import (
+        build_arcgis_surpass_scorecard,
+        build_paper6_benchmark_matrix,
+    )
+
+    paths = _write_fixture_inputs(tmp_path)
+    synthetic_summary = tmp_path / "scenario_fragility_summary_preferred.csv"
+    pd.DataFrame(
+        [
+            {
+                "scenario": "GCCM",
+                "n_summary_rows": 12,
+                "n_robust": 0,
+                "n_bounded": 0,
+                "n_fragile": 12,
+                "min_score": 0.06,
+                "max_score": 0.40,
+                "preferred_variant": "queen",
+                "preferred_fragility": "fragile",
+                "preferred_fragile_rows": 4,
+                "diagnostic_fragile_rows": 8,
+            }
+        ]
+    ).to_csv(synthetic_summary, index=False)
+
+    matrix = build_paper6_benchmark_matrix(
+        arcgis_comparison_manifests=[paths["arcgis_manifest"], paths["soho_arcgis_manifest"]],
+        synthetic_scenario_summary_csv=synthetic_summary,
+        epa_benchmark_summary_json=paths["epa_summary"],
+    )
+
+    scorecard = build_arcgis_surpass_scorecard(matrix, required_arcgis_real_rows=2)
+    overall = scorecard.loc[scorecard["criterion_id"] == "overall_arcgis_surpass_readiness"].iloc[0]
+    assert overall["status"] == "not_yet_claimable"
+    assert "synthetic robustness" in overall["next_action"].lower()
+    assert "additional real ArcGIS comparisons" not in overall["next_action"]

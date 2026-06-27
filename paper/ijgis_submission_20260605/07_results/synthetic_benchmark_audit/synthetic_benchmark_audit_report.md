@@ -4,12 +4,12 @@ This report summarizes which Paper 6 synthetic estimators remained robust under 
 
 ## Scenario Summary
 
-- `CausalForest`: robust=2, bounded=2, fragile=0, score_range=[0.90, 0.99]
-- `DiD`: robust=3, bounded=1, fragile=0, score_range=[0.78, 0.98]
-- `ERF`: robust=2, bounded=2, fragile=0, score_range=[0.84, 0.90]
-- `GCCM`: robust=0, bounded=0, fragile=12, score_range=[0.07, 0.40]
-- `Granger`: robust=2, bounded=1, fragile=1, score_range=[0.17, 0.87]
-- `PSM`: robust=4, bounded=0, fragile=16, score_range=[0.12, 0.98]
+- `CausalForest`: robust=2, bounded=2, fragile=0, preferred=`standard`/bounded, preferred_fragile=0, diagnostic_fragile=0, score_range=[0.90, 0.99]
+- `DiD`: robust=3, bounded=1, fragile=0, preferred=`standard`/bounded, preferred_fragile=0, diagnostic_fragile=0, score_range=[0.78, 0.98]
+- `ERF`: robust=2, bounded=2, fragile=0, preferred=`standard`/bounded, preferred_fragile=0, diagnostic_fragile=0, score_range=[0.84, 0.90]
+- `GCCM`: robust=0, bounded=0, fragile=12, preferred=`queen`/fragile, preferred_fragile=4, diagnostic_fragile=8, score_range=[0.07, 0.40]
+- `Granger`: robust=2, bounded=1, fragile=1, preferred=`standard`/fragile, preferred_fragile=1, diagnostic_fragile=0, score_range=[0.17, 0.87]
+- `PSM`: robust=4, bounded=0, fragile=16, preferred=`ols_adjusted`/robust, preferred_fragile=0, diagnostic_fragile=16, score_range=[0.12, 0.98]
 
 ## Most Fragile Rows
 

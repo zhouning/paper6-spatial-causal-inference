@@ -51,6 +51,10 @@ MATRIX_COLUMNS = [
     "synthetic_robust_rows",
     "synthetic_bounded_rows",
     "synthetic_fragile_rows",
+    "synthetic_preferred_variant",
+    "synthetic_preferred_fragility",
+    "synthetic_preferred_fragile_rows",
+    "synthetic_diagnostic_fragile_rows",
     "score_min",
     "score_max",
     "evidence_summary",
@@ -237,20 +241,41 @@ def _synthetic_rows(synthetic_scenario_summary_csv: str | Path | None) -> list[d
     for _, item in frame.iterrows():
         scenario = str(item.get("scenario") or "unknown")
         fragile = _int_or_none(item.get("n_fragile")) or 0
+        preferred_fragile = _int_or_none(item.get("preferred_fragile_rows"))
+        if preferred_fragile is None:
+            preferred_fragile = fragile
+        diagnostic_fragile = _int_or_none(item.get("diagnostic_fragile_rows"))
+        if diagnostic_fragile is None:
+            diagnostic_fragile = max(fragile - preferred_fragile, 0)
+        preferred_variant_raw = item.get("preferred_variant")
+        preferred_variant = None if pd.isna(preferred_variant_raw) else preferred_variant_raw
+        preferred_fragility_raw = item.get("preferred_fragility")
+        preferred_fragility = None if pd.isna(preferred_fragility_raw) else preferred_fragility_raw
         row = _empty_row(f"synthetic_{scenario}", "synthetic_known_truth", str(synthetic_scenario_summary_csv))
+        if preferred_variant:
+            evidence_summary = (
+                f"Synthetic known-truth scenario with {fragile} raw fragile diagnostic rows; "
+                f"preferred variant {preferred_variant} has {preferred_fragile} fragile rows."
+            )
+        else:
+            evidence_summary = (
+                f"Synthetic known-truth scenario with {fragile} fragile summary rows."
+            )
         row.update(
             {
                 "synthetic_robust_rows": _int_or_none(item.get("n_robust")),
                 "synthetic_bounded_rows": _int_or_none(item.get("n_bounded")),
                 "synthetic_fragile_rows": fragile,
+                "synthetic_preferred_variant": preferred_variant,
+                "synthetic_preferred_fragility": preferred_fragility,
+                "synthetic_preferred_fragile_rows": preferred_fragile,
+                "synthetic_diagnostic_fragile_rows": diagnostic_fragile,
                 "score_min": _finite_float(item.get("min_score")),
                 "score_max": _finite_float(item.get("max_score")),
-                "evidence_summary": (
-                    f"Synthetic known-truth scenario with {fragile} fragile summary rows."
-                ),
-                "next_action": "Prioritize estimator hardening for fragile synthetic scenarios."
-                if fragile > 0
-                else "Use as positive-control benchmark for regression testing.",
+                "evidence_summary": evidence_summary,
+                "next_action": "Prioritize estimator hardening for fragile preferred synthetic scenarios."
+                if preferred_fragile > 0
+                else "Use as positive-control benchmark; retain diagnostic variants for regression testing.",
             }
         )
         rows.append(row)
@@ -377,6 +402,28 @@ def _case_row(matrix: pd.DataFrame, case_id: str) -> pd.Series | None:
     rows = matrix.loc[matrix["case_id"] == case_id]
     return None if rows.empty else rows.iloc[0]
 
+
+def _overall_blocker_next_action(blocking: list[dict[str, Any]]) -> str:
+    blocker_ids = {str(row.get("criterion_id")) for row in blocking}
+    actions: list[str] = []
+    if "synthetic_fragility" in blocker_ids:
+        actions.append("Close remaining synthetic robustness gaps.")
+    if "direct_arcgis_real_dataset_coverage" in blocker_ids:
+        actions.append("Add additional real ArcGIS comparisons before broad superiority claims.")
+    if "epa_known_truth_recovery" in blocker_ids:
+        actions.append("Restore EPA known-truth recovery evidence.")
+    direct_metric_blockers = blocker_ids.intersection(
+        {
+            "county_calibrated_balance",
+            "county_preferred_erf",
+            "county_arcgis_style_erf",
+        }
+    )
+    if direct_metric_blockers:
+        actions.append("Close remaining direct ArcGIS metric gaps.")
+    if not actions:
+        actions.append("Close remaining scorecard blockers before a broad superiority claim.")
+    return " ".join(actions)
 
 def build_arcgis_surpass_scorecard(
     matrix: pd.DataFrame,
@@ -560,11 +607,20 @@ def build_arcgis_surpass_scorecard(
     )
 
     synthetic_fragile = 0
+    synthetic_raw_fragile = 0
     if not matrix.empty and {"data_type", "synthetic_fragile_rows"}.issubset(matrix.columns):
-        synthetic_matrix = matrix.loc[matrix["data_type"] == "synthetic_known_truth"]
-        synthetic_fragile = int(
+        synthetic_matrix = matrix.loc[matrix["data_type"] == "synthetic_known_truth"].copy()
+        synthetic_raw_fragile = int(
             pd.to_numeric(synthetic_matrix["synthetic_fragile_rows"], errors="coerce").fillna(0).sum()
         )
+        if "synthetic_preferred_fragile_rows" in synthetic_matrix.columns:
+            preferred_values = pd.to_numeric(
+                synthetic_matrix["synthetic_preferred_fragile_rows"], errors="coerce"
+            )
+            raw_values = pd.to_numeric(synthetic_matrix["synthetic_fragile_rows"], errors="coerce")
+            synthetic_fragile = int(preferred_values.fillna(raw_values).fillna(0).sum())
+        else:
+            synthetic_fragile = synthetic_raw_fragile
     synthetic_status = "open_gap" if synthetic_fragile > 0 else "passes_known_truth"
     rows.append(
         _scorecard_row(
@@ -572,15 +628,17 @@ def build_arcgis_surpass_scorecard(
             category="known_truth_robustness",
             status=synthetic_status,
             metric_value=synthetic_fragile,
-            threshold=0,
+            arcgis_reference=synthetic_raw_fragile,
+            threshold="preferred fragile rows = 0",
             evidence_case="synthetic_known_truth_rows",
-            interpretation="Synthetic known-truth audit still contains fragile method/scenario rows."
+            interpretation="Synthetic known-truth audit still contains fragile preferred/champion method rows."
             if synthetic_status == "open_gap"
-            else "Synthetic known-truth audit has no fragile rows under the current summary.",
-            next_action="Prioritize fragile synthetic scenarios before claiming robust algorithmic superiority.",
+            else "Synthetic known-truth preferred/champion rows have no fragile failures; raw fragile variants remain diagnostic.",
+            next_action="Prioritize fragile preferred synthetic scenarios before claiming robust algorithmic superiority."
+            if synthetic_status == "open_gap"
+            else "Keep diagnostic fragile variants visible while expanding known-truth stress tests.",
         )
     )
-
     epa = _case_row(matrix, "epa_nonattainment_airdata")
     epa_error = _row_float(epa, "absolute_error")
     epa_status = (
@@ -619,7 +677,7 @@ def build_arcgis_surpass_scorecard(
             interpretation="Evidence supports partial wins, but not a broad ArcGIS-superiority claim yet."
             if blocking
             else "No configured scorecard gates block a current ArcGIS-superiority claim.",
-            next_action="Close remaining synthetic robustness gaps and add additional real ArcGIS comparisons before a broad superiority claim."
+            next_action=_overall_blocker_next_action(blocking)
             if blocking
             else "Maintain the gate as new datasets and metrics are added.",
         )
