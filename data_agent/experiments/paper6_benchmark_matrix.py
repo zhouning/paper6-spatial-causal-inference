@@ -412,6 +412,8 @@ def _overall_blocker_next_action(blocking: list[dict[str, Any]]) -> str:
         actions.append("Add additional real ArcGIS comparisons before broad superiority claims.")
     if "epa_known_truth_recovery" in blocker_ids:
         actions.append("Restore EPA known-truth recovery evidence.")
+    if "arcgis_runtime_reproducibility" in blocker_ids:
+        actions.append("Restore ArcGIS runtime reproducibility evidence.")
     direct_metric_blockers = blocker_ids.intersection(
         {
             "county_calibrated_balance",
@@ -432,6 +434,7 @@ def build_arcgis_surpass_scorecard(
     arcgis_style_erf_near_parity_mae: float = 0.05,
     default_erf_gap_mae: float = 0.25,
     known_truth_absolute_error_tolerance: float = 1e-6,
+    arcgis_runtime_audit: dict[str, Any] | None = None,
 ) -> pd.DataFrame:
     rows: list[dict[str, Any]] = []
     county = _case_row(matrix, "county_arcgis_builtin")
@@ -606,6 +609,38 @@ def build_arcgis_surpass_scorecard(
         )
     )
 
+    if arcgis_runtime_audit:
+        runtime_available = bool(arcgis_runtime_audit.get("runtime_available"))
+        runtime_rows = _int_or_none(arcgis_runtime_audit.get("n_direct_comparison_manifests")) or 0
+        runtime_wins = _int_or_none(arcgis_runtime_audit.get("n_calibrated_balance_wins")) or 0
+        runtime_status = (
+            "passes_runtime_audit"
+            if runtime_available and runtime_rows >= required_arcgis_real_rows and runtime_wins == runtime_rows
+            else "open_gap"
+        )
+        arcgis_version = arcgis_runtime_audit.get("arcgis_version") or "unknown"
+        product = arcgis_runtime_audit.get("product") or "unknown"
+        rows.append(
+            _scorecard_row(
+                criterion_id="arcgis_runtime_reproducibility",
+                category="runtime_reproducibility",
+                status=runtime_status,
+                metric_value=runtime_rows,
+                arcgis_reference=runtime_wins,
+                threshold=(
+                    f"ArcGIS runtime available and >= {required_arcgis_real_rows} "
+                    "direct manifests with calibrated-balance wins"
+                ),
+                evidence_case="arcgis_runtime_audit",
+                interpretation=(
+                    f"ArcGIS Pro {arcgis_version} ({product}) runtime audit verified "
+                    f"{runtime_rows} direct comparison manifests and {runtime_wins} calibrated-balance wins."
+                )
+                if runtime_status == "passes_runtime_audit"
+                else "ArcGIS runtime audit is missing required runtime availability, direct manifests, or balance wins.",
+                next_action="Refresh this audit whenever ArcGIS Pro, ArcPy, or benchmark manifests change.",
+            )
+        )
     synthetic_fragile = 0
     synthetic_raw_fragile = 0
     if not matrix.empty and {"data_type", "synthetic_fragile_rows"}.issubset(matrix.columns):
@@ -764,6 +799,7 @@ def write_paper6_benchmark_matrix(
     method_comparison_csv: str | Path | None = None,
     synthetic_scenario_summary_csv: str | Path | None = None,
     epa_benchmark_summary_json: str | Path | None = None,
+    arcgis_runtime_audit_json: str | Path | None = None,
 ) -> dict[str, Any]:
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -779,7 +815,11 @@ def write_paper6_benchmark_matrix(
     scorecard_path = output_dir / OUTPUT_FILES["surpass_scorecard_csv"]
     scorecard_report_path = output_dir / OUTPUT_FILES["surpass_scorecard_report_md"]
     manifest_path = output_dir / OUTPUT_FILES["manifest_json"]
-    scorecard = build_arcgis_surpass_scorecard(matrix)
+    arcgis_runtime_audit = _read_json(arcgis_runtime_audit_json)
+    scorecard = build_arcgis_surpass_scorecard(
+        matrix,
+        arcgis_runtime_audit=arcgis_runtime_audit if arcgis_runtime_audit else None,
+    )
     matrix.to_csv(matrix_path, index=False)
     report_path.write_text(_render_report(matrix), encoding="utf-8")
     scorecard.to_csv(scorecard_path, index=False)
@@ -812,6 +852,7 @@ def write_paper6_benchmark_matrix(
             if synthetic_scenario_summary_csv
             else None,
             "epa_benchmark_summary_json": str(epa_benchmark_summary_json) if epa_benchmark_summary_json else None,
+            "arcgis_runtime_audit_json": str(arcgis_runtime_audit_json) if arcgis_runtime_audit_json else None,
         },
     }
     manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
@@ -831,6 +872,7 @@ def main() -> None:
         default=str(DEFAULT_RESULTS_DIR / "synthetic_benchmark_audit" / "scenario_fragility_summary.csv"),
     )
     parser.add_argument("--epa-benchmark-summary-json")
+    parser.add_argument("--arcgis-runtime-audit-json")
     args = parser.parse_args()
     manifest = write_paper6_benchmark_matrix(
         output_dir=args.output_dir,
@@ -838,6 +880,7 @@ def main() -> None:
         method_comparison_csv=args.method_comparison_csv,
         synthetic_scenario_summary_csv=args.synthetic_scenario_summary_csv,
         epa_benchmark_summary_json=args.epa_benchmark_summary_json,
+        arcgis_runtime_audit_json=args.arcgis_runtime_audit_json,
     )
     print(json.dumps(manifest, indent=2, ensure_ascii=False))
 

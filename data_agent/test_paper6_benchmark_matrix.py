@@ -463,3 +463,36 @@ def test_paper6_scorecard_overall_next_action_tracks_remaining_blockers(tmp_path
     assert overall["status"] == "not_yet_claimable"
     assert "synthetic robustness" in overall["next_action"].lower()
     assert "additional real ArcGIS comparisons" not in overall["next_action"]
+
+
+def test_paper6_scorecard_includes_optional_arcgis_runtime_audit(tmp_path):
+    from data_agent.experiments.paper6_benchmark_matrix import (
+        build_arcgis_surpass_scorecard,
+        build_paper6_benchmark_matrix,
+    )
+
+    paths = _write_fixture_inputs(tmp_path)
+    audit = {
+        "runtime_available": True,
+        "tool": "arcpy.stats.CausalInferenceAnalysis",
+        "arcgis_version": "3.7",
+        "product": "ArcInfo",
+        "n_direct_comparison_manifests": 3,
+        "n_calibrated_balance_wins": 3,
+        "comparison_case_ids": [
+            "county_arcgis_builtin",
+            "soho_arcgis_builtin_relaxed",
+            "snow8_arcgis_builtin_relaxed",
+        ],
+    }
+
+    matrix = build_paper6_benchmark_matrix(
+        arcgis_comparison_manifests=[paths["arcgis_manifest"], paths["soho_arcgis_manifest"]],
+    )
+    scorecard = build_arcgis_surpass_scorecard(matrix, arcgis_runtime_audit=audit)
+
+    runtime = scorecard.loc[scorecard["criterion_id"] == "arcgis_runtime_reproducibility"].iloc[0]
+    assert runtime["status"] == "passes_runtime_audit"
+    assert runtime["metric_value"] == 3
+    assert runtime["arcgis_reference"] == 3
+    assert "ArcGIS Pro 3.7" in runtime["interpretation"]
