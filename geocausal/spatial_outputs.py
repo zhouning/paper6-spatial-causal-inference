@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+from html import escape as html_escape
 import re
 from pathlib import Path
 from typing import Any, Iterable
@@ -794,6 +795,83 @@ def write_analysis_visualizations(
     return outputs
 
 
+def _report_href(path_value: str, output_dir: Path) -> str:
+    path = Path(path_value)
+    try:
+        return path.resolve().relative_to(output_dir.resolve()).as_posix()
+    except (OSError, ValueError):
+        return path.as_posix()
+
+
+def _report_link_rows(files: dict[str, str], output_dir: Path) -> str:
+    rows: list[str] = []
+    for key, path_value in sorted(files.items()):
+        href = _report_href(path_value, output_dir)
+        label = Path(path_value).name or str(path_value)
+        rows.append(
+            "<tr>"
+            f"<td>{html_escape(key)}</td>"
+            f"<td><a href=\"{html_escape(href)}\">{html_escape(label)}</a></td>"
+            "</tr>"
+        )
+    return "\n".join(rows) if rows else "<tr><td colspan=\"2\">No files generated.</td></tr>"
+
+
+def write_open_spatial_report(*, output_dir: str | Path, manifest: dict[str, Any]) -> str:
+    output_dir = Path(output_dir)
+    report_path = output_dir / "open_gis_spatial_report.html"
+    sections = {
+        "Spatial files": manifest.get("spatial_files", {}),
+        "Visualizations": manifest.get("visualizations", {}),
+        "QGIS styles": manifest.get("qgis_styles", {}),
+        "Manifest": {"spatial_output_manifest": manifest.get("manifest", "")},
+    }
+    section_html = []
+    for title, files in sections.items():
+        section_html.append(
+            f"<section><h2>{html_escape(title)}</h2>"
+            "<table><thead><tr><th>Output</th><th>File</th></tr></thead><tbody>"
+            f"{_report_link_rows({k: v for k, v in files.items() if v}, output_dir)}"
+            "</tbody></table></section>"
+        )
+    html = f"""<!doctype html>
+<html lang=\"en\">
+<head>
+  <meta charset=\"utf-8\">
+  <title>GeoCausal Open Spatial Report</title>
+  <style>
+    body {{ font-family: Arial, sans-serif; margin: 32px; color: #1f2933; }}
+    header {{ border-bottom: 1px solid #d5dbe3; margin-bottom: 24px; padding-bottom: 16px; }}
+    h1 {{ margin: 0 0 8px; font-size: 28px; }}
+    h2 {{ margin-top: 28px; font-size: 20px; }}
+    .summary {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }}
+    .metric {{ border: 1px solid #d5dbe3; padding: 12px; }}
+    .metric strong {{ display: block; font-size: 22px; margin-top: 4px; }}
+    table {{ border-collapse: collapse; width: 100%; }}
+    th, td {{ border: 1px solid #d5dbe3; padding: 8px 10px; text-align: left; }}
+    th {{ background: #f3f6f8; }}
+    a {{ color: #155e75; }}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>GeoCausal Open Spatial Report</h1>
+    <p>Open GIS deliverables generated without ArcGIS.</p>
+  </header>
+  <section class=\"summary\">
+    <div class=\"metric\">Spatial units<strong>{html_escape(str(manifest.get("row_count", "")))}</strong></div>
+    <div class=\"metric\">Matched analysis units<strong>{html_escape(str(manifest.get("matched_count", "")))}</strong></div>
+    <div class=\"metric\">Map field<strong>{html_escape(str(manifest.get("map_field", "")))}</strong></div>
+    <div class=\"metric\">CRS<strong>{html_escape(str(manifest.get("crs", "")))}</strong></div>
+  </section>
+  {chr(10).join(section_html)}
+</body>
+</html>
+"""
+    report_path.write_text(html, encoding="utf-8")
+    return str(report_path)
+
+
 def build_spatial_analysis_outputs(
     *,
     boundary_path: str | Path,
@@ -864,6 +942,10 @@ def build_spatial_analysis_outputs(
         "qgis_styles": qgis_styles,
     }
     manifest_path = output_dir / "spatial_output_manifest.json"
-    _write_json(manifest_path, manifest)
     manifest["manifest"] = str(manifest_path)
+    manifest["open_report"] = write_open_spatial_report(
+        output_dir=output_dir,
+        manifest=manifest,
+    )
+    _write_json(manifest_path, manifest)
     return manifest
