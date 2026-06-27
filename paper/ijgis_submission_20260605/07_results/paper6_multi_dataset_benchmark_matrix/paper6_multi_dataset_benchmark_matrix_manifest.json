@@ -5,7 +5,7 @@
   "surpass_scorecard_csv": "paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_arcgis_surpass_scorecard.csv",
   "surpass_scorecard_report_md": "paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_arcgis_surpass_scorecard.md",
   "n_rows": 12,
-  "scorecard_rows": 9,
+  "scorecard_rows": 10,
   "case_ids": [
     "county_arcgis_builtin",
     "soho_arcgis_builtin_relaxed",

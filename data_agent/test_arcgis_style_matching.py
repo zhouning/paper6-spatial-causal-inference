@@ -24,6 +24,12 @@ def _matching_fixture() -> pd.DataFrame:
     )
 
 
+def _large_matching_fixture() -> pd.DataFrame:
+    base = _matching_fixture()
+    blocks = [base.assign(unit_id=base["unit_id"].astype(str) + f"_r{repeat}") for repeat in range(6)]
+    return pd.concat(blocks, ignore_index=True)
+
+
 def test_arcgis_style_matching_grid_search_selects_best_count_weight_candidate():
     from geocausal.arcgis_style_matching import arcgis_style_matching_search
 
@@ -109,7 +115,7 @@ def test_arcgis_style_erf_uses_plugin_bandwidth_and_count_weights():
     assert result.curve["response"].between(frame["outcome"].min(), frame["outcome"].max()).all()
 
 def test_open_gis_package_writes_arcgis_style_matching_outputs(tmp_path):
-    frame = _matching_fixture()
+    frame = _large_matching_fixture()
     (tmp_path / "fixture.csv").write_text(frame.to_csv(index=False), encoding="utf-8")
     config_path = tmp_path / "analysis.yaml"
     config_path.write_text(
@@ -169,6 +175,7 @@ output:
     calibrated_balance = pd.read_csv(package_dir / "arcgis_style_calibrated_balance_summary.csv")
     arcgis_style_erf = pd.read_csv(package_dir / "gis_arcgis_style_erf_curve_200.csv")
     calibrated_arcgis_style_erf = pd.read_csv(package_dir / "gis_arcgis_style_calibrated_erf_curve_200.csv")
+    preferred_erf = pd.read_csv(package_dir / "gis_preferred_erf_curve_200.csv")
     run_summary = json.loads((package_dir / "gis_run_summary.json").read_text(encoding="utf-8"))
 
     assert {
@@ -184,6 +191,8 @@ output:
     assert {"exposure", "response", "source"}.issubset(arcgis_style_erf.columns)
     assert len(calibrated_arcgis_style_erf) == 200
     assert {"exposure", "response", "source"}.issubset(calibrated_arcgis_style_erf.columns)
+    assert len(preferred_erf) == 200
+    assert preferred_erf["response"].equals(arcgis_style_erf["response"])
     assert summary["generated_files"]["arcgis_style_matching_grid"] == "arcgis_style_matching_grid.csv"
     assert summary["generated_files"]["arcgis_style_calibrated_balance_summary"] == "arcgis_style_calibrated_balance_summary.csv"
     assert summary["generated_files"]["gis_arcgis_style_erf_curve_200"] == "gis_arcgis_style_erf_curve_200.csv"
@@ -191,6 +200,9 @@ output:
         summary["generated_files"]["gis_arcgis_style_calibrated_erf_curve_200"]
         == "gis_arcgis_style_calibrated_erf_curve_200.csv"
     )
+    assert summary["generated_files"]["gis_preferred_erf_curve_200"] == "gis_preferred_erf_curve_200.csv"
+    assert run_summary["preferred_erf"]["selected_curve"] == "gis_arcgis_style_erf_curve_200"
+    assert run_summary["preferred_erf"]["curve_file"] == "gis_preferred_erf_curve_200.csv"
     assert run_summary["arcgis_style_erf"]["bandwidth"] > 0
     assert run_summary["arcgis_style_erf"]["n_grid"] == 200
     assert run_summary["arcgis_style_calibrated_erf"]["bandwidth"] > 0
@@ -199,3 +211,67 @@ output:
     assert run_summary["arcgis_style_matching"]["selected_num_bins"] == int(
         grid.loc[grid["selected"] == 1, "num_bins"].iloc[0]
     )
+
+
+def test_open_gis_preferred_erf_uses_legacy_curve_for_small_samples(tmp_path):
+    frame = _matching_fixture()
+    (tmp_path / "fixture.csv").write_text(frame.to_csv(index=False), encoding="utf-8")
+    config_path = tmp_path / "analysis.yaml"
+    config_path.write_text(
+        """
+case_name: small_sample_preferred_erf_fixture
+input:
+  path: fixture.csv
+variables:
+  unit_id: unit_id
+  exposure: exposure
+  outcome: outcome
+  confounders:
+    - confounder_a
+    - confounder_b
+robustness:
+  bootstrap:
+    group_column: unit_id
+    n_replicates: 3
+output:
+  directory: results/small_sample_preferred_erf_fixture
+""",
+        encoding="utf-8",
+    )
+    config = load_config(config_path)
+    spec = config.to_study_spec()
+    paths = SCCAPaths(output_dir=config.resolve_output_dir())
+    paths.ensure()
+    pd.DataFrame(
+        {
+            "unit_id": frame["unit_id"],
+            "gc_propensity_score": np.linspace(0.1, 0.9, len(frame)),
+            "gc_balancing_weight": np.ones(len(frame)),
+        }
+    ).to_csv(paths.generalized_propensity_scores, index=False)
+    pd.DataFrame({"exposure": [1.0, 24.0], "response": [20.0, 26.0]}).to_csv(
+        paths.erf_curve,
+        index=False,
+    )
+
+    summary = write_open_gis_package(
+        config=config,
+        features=frame,
+        spec=spec,
+        paths=paths,
+        manifest={
+            "row_count": len(frame),
+            "evidence_grade": "core_support",
+            "evidence_grade_reasons": [],
+            "result_summary": {},
+        },
+    )
+
+    package_dir = paths.output_dir / "open_gis_analysis_package"
+    preferred_erf = pd.read_csv(package_dir / "gis_preferred_erf_curve_200.csv")
+    legacy_erf = pd.read_csv(package_dir / "gis_erf_curve_200.csv")
+    run_summary = json.loads((package_dir / "gis_run_summary.json").read_text(encoding="utf-8"))
+
+    assert summary["preferred_erf"]["selected_curve"] == "gis_erf_curve_200"
+    assert run_summary["preferred_erf"]["selected_curve"] == "gis_erf_curve_200"
+    assert preferred_erf["response"].equals(legacy_erf["response"])

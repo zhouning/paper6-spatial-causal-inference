@@ -250,6 +250,27 @@ def _comparison_rows(metrics: dict[str, Any]) -> list[dict[str, Any]]:
             interpretation="Root-mean-square response difference on the common ERF grid.",
         ),
         _metric_row(
+            "preferred_erf_rows",
+            metrics.get("arcgis_erf_rows"),
+            metrics.get("geocausal_preferred_erf_rows"),
+            status=_status_exact(metrics.get("arcgis_erf_rows"), metrics.get("geocausal_preferred_erf_rows")),
+            interpretation="Preferred GeoCausal ERF emits the user-facing ArcGIS-compatible benchmark curve.",
+        ),
+        _metric_row(
+            "preferred_erf_response_mae",
+            None,
+            metrics.get("preferred_erf_response_mae"),
+            status="computed" if metrics.get("preferred_erf_response_mae") is not None else "unavailable",
+            interpretation="Mean absolute response difference for the preferred Open GIS ERF curve.",
+        ),
+        _metric_row(
+            "preferred_erf_response_rmse",
+            None,
+            metrics.get("preferred_erf_response_rmse"),
+            status="computed" if metrics.get("preferred_erf_response_rmse") is not None else "unavailable",
+            interpretation="Root-mean-square response difference for the preferred Open GIS ERF curve.",
+        ),
+        _metric_row(
             "arcgis_style_erf_rows",
             metrics.get("arcgis_erf_rows"),
             metrics.get("geocausal_arcgis_style_erf_rows"),
@@ -339,6 +360,8 @@ def _render_report(rows: pd.DataFrame, metrics: dict[str, Any]) -> str:
         f"- GeoCausal ERF rows: `{metrics.get('geocausal_erf_rows')}`",
         f"- ERF response MAE: `{metrics.get('erf_response_mae')}`",
         f"- ERF response RMSE: `{metrics.get('erf_response_rmse')}`",
+        f"- Preferred ERF response MAE: `{metrics.get('preferred_erf_response_mae')}`",
+        f"- Preferred ERF response RMSE: `{metrics.get('preferred_erf_response_rmse')}`",
         f"- ArcGIS-style ERF response MAE: `{metrics.get('arcgis_style_erf_response_mae')}`",
         f"- ArcGIS-style ERF response RMSE: `{metrics.get('arcgis_style_erf_response_rmse')}`",
         f"- ArcGIS-style calibrated ERF response MAE: `{metrics.get('arcgis_style_calibrated_erf_response_mae')}`",
@@ -384,6 +407,9 @@ def build_arcgis_geocausal_comparison(
     geocausal_joined = _read_csv(open_gis_dir / "analysis_joined.csv")
     geocausal_erf = _read_csv(open_gis_dir / "gis_erf_curve_200.csv")
     geocausal_arcgis_style_erf = _read_csv(open_gis_dir / "gis_arcgis_style_erf_curve_200.csv")
+    geocausal_preferred_erf = _read_csv(open_gis_dir / "gis_preferred_erf_curve_200.csv")
+    if geocausal_preferred_erf.empty:
+        geocausal_preferred_erf = geocausal_arcgis_style_erf
     geocausal_arcgis_style_calibrated_erf = _read_csv(
         open_gis_dir / "gis_arcgis_style_calibrated_erf_curve_200.csv"
     )
@@ -407,6 +433,9 @@ def build_arcgis_geocausal_comparison(
         "arcgis_mean_weighted_correlation": arcgis_summary.get("mean_weighted_correlation"),
         "geocausal_joined_rows": int(len(geocausal_joined)) if not geocausal_joined.empty else None,
         "geocausal_erf_rows": int(len(geocausal_erf)) if not geocausal_erf.empty else None,
+        "geocausal_preferred_erf_rows": int(len(geocausal_preferred_erf))
+        if not geocausal_preferred_erf.empty
+        else None,
         "geocausal_arcgis_style_erf_rows": int(len(geocausal_arcgis_style_erf))
         if not geocausal_arcgis_style_erf.empty
         else None,
@@ -416,6 +445,7 @@ def build_arcgis_geocausal_comparison(
         "geocausal_evidence_grade": geocausal_summary.get("evidence_grade"),
     }
     metrics.update(_erf_metrics(arcgis_erf, geocausal_erf))
+    metrics.update(_prefixed_erf_metrics("preferred", arcgis_erf, geocausal_preferred_erf))
     metrics.update(_prefixed_erf_metrics("arcgis_style", arcgis_erf, geocausal_arcgis_style_erf))
     metrics.update(_prefixed_erf_metrics("arcgis_style_calibrated", arcgis_erf, geocausal_arcgis_style_calibrated_erf))
     metrics.update(_balance_metrics(geocausal_balance))

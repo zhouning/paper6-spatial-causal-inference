@@ -263,6 +263,7 @@ def test_run_analysis_writes_open_gis_parity_package(tmp_path):
         "analysis_joined.csv",
         "gis_balance_summary.csv",
         "gis_erf_curve_200.csv",
+        "gis_preferred_erf_curve_200.csv",
         "gis_run_summary.json",
         "gis_run_summary.md",
     }
@@ -301,6 +302,8 @@ def test_run_analysis_writes_open_gis_parity_package(tmp_path):
     summary = json.loads((package_dir / "gis_run_summary.json").read_text(encoding="utf-8"))
     assert summary["case_name"] == "geocausal_fixture"
     assert summary["generated_files"]["analysis_joined"] == "analysis_joined.csv"
+    assert summary["generated_files"]["gis_preferred_erf_curve_200"] == "gis_preferred_erf_curve_200.csv"
+    assert summary["preferred_erf"]["selected_curve"] == "gis_erf_curve_200"
     assert summary["evidence_grade"] in {"core_support", "bounded_support", "fragile_support"}
     assert "Open GIS" in (package_dir / "gis_run_summary.md").read_text(encoding="utf-8")
 

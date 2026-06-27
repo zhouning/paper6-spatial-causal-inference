@@ -31,6 +31,7 @@ MATRIX_COLUMNS = [
     "geocausal_default_balance",
     "geocausal_calibrated_balance",
     "default_erf_response_mae",
+    "preferred_erf_response_mae",
     "arcgis_style_erf_response_mae",
     "arcgis_style_calibrated_erf_response_mae",
     "baseline_method",
@@ -155,6 +156,9 @@ def _arcgis_comparison_row(manifest_path: str | Path | None) -> dict[str, Any] |
         "real_arcgis_benchmark",
         str(manifest_path),
     )
+    preferred_erf_response_mae = _finite_float(metrics.get("preferred_erf_response_mae"))
+    if preferred_erf_response_mae is None:
+        preferred_erf_response_mae = _finite_float(metrics.get("arcgis_style_erf_response_mae"))
     row.update(
         {
             "sample_rows": _int_or_none(metrics.get("geocausal_joined_rows") or metrics.get("arcgis_final_n")),
@@ -167,6 +171,7 @@ def _arcgis_comparison_row(manifest_path: str | Path | None) -> dict[str, Any] |
                 metrics.get("geocausal_arcgis_style_calibrated_confounder_mean_abs_weighted_correlation")
             ),
             "default_erf_response_mae": _finite_float(metrics.get("erf_response_mae")),
+            "preferred_erf_response_mae": preferred_erf_response_mae,
             "arcgis_style_erf_response_mae": _finite_float(metrics.get("arcgis_style_erf_response_mae")),
             "arcgis_style_calibrated_erf_response_mae": _finite_float(
                 metrics.get("arcgis_style_calibrated_erf_response_mae")
@@ -408,6 +413,29 @@ def build_arcgis_surpass_scorecard(
         )
     )
 
+    preferred_erf = _row_float(county, "preferred_erf_response_mae")
+    preferred_erf_status = (
+        "near_parity"
+        if preferred_erf is not None and preferred_erf <= arcgis_style_erf_near_parity_mae
+        else "missing_evidence"
+        if preferred_erf is None
+        else "open_gap"
+    )
+    rows.append(
+        _scorecard_row(
+            criterion_id="county_preferred_erf",
+            category="direct_arcgis_metric",
+            status=preferred_erf_status,
+            metric_value=preferred_erf,
+            threshold=f"MAE <= {arcgis_style_erf_near_parity_mae}",
+            evidence_case="county_arcgis_builtin",
+            interpretation="Preferred Open GIS ERF closely reproduces the ArcGIS ERF curve."
+            if preferred_erf_status == "near_parity"
+            else "Preferred Open GIS ERF is not yet close enough to the ArcGIS reference.",
+            next_action="Keep the preferred ERF as the user-facing ArcGIS-compatible curve and test it on more real datasets.",
+        )
+    )
+
     arcgis_style_erf = _row_float(county, "arcgis_style_erf_response_mae")
     erf_status = (
         "near_parity"
@@ -438,7 +466,7 @@ def build_arcgis_surpass_scorecard(
         and calibrated_arcgis_style_erf <= arcgis_style_erf_near_parity_mae
         else "missing_evidence"
         if calibrated_arcgis_style_erf is None
-        else "open_gap"
+        else "diagnostic_gap"
     )
     rows.append(
         _scorecard_row(
@@ -450,15 +478,15 @@ def build_arcgis_surpass_scorecard(
             evidence_case="county_arcgis_builtin",
             interpretation="Calibrated ArcGIS-style open ERF closely reproduces the ArcGIS ERF curve."
             if calibrated_erf_status == "near_parity"
-            else "Calibrated ArcGIS-style ERF is not yet close enough to the ArcGIS reference.",
-            next_action="Use calibrated ERF as the preferred ArcGIS-compatible Open GIS curve when it improves parity.",
+            else "Calibrated ArcGIS-style ERF is retained as a diagnostic curve and is not the preferred user-facing ERF.",
+            next_action="Keep calibrated weights for balance gains, but do not promote calibrated ERF unless real ArcGIS parity improves.",
         )
     )
 
 
     default_erf = _row_float(county, "default_erf_response_mae")
     default_erf_status = (
-        "open_gap"
+        "diagnostic_gap"
         if default_erf is not None and default_erf > default_erf_gap_mae
         else "missing_evidence"
         if default_erf is None
@@ -472,10 +500,10 @@ def build_arcgis_surpass_scorecard(
             metric_value=default_erf,
             threshold=f"MAE <= {default_erf_gap_mae}",
             evidence_case="county_arcgis_builtin",
-            interpretation="Default GeoCausal ERF is still numerically far from the ArcGIS ERF reference."
-            if default_erf_status == "open_gap"
+            interpretation="Legacy default GeoCausal ERF is numerically far from the ArcGIS ERF reference, so preferred ERF is used for Open GIS workflows."
+            if default_erf_status == "diagnostic_gap"
             else "Default GeoCausal ERF is within the configured ArcGIS-reference gap threshold.",
-            next_action="Tune the default ERF smoother/bandwidth or promote the open ArcGIS-style ERF as the default benchmark mode.",
+            next_action="Keep this row as a legacy diagnostic while improving the preferred ERF across datasets.",
         )
     )
 
@@ -591,7 +619,7 @@ def build_arcgis_surpass_scorecard(
             interpretation="Evidence supports partial wins, but not a broad ArcGIS-superiority claim yet."
             if blocking
             else "No configured scorecard gates block a current ArcGIS-superiority claim.",
-            next_action="Add additional real ArcGIS comparisons and close open synthetic/default-ERF gaps."
+            next_action="Close remaining synthetic robustness gaps and add additional real ArcGIS comparisons before a broad superiority claim."
             if blocking
             else "Maintain the gate as new datasets and metrics are added.",
         )
@@ -661,6 +689,7 @@ def _render_report(matrix: pd.DataFrame) -> str:
         lines.append(
             f"- `{row['case_id']}`: ArcGIS balance `{row['arcgis_balance']}`, "
             f"GeoCausal calibrated balance `{row['geocausal_calibrated_balance']}`, "
+            f"preferred ERF MAE `{row['preferred_erf_response_mae']}`, "
             f"ArcGIS-style ERF MAE `{row['arcgis_style_erf_response_mae']}`, "
             f"calibrated ArcGIS-style ERF MAE `{row['arcgis_style_calibrated_erf_response_mae']}`."
         )

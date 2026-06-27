@@ -62,6 +62,7 @@ class GeoCausalSCCAAlgorithm:
     OUTPUT_OPEN_GIS_JOINED = "OUTPUT_OPEN_GIS_ANALYSIS_JOINED"
     OUTPUT_OPEN_GIS_BALANCE = "OUTPUT_OPEN_GIS_BALANCE_SUMMARY"
     OUTPUT_OPEN_GIS_ERF_200 = "OUTPUT_OPEN_GIS_ERF_200"
+    OUTPUT_OPEN_GIS_PREFERRED_ERF_200 = "OUTPUT_OPEN_GIS_PREFERRED_ERF_200"
     OUTPUT_OPEN_GIS_ARCGIS_STYLE_ERF_200 = "OUTPUT_OPEN_GIS_ARCGIS_STYLE_ERF_200"
     OUTPUT_OPEN_GIS_ARCGIS_STYLE_GRID = "OUTPUT_OPEN_GIS_ARCGIS_STYLE_GRID"
     OUTPUT_OPEN_GIS_ARCGIS_STYLE_BALANCE = "OUTPUT_OPEN_GIS_ARCGIS_STYLE_BALANCE"
@@ -227,6 +228,9 @@ class GeoCausalSCCAAlgorithm:
             cls.OUTPUT_OPEN_GIS_JOINED: generated_path("analysis_joined", "analysis_joined.csv"),
             cls.OUTPUT_OPEN_GIS_BALANCE: generated_path("gis_balance_summary", "gis_balance_summary.csv"),
             cls.OUTPUT_OPEN_GIS_ERF_200: generated_path("gis_erf_curve_200", "gis_erf_curve_200.csv"),
+            cls.OUTPUT_OPEN_GIS_PREFERRED_ERF_200: generated_path(
+                "gis_preferred_erf_curve_200", "gis_preferred_erf_curve_200.csv"
+            ),
             cls.OUTPUT_OPEN_GIS_ARCGIS_STYLE_ERF_200: generated_path(
                 "gis_arcgis_style_erf_curve_200", "gis_arcgis_style_erf_curve_200.csv"
             ),
@@ -347,6 +351,7 @@ class GeoCausalSCCAAlgorithm:
                 self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_JOINED, "Open GIS Analysis Joined CSV"))
                 self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_BALANCE, "Open GIS Balance Summary CSV"))
                 self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_ERF_200, "Open GIS ERF 200 CSV"))
+                self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_PREFERRED_ERF_200, "Open GIS Preferred ERF 200 CSV"))
                 self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_ARCGIS_STYLE_ERF_200, "Open GIS ArcGIS-style ERF 200 CSV"))
                 self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_ARCGIS_STYLE_GRID, "Open GIS ArcGIS-style Matching Grid CSV"))
                 self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_ARCGIS_STYLE_BALANCE, "Open GIS ArcGIS-style Balance CSV"))

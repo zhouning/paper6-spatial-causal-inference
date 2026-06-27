@@ -16,6 +16,7 @@ from .config import GeoCausalConfig
 
 PACKAGE_DIR_NAME = "open_gis_analysis_package"
 BALANCE_THRESHOLD = 0.1
+PREFERRED_ERF_ARCGIS_STYLE_MIN_ROWS = 100
 
 
 def _json_ready(value: object) -> object:
@@ -270,6 +271,34 @@ def _write_arcgis_style_erf_200(
     return output_path, result.summary, list(result.warnings)
 
 
+def _write_preferred_erf_200(
+    *,
+    package_dir: Path,
+    source_path: Path,
+    source_summary: dict[str, Any],
+    selected_curve: str,
+    selection_reason: str,
+) -> tuple[Path, dict[str, Any], list[str]]:
+    output_path = package_dir / "gis_preferred_erf_curve_200.csv"
+    warnings: list[str] = []
+    if source_path.exists():
+        output_path.write_bytes(source_path.read_bytes())
+        preferred = pd.read_csv(output_path)
+    else:
+        preferred = pd.DataFrame(columns=["exposure", "response", "source"])
+        warnings.append("Preferred Open GIS ERF source is missing; preferred ERF output is empty.")
+        preferred.to_csv(output_path, index=False, encoding="utf-8-sig")
+    summary = {
+        "status": source_summary.get("status"),
+        "selected_curve": selected_curve,
+        "curve_file": output_path.name,
+        "source_file": source_path.name,
+        "selection_reason": selection_reason,
+        "n_grid": int(len(preferred)),
+    }
+    return output_path, summary, warnings
+
+
 def write_open_gis_package(
     *,
     config: GeoCausalConfig,
@@ -331,11 +360,34 @@ def write_open_gis_package(
         output_name="gis_arcgis_style_calibrated_erf_curve_200.csv",
     )
     erf_path, erf_warnings = _write_erf_200(package_dir, paths)
+    preferred_source_path = arcgis_style_erf_path
+    preferred_source_summary = arcgis_style_erf_summary
+    preferred_selected_curve = "gis_arcgis_style_erf_curve_200"
+    preferred_selection_reason = (
+        "ArcGIS-compatible Open GIS workflows use the count-weighted kernel ERF because "
+        "direct ArcGIS comparisons showed closer response parity than the legacy linear ERF on large real datasets."
+    )
+    if len(features) < PREFERRED_ERF_ARCGIS_STYLE_MIN_ROWS and not erf_warnings:
+        preferred_source_path = erf_path
+        preferred_source_summary = {"status": "ok"}
+        preferred_selected_curve = "gis_erf_curve_200"
+        preferred_selection_reason = (
+            "Legacy linear ERF is preferred for retained samples below "
+            f"{PREFERRED_ERF_ARCGIS_STYLE_MIN_ROWS} rows to avoid high-variance local kernel curves."
+        )
+    preferred_erf_path, preferred_erf_summary, preferred_erf_warnings = _write_preferred_erf_200(
+        package_dir=package_dir,
+        source_path=preferred_source_path,
+        source_summary=preferred_source_summary,
+        selected_curve=preferred_selected_curve,
+        selection_reason=preferred_selection_reason,
+    )
 
     generated_files = {
         "analysis_joined": joined_path.name,
         "gis_balance_summary": balance_path.name,
         "gis_erf_curve_200": erf_path.name,
+        "gis_preferred_erf_curve_200": preferred_erf_path.name,
         "gis_arcgis_style_erf_curve_200": arcgis_style_erf_path.name,
         "gis_arcgis_style_calibrated_erf_curve_200": arcgis_style_calibrated_erf_path.name,
         "arcgis_style_matching_grid": arcgis_style_grid_path.name,
@@ -350,6 +402,7 @@ def write_open_gis_package(
         *arcgis_style_warnings,
         *arcgis_style_erf_warnings,
         *arcgis_style_calibrated_erf_warnings,
+        *preferred_erf_warnings,
     ]
     summary = {
         "package_name": "Open GIS Analysis Package",
@@ -365,6 +418,7 @@ def write_open_gis_package(
         "evidence_grade_reasons": manifest.get("evidence_grade_reasons", []),
         "result_summary": manifest.get("result_summary", {}),
         "arcgis_style_matching": arcgis_style_summary,
+        "preferred_erf": preferred_erf_summary,
         "arcgis_style_erf": arcgis_style_erf_summary,
         "arcgis_style_calibrated_erf": arcgis_style_calibrated_erf_summary,
         "generated_files": generated_files,
