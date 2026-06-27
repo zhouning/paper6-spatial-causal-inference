@@ -1,0 +1,14 @@
+{
+    "parameters":  {
+                       "output_stem":  "snow8_arcgis_builtin_relaxed",
+                       "balance_threshold":  0.105
+                   },
+    "summary":  {
+                    "original_n":  31,
+                    "final_n":  31,
+                    "mean_weighted_correlation":  0.1026,
+                    "selected_num_bins":  5,
+                    "selected_propensity_exposure_scale":  1
+                },
+    "note":  "Sanitized ArcGIS Pro relaxed-threshold Snow8 run snapshot for Paper 6 multi-dataset matrix."
+}
