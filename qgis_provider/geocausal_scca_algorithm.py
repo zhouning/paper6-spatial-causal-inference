@@ -141,30 +141,39 @@ class GeoCausalSCCAAlgorithm:
         if missing:
             raise ValueError(f"Input layer/table is missing fields: {', '.join(missing)}")
 
-        coordinate_columns = None
+        rows: list[dict[str, Any]] = []
+        coordinate_values: list[tuple[float | None, float | None]] = []
+        has_coordinates = False
+        for feature in source.getFeatures():
+            row = {field: feature.attribute(field) for field in selected_fields}
+            if derive_coordinates:
+                point = None
+                if feature.hasGeometry():
+                    geometry = feature.geometry()
+                    if not geometry.isNull() and not geometry.isEmpty():
+                        point_geometry = geometry.pointOnSurface()
+                        if point_geometry.isNull() or point_geometry.isEmpty():
+                            point_geometry = geometry.centroid()
+                        if not point_geometry.isNull() and not point_geometry.isEmpty():
+                            point = point_geometry.asPoint()
+                x_value = point.x() if point is not None else None
+                y_value = point.y() if point is not None else None
+                coordinate_values.append((x_value, y_value))
+                has_coordinates = has_coordinates or (x_value is not None and y_value is not None)
+            rows.append(row)
+
+        coordinate_columns = ("_gc_x", "_gc_y") if derive_coordinates and has_coordinates else None
         output_fields = list(selected_fields)
-        if derive_coordinates:
-            output_fields.extend(["_gc_x", "_gc_y"])
-            coordinate_columns = ("_gc_x", "_gc_y")
+        if coordinate_columns is not None:
+            output_fields.extend(coordinate_columns)
+            for row, (x_value, y_value) in zip(rows, coordinate_values):
+                row["_gc_x"] = x_value
+                row["_gc_y"] = y_value
 
         with output_csv.open("w", encoding="utf-8-sig", newline="") as dst:
             writer = csv.DictWriter(dst, fieldnames=output_fields)
             writer.writeheader()
-            for feature in source.getFeatures():
-                row = {field: feature.attribute(field) for field in selected_fields}
-                if derive_coordinates:
-                    point = None
-                    if feature.hasGeometry():
-                        geometry = feature.geometry()
-                        if not geometry.isNull() and not geometry.isEmpty():
-                            point_geometry = geometry.pointOnSurface()
-                            if point_geometry.isNull() or point_geometry.isEmpty():
-                                point_geometry = geometry.centroid()
-                            if not point_geometry.isNull() and not point_geometry.isEmpty():
-                                point = point_geometry.asPoint()
-                    row["_gc_x"] = point.x() if point is not None else None
-                    row["_gc_y"] = point.y() if point is not None else None
-                writer.writerow(row)
+            writer.writerows(rows)
         return output_csv, coordinate_columns
 
     def create_request(self, run_request: QGISRunRequest) -> AnalysisRequest:

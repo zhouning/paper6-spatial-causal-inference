@@ -159,3 +159,113 @@ def test_qgis_source_export_writes_selected_fields_without_qgis_runtime(tmp_path
     text = output_csv.read_text(encoding="utf-8-sig")
     assert text.splitlines()[0] == "FIPS,SocialAssoc,AveAgeDeath"
     assert "01001,12.3,71.0" in text
+
+
+def test_qgis_source_export_does_not_report_empty_derived_coordinates(tmp_path):
+    module = importlib.import_module("qgis_provider.geocausal_scca_algorithm")
+    output_csv = tmp_path / "input.csv"
+
+    exported_path, coordinate_columns = module.GeoCausalSCCAAlgorithm.export_qgis_source_to_csv(
+        _FakeSource(
+            [
+                {"FIPS": "01001", "SocialAssoc": 12.3, "AveAgeDeath": 71.0},
+                {"FIPS": "01003", "SocialAssoc": 10.0, "AveAgeDeath": 70.5},
+            ]
+        ),
+        output_csv,
+        selected_fields=("FIPS", "SocialAssoc", "AveAgeDeath"),
+        derive_coordinates=True,
+    )
+
+    assert exported_path == output_csv
+    assert coordinate_columns is None
+    text = output_csv.read_text(encoding="utf-8-sig")
+    assert text.splitlines()[0] == "FIPS,SocialAssoc,AveAgeDeath"
+    assert "_gc_x" not in text
+    assert "_gc_y" not in text
+
+
+def test_qgis_source_export_reports_derived_coordinates_when_geometry_exists(tmp_path):
+    module = importlib.import_module("qgis_provider.geocausal_scca_algorithm")
+    output_csv = tmp_path / "input.csv"
+
+    class _Point:
+        def __init__(self, x, y):
+            self._x = x
+            self._y = y
+
+        def x(self):
+            return self._x
+
+        def y(self):
+            return self._y
+
+    class _PointGeometry:
+        def __init__(self, point):
+            self._point = point
+
+        def isNull(self):
+            return False
+
+        def isEmpty(self):
+            return False
+
+        def asPoint(self):
+            return self._point
+
+    class _Geometry:
+        def __init__(self, x, y):
+            self._point_geometry = _PointGeometry(_Point(x, y))
+
+        def isNull(self):
+            return False
+
+        def isEmpty(self):
+            return False
+
+        def pointOnSurface(self):
+            return self._point_geometry
+
+        def centroid(self):
+            return self._point_geometry
+
+    class _FeatureWithGeometry(_FakeFeature):
+        def __init__(self, values, x, y):
+            super().__init__(values)
+            self._geometry = _Geometry(x, y)
+
+        def hasGeometry(self):
+            return True
+
+        def geometry(self):
+            return self._geometry
+
+    class _GeometrySource(_FakeSource):
+        def __init__(self, rows, coordinates):
+            super().__init__(rows)
+            self._coordinates = coordinates
+
+        def getFeatures(self):
+            return [
+                _FeatureWithGeometry(row, x, y)
+                for row, (x, y) in zip(self._rows, self._coordinates)
+            ]
+
+    exported_path, coordinate_columns = module.GeoCausalSCCAAlgorithm.export_qgis_source_to_csv(
+        _GeometrySource(
+            [
+                {"FIPS": "01001", "SocialAssoc": 12.3, "AveAgeDeath": 71.0},
+                {"FIPS": "01003", "SocialAssoc": 10.0, "AveAgeDeath": 70.5},
+            ],
+            coordinates=((-86.64, 32.54), (-87.75, 30.66)),
+        ),
+        output_csv,
+        selected_fields=("FIPS", "SocialAssoc", "AveAgeDeath"),
+        derive_coordinates=True,
+    )
+
+    assert exported_path == output_csv
+    assert coordinate_columns == ("_gc_x", "_gc_y")
+    text = output_csv.read_text(encoding="utf-8-sig")
+    assert text.splitlines()[0] == "FIPS,SocialAssoc,AveAgeDeath,_gc_x,_gc_y"
+    assert "01001,12.3,71.0,-86.64,32.54" in text
