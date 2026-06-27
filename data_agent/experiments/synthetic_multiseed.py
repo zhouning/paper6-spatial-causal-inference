@@ -381,6 +381,48 @@ def _run_granger(data: pd.DataFrame, meta: dict[str, Any], seed: int, variant: s
     )
 
 
+
+def _gccm_direction_accuracy(result: dict[str, Any]) -> float:
+    has_convergence_flags = (
+        "x_causes_y_converges" in result or "y_causes_x_converges" in result
+    )
+    forward = bool(result.get("x_causes_y_converges"))
+    reverse = bool(result.get("y_causes_x_converges"))
+    forward_rho = _safe_float(result.get("x_causes_y_rho"))
+    reverse_rho = _safe_float(result.get("y_causes_x_rho"))
+
+    if forward and not reverse:
+        return 1.0
+    if forward_rho is not None and reverse_rho is not None:
+        if not has_convergence_flags:
+            return float(forward_rho >= reverse_rho)
+        if forward and reverse:
+            return float(forward_rho >= reverse_rho)
+    return 0.0
+
+
+def _gccm_direction_rule(result: dict[str, Any]) -> str:
+    has_convergence_flags = (
+        "x_causes_y_converges" in result or "y_causes_x_converges" in result
+    )
+    forward = bool(result.get("x_causes_y_converges"))
+    reverse = bool(result.get("y_causes_x_converges"))
+    forward_rho = _safe_float(result.get("x_causes_y_rho"))
+    reverse_rho = _safe_float(result.get("y_causes_x_rho"))
+    if forward and not reverse:
+        return "forward_only_convergence"
+    if forward_rho is not None and reverse_rho is not None:
+        if not has_convergence_flags:
+            if forward_rho >= reverse_rho:
+                return "saved_detail_forward_rho_dominance"
+            return "saved_detail_reverse_rho_dominance"
+        if forward and reverse:
+            if forward_rho >= reverse_rho:
+                return "bidirectional_convergence_forward_rho_dominance"
+            return "bidirectional_convergence_reverse_rho_dominance"
+    return "no_forward_direction_evidence"
+
+
 def _run_gccm(data: Any, meta: dict[str, Any], seed: int, variant: str) -> dict[str, Any]:
     from data_agent.causal_inference import geographic_causal_mapping
 
@@ -404,9 +446,8 @@ def _run_gccm(data: Any, meta: dict[str, Any], seed: int, variant: str) -> dict[
     finally:
         os.unlink(path)
 
-    forward = bool(result.get("x_causes_y_converges"))
-    reverse = bool(result.get("y_causes_x_converges"))
-    correct = float(forward and not reverse)
+    correct = _gccm_direction_accuracy(result)
+    direction_rule = _gccm_direction_rule(result)
     return _row(
         scenario="GCCM",
         method="geographic_causal_mapping",
@@ -418,7 +459,10 @@ def _run_gccm(data: Any, meta: dict[str, Any], seed: int, variant: str) -> dict[
         extra={
             "x_causes_y_rho": result.get("x_causes_y_rho"),
             "y_causes_x_rho": result.get("y_causes_x_rho"),
+            "x_causes_y_converges": result.get("x_causes_y_converges"),
+            "y_causes_x_converges": result.get("y_causes_x_converges"),
             "causal_direction": result.get("causal_direction"),
+            "direction_decision_rule": direction_rule,
         },
     )
 
