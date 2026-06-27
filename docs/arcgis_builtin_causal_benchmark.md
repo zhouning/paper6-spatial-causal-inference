@@ -91,21 +91,39 @@ ArcGIS output CSV checks:
 - `county_arcgis_builtin_features.csv`: 3108 rows, with `RECRD_USED` marking the 3044 analysis rows.
 - `county_arcgis_builtin_erf.csv`: 200 rows, with `EXPOSURE` and `RESPONSE` columns.
 
-Current Open GIS package comparison from the same county smoke run:
+## ArcGIS-vs-GeoCausal Comparison Builder
+
+After both output packages exist, build a comparison table with ordinary Python:
+
+```powershell
+python -m geocausal.cli arcgis-compare `
+  --arcgis-manifest D:\tmp\paper6_arcgis_builtin_causal_20260627\arcgis_causal_manifest_final.json `
+  --open-gis-dir D:\tmp\paper6_open_gis_smoke_20260627\results\open_gis_analysis_package `
+  --output-dir D:\tmp\paper6_arcgis_builtin_causal_20260627\geocausal_comparison_final
+```
+
+Current real-data comparison from the same county smoke run:
 
 ```json
 {
-  "open_gis_joined_rows": 3044,
-  "open_gis_erf_rows": 200,
-  "open_gis_mean_abs_weighted_correlation": 0.0971,
-  "open_gis_max_abs_weighted_correlation": 0.2178
+  "arcgis_final_n": 3044,
+  "geocausal_joined_rows": 3044,
+  "arcgis_erf_rows": 200,
+  "geocausal_erf_rows": 200,
+  "erf_exposure_mae": 4.263256414560601e-16,
+  "erf_response_mae": 1.2736428374694144,
+  "erf_response_rmse": 1.3805616459314445,
+  "arcgis_mean_weighted_correlation": 0.0559,
+  "geocausal_confounder_mean_abs_weighted_correlation": 0.11135132300647173,
+  "geocausal_all_mean_abs_weighted_correlation": 0.09707161677961383,
+  "geocausal_max_abs_weighted_correlation": 0.2178475400766404
 }
 ```
 
-The first exact parity checks are now automated enough to reproduce:
+Interpretation:
 
 - ArcGIS and GeoCausal retain the same `3044` analysis rows after 1%/99% exposure trimming.
-- ArcGIS and GeoCausal both produce a 200-row ERF table.
-- ArcGIS's mean weighted balance is `0.0559`; the current Open GIS balance summary mean absolute weighted correlation is `0.0971` across confounders plus spatial context columns.
-
-This is a benchmark input for the next stage: a committed ArcGIS-vs-GeoCausal comparison table that reads the ArcGIS manifest/CSV exports and the Open GIS package, then reports field-level parity, ERF distance, balance differences, and target-outcome differences.
+- ArcGIS and GeoCausal both produce a 200-row ERF table on the same exposure grid.
+- The current ArcGIS ERF and GeoCausal ERF differ by `1.27` years MAE on response values.
+- ArcGIS's built-in matching balance is stronger for the county confounders in this run: `0.0559` versus GeoCausal confounder mean absolute weighted correlation `0.1114`.
+- GeoCausal still adds open outputs, evidence grading, spatial diagnostics, SLX/spillover checks, QGIS/browser reports, and reproducible manifests that the ArcGIS built-in tool does not provide as a single open package.

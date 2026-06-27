@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from .arcgis_causal import ArcGISCausalInferenceRequest, run_arcgis_causal_inference
+from .arcgis_comparison import build_arcgis_geocausal_comparison
 from .config import load_config
 from .errors import GeoCausalError
 from .pipeline import diagnose_config, rebuild_report, run_analysis
@@ -130,6 +131,14 @@ def _build_parser() -> argparse.ArgumentParser:
     arcgis_parser.add_argument("--output-csv-dir", help="optional directory for CSV exports of ArcGIS outputs")
     arcgis_parser.add_argument("--manifest", help="optional JSON manifest path")
 
+    compare_parser = subparsers.add_parser(
+        "arcgis-compare",
+        help="compare ArcGIS built-in Causal Inference outputs with a GeoCausal Open GIS package",
+    )
+    compare_parser.add_argument("--arcgis-manifest", required=True)
+    compare_parser.add_argument("--open-gis-dir", required=True)
+    compare_parser.add_argument("--output-dir", required=True)
+
     return parser
 
 
@@ -230,6 +239,14 @@ def main(argv: list[str] | None = None) -> int:
                         output_csv_dir=args.output_csv_dir,
                     ),
                     manifest_path=Path(args.manifest) if args.manifest else None,
+                )
+            )
+        elif args.command == "arcgis-compare":
+            _print_json(
+                build_arcgis_geocausal_comparison(
+                    arcgis_manifest_path=Path(args.arcgis_manifest),
+                    open_gis_dir=Path(args.open_gis_dir),
+                    output_dir=Path(args.output_dir),
                 )
             )
         else:
