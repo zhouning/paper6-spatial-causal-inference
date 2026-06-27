@@ -45,14 +45,16 @@ The shared core also writes an Open GIS analysis package for ArcGIS-free use:
 `open_gis_analysis_package/analysis_joined.csv`,
 `open_gis_analysis_package/gis_balance_summary.csv`,
 `open_gis_analysis_package/gis_erf_curve_200.csv`,
+`open_gis_analysis_package/gis_arcgis_style_erf_curve_200.csv`,
 `open_gis_analysis_package/arcgis_style_matching_grid.csv`,
 `open_gis_analysis_package/arcgis_style_balance_summary.csv`,
 `open_gis_analysis_package/arcgis_style_calibrated_balance_summary.csv`,
 `open_gis_analysis_package/gis_run_summary.json`, and
 `open_gis_analysis_package/gis_run_summary.md`. These files expose retained
 analysis rows, generalized propensity scores, balancing weights, ArcGIS-style
-count matching, calibrated balance summaries, a 200-point exposure-response
-curve, spatial diagnostics, and evidence grading through ordinary
+count matching, calibrated balance summaries, the default 200-point exposure-response
+curve, an ArcGIS-style count-weighted kernel ERF benchmark, spatial diagnostics,
+and evidence grading through ordinary
 CSV/JSON/Markdown outputs. ArcGIS Pro is an optional adapter, not a runtime
 dependency for the causal evidence package. The ArcGIS-free quickstart and
 acceptance checklist are maintained in `docs/open_gis_analysis_package.md`.

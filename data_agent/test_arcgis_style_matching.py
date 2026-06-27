@@ -85,6 +85,29 @@ def test_arcgis_style_matching_uses_fast_residual_normal_density(monkeypatch):
     assert result.selected_scale == 0.8
     assert result.selected_mean_abs_weighted_correlation is not None
 
+
+def test_arcgis_style_erf_uses_plugin_bandwidth_and_count_weights():
+    from geocausal.arcgis_style_erf import arcgis_style_erf_curve
+
+    frame = _matching_fixture()
+    weights = pd.Series(np.linspace(1.0, 3.0, len(frame)), index=frame.index)
+
+    result = arcgis_style_erf_curve(
+        frame,
+        exposure="exposure",
+        outcome="outcome",
+        weights=weights,
+        n_grid=200,
+    )
+
+    expected_bandwidth = 2.0 * frame["exposure"].std(ddof=1) * (len(frame) ** (-1.0 / 5.0))
+    assert len(result.curve) == 200
+    assert result.summary["n"] == len(frame)
+    assert result.summary["bandwidth"] == expected_bandwidth
+    assert set(result.curve["source"]) == {"arcgis_style_kernel_weighted_mean"}
+    assert result.curve["response"].notna().all()
+    assert result.curve["response"].between(frame["outcome"].min(), frame["outcome"].max()).all()
+
 def test_open_gis_package_writes_arcgis_style_matching_outputs(tmp_path):
     frame = _matching_fixture()
     (tmp_path / "fixture.csv").write_text(frame.to_csv(index=False), encoding="utf-8")
@@ -144,6 +167,7 @@ output:
     grid = pd.read_csv(package_dir / "arcgis_style_matching_grid.csv")
     balance = pd.read_csv(package_dir / "arcgis_style_balance_summary.csv")
     calibrated_balance = pd.read_csv(package_dir / "arcgis_style_calibrated_balance_summary.csv")
+    arcgis_style_erf = pd.read_csv(package_dir / "gis_arcgis_style_erf_curve_200.csv")
     run_summary = json.loads((package_dir / "gis_run_summary.json").read_text(encoding="utf-8"))
 
     assert {
@@ -155,8 +179,13 @@ output:
     assert grid["selected"].sum() == 1
     assert {"confounder_a", "confounder_b"} == set(balance["variable"])
     assert {"confounder_a", "confounder_b"} == set(calibrated_balance["variable"])
+    assert len(arcgis_style_erf) == 200
+    assert {"exposure", "response", "source"}.issubset(arcgis_style_erf.columns)
     assert summary["generated_files"]["arcgis_style_matching_grid"] == "arcgis_style_matching_grid.csv"
     assert summary["generated_files"]["arcgis_style_calibrated_balance_summary"] == "arcgis_style_calibrated_balance_summary.csv"
+    assert summary["generated_files"]["gis_arcgis_style_erf_curve_200"] == "gis_arcgis_style_erf_curve_200.csv"
+    assert run_summary["arcgis_style_erf"]["bandwidth"] > 0
+    assert run_summary["arcgis_style_erf"]["n_grid"] == 200
     assert run_summary["arcgis_style_matching"]["calibrated_mean_abs_weighted_correlation"] <= run_summary["arcgis_style_matching"]["selected_mean_abs_weighted_correlation"]
     assert run_summary["arcgis_style_matching"]["selected_num_bins"] == int(
         grid.loc[grid["selected"] == 1, "num_bins"].iloc[0]

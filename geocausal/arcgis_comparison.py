@@ -98,6 +98,14 @@ def _erf_metrics(arcgis_erf: pd.DataFrame, geocausal_erf: pd.DataFrame) -> dict[
     }
 
 
+def _prefixed_erf_metrics(
+    prefix: str,
+    arcgis_erf: pd.DataFrame,
+    geocausal_erf: pd.DataFrame,
+) -> dict[str, float | int | None]:
+    base = _erf_metrics(arcgis_erf, geocausal_erf)
+    return {f"{prefix}_{key}": value for key, value in base.items()}
+
 def _balance_metrics(balance: pd.DataFrame) -> dict[str, float | None]:
     if balance.empty:
         return {
@@ -242,6 +250,27 @@ def _comparison_rows(metrics: dict[str, Any]) -> list[dict[str, Any]]:
             interpretation="Root-mean-square response difference on the common ERF grid.",
         ),
         _metric_row(
+            "arcgis_style_erf_rows",
+            metrics.get("arcgis_erf_rows"),
+            metrics.get("geocausal_arcgis_style_erf_rows"),
+            status=_status_exact(metrics.get("arcgis_erf_rows"), metrics.get("geocausal_arcgis_style_erf_rows")),
+            interpretation="ArcGIS-style GeoCausal ERF emits a separate 200-row benchmark curve.",
+        ),
+        _metric_row(
+            "arcgis_style_erf_response_mae",
+            None,
+            metrics.get("arcgis_style_erf_response_mae"),
+            status="computed" if metrics.get("arcgis_style_erf_response_mae") is not None else "unavailable",
+            interpretation="Mean absolute response difference for the ArcGIS-style count-weighted kernel ERF.",
+        ),
+        _metric_row(
+            "arcgis_style_erf_response_rmse",
+            None,
+            metrics.get("arcgis_style_erf_response_rmse"),
+            status="computed" if metrics.get("arcgis_style_erf_response_rmse") is not None else "unavailable",
+            interpretation="Root-mean-square response difference for the ArcGIS-style count-weighted kernel ERF.",
+        ),
+        _metric_row(
             "mean_weighted_balance",
             metrics.get("arcgis_mean_weighted_correlation"),
             metrics.get("geocausal_confounder_mean_abs_weighted_correlation"),
@@ -286,6 +315,8 @@ def _render_report(rows: pd.DataFrame, metrics: dict[str, Any]) -> str:
         f"- GeoCausal ERF rows: `{metrics.get('geocausal_erf_rows')}`",
         f"- ERF response MAE: `{metrics.get('erf_response_mae')}`",
         f"- ERF response RMSE: `{metrics.get('erf_response_rmse')}`",
+        f"- ArcGIS-style ERF response MAE: `{metrics.get('arcgis_style_erf_response_mae')}`",
+        f"- ArcGIS-style ERF response RMSE: `{metrics.get('arcgis_style_erf_response_rmse')}`",
         f"- ArcGIS mean weighted balance: `{metrics.get('arcgis_mean_weighted_correlation')}`",
         "- GeoCausal confounder mean absolute weighted balance: "
         f"`{metrics.get('geocausal_confounder_mean_abs_weighted_correlation')}`",
@@ -326,6 +357,7 @@ def build_arcgis_geocausal_comparison(
     arcgis_features = _read_csv(arcgis_features_path) if arcgis_features_path else pd.DataFrame()
     geocausal_joined = _read_csv(open_gis_dir / "analysis_joined.csv")
     geocausal_erf = _read_csv(open_gis_dir / "gis_erf_curve_200.csv")
+    geocausal_arcgis_style_erf = _read_csv(open_gis_dir / "gis_arcgis_style_erf_curve_200.csv")
     geocausal_balance = _read_csv(open_gis_dir / "gis_balance_summary.csv")
     geocausal_arcgis_style_balance = _read_csv(open_gis_dir / "arcgis_style_balance_summary.csv")
     geocausal_arcgis_style_calibrated_balance = _read_csv(
@@ -346,9 +378,13 @@ def build_arcgis_geocausal_comparison(
         "arcgis_mean_weighted_correlation": arcgis_summary.get("mean_weighted_correlation"),
         "geocausal_joined_rows": int(len(geocausal_joined)) if not geocausal_joined.empty else None,
         "geocausal_erf_rows": int(len(geocausal_erf)) if not geocausal_erf.empty else None,
+        "geocausal_arcgis_style_erf_rows": int(len(geocausal_arcgis_style_erf))
+        if not geocausal_arcgis_style_erf.empty
+        else None,
         "geocausal_evidence_grade": geocausal_summary.get("evidence_grade"),
     }
     metrics.update(_erf_metrics(arcgis_erf, geocausal_erf))
+    metrics.update(_prefixed_erf_metrics("arcgis_style", arcgis_erf, geocausal_arcgis_style_erf))
     metrics.update(_balance_metrics(geocausal_balance))
     metrics.update(_arcgis_style_balance_metrics(geocausal_arcgis_style_balance))
     metrics.update(_arcgis_style_calibrated_balance_metrics(geocausal_arcgis_style_calibrated_balance))

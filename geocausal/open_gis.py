@@ -9,6 +9,7 @@ import pandas as pd
 
 from data_agent.scca.specs import SCCAPaths, StudySpec
 
+from .arcgis_style_erf import arcgis_style_erf_curve
 from .arcgis_style_matching import arcgis_style_matching_search
 from .config import GeoCausalConfig
 
@@ -248,6 +249,26 @@ def _write_arcgis_style_matching_outputs(
         list(result.warnings),
     )
 
+
+def _write_arcgis_style_erf_200(
+    *,
+    package_dir: Path,
+    features: pd.DataFrame,
+    spec: StudySpec,
+    weights: pd.Series,
+) -> tuple[Path, dict[str, Any], list[str]]:
+    output_path = package_dir / "gis_arcgis_style_erf_curve_200.csv"
+    result = arcgis_style_erf_curve(
+        features,
+        exposure=spec.exposure,
+        outcome=spec.outcome,
+        weights=weights,
+        n_grid=200,
+    )
+    result.curve.to_csv(output_path, index=False, encoding="utf-8-sig")
+    return output_path, result.summary, list(result.warnings)
+
+
 def write_open_gis_package(
     *,
     config: GeoCausalConfig,
@@ -291,19 +312,26 @@ def write_open_gis_package(
     joined["gc_arcgis_style_matching_weight"] = arcgis_style_weights.reset_index(drop=True)
     joined["gc_arcgis_style_calibrated_weight"] = arcgis_style_calibrated_weights.reset_index(drop=True)
     joined.to_csv(joined_path, index=False, encoding="utf-8-sig")
+    arcgis_style_erf_path, arcgis_style_erf_summary, arcgis_style_erf_warnings = _write_arcgis_style_erf_200(
+        package_dir=package_dir,
+        features=features,
+        spec=spec,
+        weights=arcgis_style_weights,
+    )
     erf_path, erf_warnings = _write_erf_200(package_dir, paths)
 
     generated_files = {
         "analysis_joined": joined_path.name,
         "gis_balance_summary": balance_path.name,
         "gis_erf_curve_200": erf_path.name,
+        "gis_arcgis_style_erf_curve_200": arcgis_style_erf_path.name,
         "arcgis_style_matching_grid": arcgis_style_grid_path.name,
         "arcgis_style_balance_summary": arcgis_style_balance_path.name,
         "arcgis_style_calibrated_balance_summary": arcgis_style_calibrated_balance_path.name,
         "gis_run_summary_json": "gis_run_summary.json",
         "gis_run_summary_markdown": "gis_run_summary.md",
     }
-    warnings = [*joined_warnings, *erf_warnings, *arcgis_style_warnings]
+    warnings = [*joined_warnings, *erf_warnings, *arcgis_style_warnings, *arcgis_style_erf_warnings]
     summary = {
         "package_name": "Open GIS Analysis Package",
         "package_dir": PACKAGE_DIR_NAME,
@@ -318,6 +346,7 @@ def write_open_gis_package(
         "evidence_grade_reasons": manifest.get("evidence_grade_reasons", []),
         "result_summary": manifest.get("result_summary", {}),
         "arcgis_style_matching": arcgis_style_summary,
+        "arcgis_style_erf": arcgis_style_erf_summary,
         "generated_files": generated_files,
         "warnings": warnings,
     }
