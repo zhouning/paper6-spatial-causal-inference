@@ -20,7 +20,7 @@
     "synthetic_PSM",
     "epa_nonattainment_airdata"
   ],
-  "surpass_scorecard_status": "not_yet_claimable",
+  "surpass_scorecard_status": "claimable_with_current_evidence",
   "inputs": {
     "arcgis_comparison_manifest": null,
     "arcgis_comparison_manifests": [
