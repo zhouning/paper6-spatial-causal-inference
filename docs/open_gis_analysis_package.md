@@ -30,6 +30,7 @@ For the committed county CSV and `examples/county_social_capital_example.yaml` s
 - `gis_balance_summary.csv` has 13 rows: 11 confounders plus 2 context columns.
 - `gis_erf_curve_200.csv` has exactly 200 rows.
 - `gis_run_summary.json.evidence_grade` is `core_support` for this example run.
+- `spatial-package` reports `row_count = 3108`, `matched_count = 3044`, and writes GeoPackage, GeoJSON, chart PNGs, map PNG/HTML, QGIS style, and `spatial_output_manifest.json` when run against `data/CountyData.shp`.
 
 ## Files
 
@@ -40,6 +41,24 @@ For the committed county CSV and `examples/county_social_capital_example.yaml` s
 | `gis_erf_curve_200.csv` | A 200-row exposure-response curve interpolated from the model ERF output. | Plot a stable curve in QGIS, notebooks, dashboards, or reporting tools. |
 | `gis_run_summary.json` | Machine-readable run summary: case name, row counts, variables, evidence grade, generated files, and warnings. | Drive downstream automation, validation, or data-agent responses. |
 | `gis_run_summary.md` | Human-readable summary for analysts and reviewers. | Attach to analysis reports or share with non-Python users. |
+
+## Build Spatial Outputs
+
+After `analysis_joined.csv` exists, generate an open spatial output package with one CLI command:
+
+```bash
+python -m geocausal.cli spatial-package \
+  --boundary data/CountyData.shp \
+  --analysis-joined results/county_open_gis_smoke/open_gis_analysis_package/analysis_joined.csv \
+  --output-dir results/county_open_gis_smoke/spatial_outputs \
+  --analysis-dir results/county_open_gis_smoke \
+  --boundary-key FIPS \
+  --analysis-key gc_unit_id \
+  --states data/States.shp \
+  --output-stem county_open_gis
+```
+
+The command reuses `geocausal.spatial_outputs.build_spatial_analysis_outputs` and writes open GIS deliverables such as GeoPackage, GeoJSON, Shapefile compatibility output, QGIS `.qml` styles, static PNG maps, interactive HTML maps, chart PNGs, and `spatial_output_manifest.json`. When `--analysis-dir` is omitted and `--analysis-joined` is inside `open_gis_analysis_package/`, the CLI infers the parent GeoCausal run directory.
 
 ## QGIS Workflow
 

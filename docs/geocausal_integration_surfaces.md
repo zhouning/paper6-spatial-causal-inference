@@ -124,9 +124,10 @@ spatial_manifest = build_spatial_analysis_outputs(
 ```
 
 This writes GeoPackage, GeoJSON, Shapefile, chart PNGs, a static choropleth PNG,
-and an interactive Folium HTML map. GeoPackage and GeoJSON preserve long analysis
-field names; Shapefile output is compatibility-only because DBF field names are
-limited to 10 characters.
+and an interactive Folium HTML map. The same builder is available from the CLI
+through `python -m geocausal.cli spatial-package ...`. GeoPackage and GeoJSON
+preserve long analysis field names; Shapefile output is compatibility-only
+because DBF field names are limited to 10 characters.
 
 When target outcomes are configured, notebook users can also build a one-row-per-
 unit joined analysis table from the original input and `target_exposures.csv`:

@@ -556,3 +556,62 @@ def test_cli_report_rebuilds_markdown(tmp_path):
 
     assert "reported_case" in result.stdout
     assert (output_dir / "geocausal_report.md").exists()
+
+
+def test_cli_spatial_package_calls_existing_builder(tmp_path, monkeypatch, capsys):
+    from geocausal import cli
+
+    calls = {}
+
+    def fake_build_spatial_analysis_outputs(**kwargs):
+        calls.update(kwargs)
+        return {"manifest": str(tmp_path / "spatial_output_manifest.json"), "row_count": 2}
+
+    monkeypatch.setattr(
+        cli,
+        "build_spatial_analysis_outputs",
+        fake_build_spatial_analysis_outputs,
+        raising=False,
+    )
+
+    result = cli.main(
+        [
+            "spatial-package",
+            "--boundary",
+            "boundary.shp",
+            "--analysis-joined",
+            "analysis_joined.csv",
+            "--output-dir",
+            str(tmp_path / "spatial_outputs"),
+            "--analysis-dir",
+            str(tmp_path / "analysis"),
+            "--boundary-key",
+            "FIPS",
+            "--analysis-key",
+            "gc_unit_id",
+            "--output-stem",
+            "county_open_gis",
+            "--formats",
+            "gpkg,geojson",
+            "--states",
+            "states.shp",
+            "--map-field",
+            "gc_target_70_exposure_change",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert result == 0
+    assert payload["row_count"] == 2
+    assert calls == {
+        "boundary_path": Path("boundary.shp"),
+        "analysis_joined_csv": Path("analysis_joined.csv"),
+        "output_dir": tmp_path / "spatial_outputs",
+        "analysis_dir": tmp_path / "analysis",
+        "boundary_key": "FIPS",
+        "analysis_key": "gc_unit_id",
+        "output_stem": "county_open_gis",
+        "formats": ("gpkg", "geojson"),
+        "states_path": Path("states.shp"),
+        "map_field": "gc_target_70_exposure_change",
+    }
