@@ -84,6 +84,33 @@ def test_qgis_algorithm_runs_from_parameter_dict(tmp_path):
     assert (case_dir / "result_summary.md").exists()
 
 
+def test_qgis_open_gis_output_mapping_uses_manifest_package_files(tmp_path):
+    module = importlib.import_module("qgis_provider.geocausal_scca_algorithm")
+    algorithm = module.GeoCausalSCCAAlgorithm()
+    case_dir = tmp_path / "case"
+    manifest = {
+        "open_gis_package": {
+            "package_dir": "open_gis_analysis_package",
+            "generated_files": {
+                "analysis_joined": "analysis_joined.csv",
+                "gis_balance_summary": "gis_balance_summary.csv",
+                "gis_erf_curve_200": "gis_erf_curve_200.csv",
+                "gis_run_summary_json": "gis_run_summary.json",
+                "gis_run_summary_markdown": "gis_run_summary.md",
+            },
+        }
+    }
+
+    outputs = algorithm.open_gis_package_outputs(case_dir, manifest)
+
+    package_dir = case_dir / "open_gis_analysis_package"
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_PACKAGE] == str(package_dir)
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_JOINED] == str(package_dir / "analysis_joined.csv")
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_BALANCE] == str(package_dir / "gis_balance_summary.csv")
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_ERF_200] == str(package_dir / "gis_erf_curve_200.csv")
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_SUMMARY_JSON] == str(package_dir / "gis_run_summary.json")
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_SUMMARY_MD] == str(package_dir / "gis_run_summary.md")
+
 def test_qgis_required_fields_preserve_order_and_uniqueness():
     module = importlib.import_module("qgis_provider.geocausal_scca_algorithm")
     request = module.QGISRunRequest(
