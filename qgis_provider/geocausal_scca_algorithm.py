@@ -3,13 +3,10 @@ from __future__ import annotations
 import csv
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from geocausal.adapters import (
-    AnalysisRequest,
-    build_analysis_joined_table,
-    run_scca_analysis,
-)
+if TYPE_CHECKING:
+    from geocausal.adapters import AnalysisRequest
 
 
 @dataclass(frozen=True)
@@ -178,7 +175,9 @@ class GeoCausalSCCAAlgorithm:
                 writer.writerow(row)
         return output_csv, coordinate_columns
 
-    def create_request(self, run_request: QGISRunRequest) -> AnalysisRequest:
+    def create_request(self, run_request: QGISRunRequest) -> "AnalysisRequest":
+        from geocausal.adapters import AnalysisRequest
+
         return AnalysisRequest(
             case_name=run_request.case_name,
             input_path=run_request.input_csv,
@@ -200,6 +199,8 @@ class GeoCausalSCCAAlgorithm:
         )
 
     def run_from_csv(self, run_request: QGISRunRequest) -> dict[str, object]:
+        from geocausal.adapters import build_analysis_joined_table, run_scca_analysis
+
         request = self.create_request(run_request)
         manifest = run_scca_analysis(request)
         target_file = manifest.get("files", {}).get("target_exposures")

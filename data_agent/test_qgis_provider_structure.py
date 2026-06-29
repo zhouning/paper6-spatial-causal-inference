@@ -9,6 +9,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 PROVIDER_PATH = REPO_ROOT / "qgis_provider" / "geocausal_scca_algorithm.py"
 PROVIDER_MODULE_PATH = REPO_ROOT / "qgis_provider" / "provider.py"
 PLUGIN_MODULE_PATH = REPO_ROOT / "qgis_provider" / "plugin.py"
+METADATA_PATH = REPO_ROOT / "qgis_provider" / "metadata.txt"
 
 
 def test_qgis_provider_skeleton_exists_and_avoids_case_specific_fields():
@@ -44,6 +45,20 @@ def test_qgis_plugin_entrypoint_imports_without_qgis_runtime():
     module = importlib.import_module("qgis_provider.plugin")
     assert hasattr(module, "GeoCausalPlugin")
     assert hasattr(module, "classFactory")
+
+
+def test_qgis_package_exports_class_factory_for_plugin_loader():
+    module = importlib.import_module("qgis_provider")
+    assert hasattr(module, "classFactory")
+
+
+def test_qgis_processing_metadata_and_lifecycle_hooks_are_declared():
+    metadata = METADATA_PATH.read_text(encoding="utf-8")
+    plugin_module = importlib.import_module("qgis_provider.plugin")
+    plugin = plugin_module.GeoCausalPlugin(iface=None)
+
+    assert "hasProcessingProvider=yes" in metadata
+    assert hasattr(plugin, "initProcessing")
 
 
 def test_qgis_provider_factory_returns_runtime_light_provider_without_qgis():

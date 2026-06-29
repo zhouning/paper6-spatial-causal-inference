@@ -8,3 +8,4 @@ email=zhouning@stu.pku.edu.cn
 about=Thin QGIS Processing provider over geocausal.adapters.AnalysisRequest.
 category=Analysis
 experimental=True
+hasProcessingProvider=yes

@@ -126,6 +126,27 @@ def test_summarize_semisynthetic_metrics_uses_each_scenario_error():
     assert summary["max_absolute_error"] == pytest.approx(0.40)
     assert summary["scenario_metrics"][0]["absolute_error"] == pytest.approx(0.02)
 
+
+def test_write_geocausal_config_uses_absolute_paths(tmp_path):
+    from data_agent.experiments.epa_airdata_benchmark import write_geocausal_config
+
+    panel_path = tmp_path / "semi_synthetic" / "stable_known_effect.csv"
+    output_dir = tmp_path / "scca_run"
+    config_path = tmp_path / "epa_policy_structure_semisynthetic.yaml"
+    panel_path.parent.mkdir()
+    panel_path.write_text("county_year_id,annual_mean\n01001_2020,8.0\n", encoding="utf-8")
+
+    write_geocausal_config(
+        panel_path=panel_path,
+        output_dir=output_dir,
+        config_path=config_path,
+    )
+
+    text = config_path.read_text(encoding="utf-8")
+    assert f"  path: {panel_path.resolve().as_posix()}" in text
+    assert f"  directory: {output_dir.resolve().as_posix()}" in text
+
+
 def test_make_semisynthetic_scenarios_scales_projected_coordinates():
     from data_agent.experiments.epa_airdata_benchmark import make_semisynthetic_scenarios
 

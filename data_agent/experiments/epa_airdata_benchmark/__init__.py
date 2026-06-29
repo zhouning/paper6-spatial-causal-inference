@@ -323,7 +323,7 @@ def write_geocausal_config(
     target.parent.mkdir(parents=True, exist_ok=True)
     text = f"""case_name: epa_nonattainment_airdata
 input:
-  path: {Path(panel_path).as_posix()}
+  path: {Path(panel_path).resolve().as_posix()}
   x: x
   y: y
 variables:
@@ -350,7 +350,7 @@ robustness:
       role: spatial_neighbor_exposure
       expected_relation: weaker_than_main
 output:
-  directory: {Path(output_dir).as_posix()}
+  directory: {Path(output_dir).resolve().as_posix()}
 """
     target.write_text(text, encoding="utf-8")
     return target
