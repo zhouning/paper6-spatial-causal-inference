@@ -12,7 +12,7 @@ SCCA is not presented as a new causal estimator. It is an engineering-grade diag
 - `data_agent/scca/`: the SCCA method modules used by the paper, including profiling, context construction, design selection, estimators, diagnostics, robustness, spatial diagnostics, reporting, and evidence rules.
 - `arcgis_toolbox/`: ArcGIS Pro toolbox wrapper and county social-capital workflow notes.
 - `qgis_provider/`: QGIS Processing provider skeleton for running GeoCausal SCCA.
-- `examples/`: cross-platform county social-capital configuration and CSV input for a runnable smoke case.
+- `examples/`: cross-platform county social-capital configuration and example inputs for county, Snow8, and Soho smoke/reproduction cases.
 - `data/`: CountyData and States shapefiles used for GIS joins, map rendering, and ArcGIS/QGIS demonstrations.
 - `paper/ijgis_submission_20260605/`: IJGIS-oriented manuscript package, generated results, reports, figures, and internal review materials.
 
@@ -156,9 +156,9 @@ The new-version paper centers on SCCA as a spatial causal workflow and evaluates
 Representative commands:
 
 ```bash
-python -m data_agent.experiments.run_scca_snow8 --csv-path /path/to/subdistricts.csv
-python -m data_agent.experiments.run_scca_soho --csv-path /path/to/deaths_nd_by_house.csv
-python -m data_agent.experiments.run_scca_county_social_capital --workbook-path /path/to/CountyData_TableToExcel.xlsx
+python -m data_agent.experiments.run_scca_snow8 --csv-path examples/data/snow8/subdistricts.csv
+python -m data_agent.experiments.run_scca_soho --csv-path examples/data/snow1/deaths_nd_by_house.csv
+python -m data_agent.experiments.run_scca_county_social_capital --workbook-path examples/data/county/CountyData_TableToExcel.xlsx
 python -m data_agent.experiments.run_scca_robustness_summary
 ```
 
@@ -186,6 +186,8 @@ Expected Chongqing result files are written under `paper/ijgis_submission_202606
 - QGIS Processing provider skeleton: `qgis_provider/geocausal_scca_algorithm.py`
 - Map-ready county shapefile: `data/CountyData.shp`
 - Cross-platform county CSV: `examples/data/county_social_capital.csv`
+- Original county workbook copy used for SCCA reproduction: `examples/data/county/CountyData_TableToExcel.xlsx`
+- Snow/Soho SCCA inputs: `examples/data/snow8/subdistricts.csv` and `examples/data/snow1/deaths_nd_by_house.csv`
 
 The intended GIS pattern is:
 

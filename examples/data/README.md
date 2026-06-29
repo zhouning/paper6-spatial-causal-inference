@@ -44,6 +44,21 @@ Windows, macOS, and Linux without ArcPy. ArcGIS Pro users can import it into a
 file geodatabase before running `arcgis_toolbox/GeoCausalSCCA.pyt`; notebook and
 QGIS users can read it directly.
 
+## Original Small Reproduction Inputs
+
+These files are committed so the Windows-tested SCCA reproduction cases can run
+from a clean checkout on macOS or Linux without local absolute paths:
+
+- `county/CountyData_TableToExcel.xlsx`
+  - SHA256: `07766ff7e32899b538bba6b1b57eff351b67ad371a7db519895d177a3f871941`
+  - Used by `python -m data_agent.experiments.run_scca_county_social_capital --workbook-path examples/data/county/CountyData_TableToExcel.xlsx`
+- `snow8/subdistricts.csv`
+  - SHA256: `6ff18b96dd9b48dcfe70873067dff0da2e479dd4172f75e64ce31ca0e9809c66`
+  - Used by `python -m data_agent.experiments.run_scca_snow8 --csv-path examples/data/snow8/subdistricts.csv`
+- `snow1/deaths_nd_by_house.csv`
+  - SHA256: `1767706cd333276e9530eec7a8454203470a5a3aa13b9e812410727e10a38b86`
+  - Used by `python -m data_agent.experiments.run_scca_soho --csv-path examples/data/snow1/deaths_nd_by_house.csv`
+
 ## Source and Use Terms
 
 The source shapefile metadata in `data/CountyData.shp.xml` credits Esri, the

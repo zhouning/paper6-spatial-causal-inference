@@ -1,5 +1,8 @@
 *.pdf binary
 *.docx binary
+*.xlsx binary
+examples/data/*.csv text eol=lf
+examples/data/*/*.csv text eol=lf
 *.png binary
 *.tif binary
 *.shp binary
