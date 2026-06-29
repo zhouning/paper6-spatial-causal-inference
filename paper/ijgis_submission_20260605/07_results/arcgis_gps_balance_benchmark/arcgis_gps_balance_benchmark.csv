@@ -1,0 +1,3 @@
+gps_method,selected_gps_method,selected_num_bins,selected_scale,mean_abs_weighted_correlation,median_abs_weighted_correlation,max_abs_weighted_correlation,balanced_at_0_1,nonzero_weight_n,candidate_count
+ols,ols,6,1.0,0.03280882670166687,0.03280882670166687,0.06140689870474451,True,165,12
+gbm,gbm,10,0.5,0.021831077048366034,0.021831077048366034,0.03627335640184167,True,114,12

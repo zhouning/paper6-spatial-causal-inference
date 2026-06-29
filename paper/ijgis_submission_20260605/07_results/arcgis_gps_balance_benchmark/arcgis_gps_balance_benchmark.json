@@ -1,0 +1,13 @@
+{
+  "benchmark_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\arcgis_gps_balance_benchmark\\arcgis_gps_balance_benchmark.csv",
+  "manifest_json": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\arcgis_gps_balance_benchmark\\arcgis_gps_balance_benchmark.json",
+  "benchmark_role": "nonlinear_gps_balance_positive_control",
+  "row_count": 220,
+  "candidate_count": 2,
+  "selected_gps_method": "gbm",
+  "gbm_beats_ols": true,
+  "ols_mean_abs_weighted_correlation": 0.03280882670166687,
+  "gbm_mean_abs_weighted_correlation": 0.021831077048366034,
+  "ols_max_abs_weighted_correlation": 0.06140689870474451,
+  "gbm_max_abs_weighted_correlation": 0.03627335640184167
+}

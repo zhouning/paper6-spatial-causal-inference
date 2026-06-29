@@ -30,6 +30,28 @@ def _large_matching_fixture() -> pd.DataFrame:
     return pd.concat(blocks, ignore_index=True)
 
 
+def _nonlinear_gps_fixture() -> pd.DataFrame:
+    rng = np.random.default_rng(0)
+    n = 220
+    confounder_a = rng.uniform(-3.0, 3.0, n)
+    confounder_b = rng.uniform(-3.0, 3.0, n)
+    exposure = (
+        np.where(confounder_a * confounder_b > 0.0, 2.0, -2.0)
+        + 0.3 * confounder_a
+        + rng.normal(0.0, 0.2, n)
+    )
+    outcome = 5.0 + 0.7 * exposure + 0.8 * confounder_a - 0.4 * confounder_b
+    return pd.DataFrame(
+        {
+            "unit_id": [f"nl{i:03d}" for i in range(n)],
+            "exposure": exposure,
+            "outcome": outcome,
+            "confounder_a": confounder_a,
+            "confounder_b": confounder_b,
+        }
+    )
+
+
 def test_arcgis_style_matching_grid_search_selects_best_count_weight_candidate():
     from geocausal.arcgis_style_matching import arcgis_style_matching_search
 
@@ -45,8 +67,10 @@ def test_arcgis_style_matching_grid_search_selects_best_count_weight_candidate()
 
     assert len(result.weights) == len(frame)
     assert len(result.propensity_scores) == len(frame)
-    assert result.grid.shape[0] == 9
+    assert result.grid.shape[0] == 18
+    assert set(result.grid["gps_method"]) == {"ols", "gbm"}
     assert result.grid["selected"].sum() == 1
+    assert result.selected_gps_method in {"ols", "gbm"}
     assert result.selected_num_bins in {3, 4, 6}
     assert result.selected_scale in {0.0, 0.5, 1.0}
     assert result.selected_mean_abs_weighted_correlation == result.grid[
@@ -66,6 +90,26 @@ def test_arcgis_style_matching_grid_search_selects_best_count_weight_candidate()
         "balanced_at_0_1",
     }.issubset(result.balance_summary.columns)
 
+
+def test_arcgis_style_matching_selects_gbm_for_nonlinear_gps_fixture():
+    from geocausal.arcgis_style_matching import arcgis_style_matching_search
+
+    frame = _nonlinear_gps_fixture()
+    search_kwargs = {
+        "exposure": "exposure",
+        "confounders": ("confounder_a", "confounder_b"),
+        "num_bins": (4, 6, 8, 10),
+        "scales": (0.5, 0.8, 1.0),
+    }
+
+    ols = arcgis_style_matching_search(frame, **search_kwargs, gps_methods=("ols",))
+    gbm = arcgis_style_matching_search(frame, **search_kwargs, gps_methods=("gbm",))
+    auto = arcgis_style_matching_search(frame, **search_kwargs, gps_methods=("ols", "gbm"))
+
+    assert set(auto.grid["gps_method"]) == {"ols", "gbm"}
+    assert auto.selected_gps_method == "gbm"
+    assert gbm.selected_mean_abs_weighted_correlation < ols.selected_mean_abs_weighted_correlation
+    assert auto.selected_mean_abs_weighted_correlation == gbm.selected_mean_abs_weighted_correlation
 
 def test_arcgis_style_matching_uses_fast_residual_normal_density(monkeypatch):
     import geocausal.arcgis_style_matching as matching
@@ -182,10 +226,20 @@ output:
         "gc_arcgis_style_propensity_score",
         "gc_arcgis_style_matching_weight",
         "gc_arcgis_style_calibrated_weight",
+        "gc_arcgis_propensity_score",
+        "gc_arcgis_matching_weight",
+        "gc_arcgis_calibrated_weight",
+        "gc_arcgis_gps_method",
     }.issubset(joined.columns)
     assert joined["gc_arcgis_style_matching_weight"].sum() > 0
     assert grid["selected"].sum() == 1
     assert {"confounder_a", "confounder_b"} == set(balance["variable"])
+    assert {
+        "arcgis_mean_abs_weighted_correlation",
+        "arcgis_median_abs_weighted_correlation",
+        "arcgis_max_abs_weighted_correlation",
+        "arcgis_balanced_at_0_1",
+    }.issubset(balance.columns)
     assert {"confounder_a", "confounder_b"} == set(calibrated_balance["variable"])
     assert len(arcgis_style_erf) == 200
     assert {"exposure", "response", "source"}.issubset(arcgis_style_erf.columns)
@@ -202,6 +256,16 @@ output:
     )
     assert summary["generated_files"]["gis_preferred_erf_curve_200"] == "gis_preferred_erf_curve_200.csv"
     assert run_summary["preferred_erf"]["selected_curve"] == "gis_arcgis_style_erf_curve_200"
+    assert run_summary["arcgis_style_matching"]["selected_gps_method"] in {"ols", "gbm"}
+    assert set(joined["gc_arcgis_gps_method"]) == {run_summary["arcgis_style_matching"]["selected_gps_method"]}
+    assert {
+        "selected_median_abs_weighted_correlation",
+        "selected_max_abs_weighted_correlation",
+        "selected_balanced_at_0_1",
+        "calibrated_median_abs_weighted_correlation",
+        "calibrated_max_abs_weighted_correlation",
+        "calibrated_balanced_at_0_1",
+    }.issubset(run_summary["arcgis_style_matching"])
     assert run_summary["preferred_erf"]["curve_file"] == "gis_preferred_erf_curve_200.csv"
     assert run_summary["arcgis_style_erf"]["bandwidth"] > 0
     assert run_summary["arcgis_style_erf"]["n_grid"] == 200

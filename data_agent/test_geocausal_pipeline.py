@@ -278,6 +278,10 @@ def test_run_analysis_writes_open_gis_parity_package(tmp_path):
         "gc_outcome",
         "gc_propensity_score",
         "gc_balancing_weight",
+        "gc_arcgis_propensity_score",
+        "gc_arcgis_matching_weight",
+        "gc_arcgis_calibrated_weight",
+        "gc_arcgis_gps_method",
         "gc_included",
         "gc_trim_status",
     }.issubset(joined.columns)
@@ -292,8 +296,11 @@ def test_run_analysis_writes_open_gis_parity_package(tmp_path):
         "weighted_correlation",
         "absolute_weighted_correlation",
         "balanced_at_0_1",
+        "arcgis_mean_abs_weighted_correlation",
+        "arcgis_median_abs_weighted_correlation",
+        "arcgis_max_abs_weighted_correlation",
+        "arcgis_balanced_at_0_1",
     }.issubset(balance.columns)
-
     erf_200 = pd.read_csv(package_dir / "gis_erf_curve_200.csv")
     assert len(erf_200) == 200
     assert {"exposure", "response", "source"}.issubset(erf_200.columns)
@@ -304,6 +311,18 @@ def test_run_analysis_writes_open_gis_parity_package(tmp_path):
     assert summary["generated_files"]["analysis_joined"] == "analysis_joined.csv"
     assert summary["generated_files"]["gis_preferred_erf_curve_200"] == "gis_preferred_erf_curve_200.csv"
     assert summary["preferred_erf"]["selected_curve"] == "gis_erf_curve_200"
+    assert {
+        "arcgis_mean_abs_weighted_correlation",
+        "arcgis_median_abs_weighted_correlation",
+        "arcgis_max_abs_weighted_correlation",
+        "arcgis_balanced_at_0_1",
+    }.issubset(summary["balance_summary"])
+    assert summary["arcgis_style_matching"]["selected_gps_method"] in {"ols", "gbm"}
+    assert {
+        "selected_median_abs_weighted_correlation",
+        "selected_max_abs_weighted_correlation",
+        "selected_balanced_at_0_1",
+    }.issubset(summary["arcgis_style_matching"])
     assert summary["evidence_grade"] in {"core_support", "bounded_support", "fragile_support"}
     assert "Open GIS" in (package_dir / "gis_run_summary.md").read_text(encoding="utf-8")
 

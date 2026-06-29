@@ -69,6 +69,32 @@ def _weighted_correlation(x: pd.Series, y: pd.Series, weights: pd.Series | None 
     return cov / denom if denom > 0 else np.nan
 
 
+def _balance_aggregate_fields(balance: pd.DataFrame) -> dict[str, Any]:
+    values = pd.Series(dtype=float)
+    if "absolute_weighted_correlation" in balance.columns:
+        values = pd.to_numeric(balance["absolute_weighted_correlation"], errors="coerce").replace(
+            [np.inf, -np.inf],
+            np.nan,
+        ).dropna()
+    mean_value = float(values.mean()) if not values.empty else np.nan
+    median_value = float(values.median()) if not values.empty else np.nan
+    max_value = float(values.max()) if not values.empty else np.nan
+    return {
+        "arcgis_mean_abs_weighted_correlation": mean_value,
+        "arcgis_median_abs_weighted_correlation": median_value,
+        "arcgis_max_abs_weighted_correlation": max_value,
+        "arcgis_balanced_at_0_1": bool(not values.empty and max_value <= BALANCE_THRESHOLD),
+    }
+
+
+def _with_balance_aggregate_columns(balance: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, Any]]:
+    result = balance.copy()
+    aggregates = _balance_aggregate_fields(result)
+    for column, value in aggregates.items():
+        result[column] = value
+    return result, aggregates
+
+
 def _merge_target_exposure_fields(joined: pd.DataFrame, paths: SCCAPaths) -> pd.DataFrame:
     target_path = paths.output_dir / "target_exposures.csv"
     if not target_path.exists():
@@ -151,7 +177,7 @@ def _write_balance_summary(
     features: pd.DataFrame,
     spec: StudySpec,
     weights: pd.Series,
-) -> Path:
+) -> tuple[Path, dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     variables = [
         *[(column, "confounder") for column in spec.confounders],
@@ -176,8 +202,9 @@ def _write_balance_summary(
             }
         )
     output_path = package_dir / "gis_balance_summary.csv"
-    pd.DataFrame(rows).to_csv(output_path, index=False, encoding="utf-8-sig")
-    return output_path
+    balance, aggregates = _with_balance_aggregate_columns(pd.DataFrame(rows))
+    balance.to_csv(output_path, index=False, encoding="utf-8-sig")
+    return output_path, aggregates
 
 
 def _write_erf_200(package_dir: Path, paths: SCCAPaths) -> tuple[Path, list[str]]:
@@ -227,13 +254,30 @@ def _write_arcgis_style_matching_outputs(
     balance_path = package_dir / "arcgis_style_balance_summary.csv"
     calibrated_balance_path = package_dir / "arcgis_style_calibrated_balance_summary.csv"
     result.grid.to_csv(grid_path, index=False, encoding="utf-8-sig")
-    result.balance_summary.to_csv(balance_path, index=False, encoding="utf-8-sig")
-    result.calibrated_balance_summary.to_csv(calibrated_balance_path, index=False, encoding="utf-8-sig")
+    balance_summary, balance_aggregates = _with_balance_aggregate_columns(result.balance_summary)
+    calibrated_balance_summary, calibrated_balance_aggregates = _with_balance_aggregate_columns(
+        result.calibrated_balance_summary
+    )
+    balance_summary.to_csv(balance_path, index=False, encoding="utf-8-sig")
+    calibrated_balance_summary.to_csv(calibrated_balance_path, index=False, encoding="utf-8-sig")
     selected = {
         "selected_num_bins": result.selected_num_bins,
         "selected_scale": result.selected_scale,
-        "selected_mean_abs_weighted_correlation": result.selected_mean_abs_weighted_correlation,
-        "calibrated_mean_abs_weighted_correlation": result.calibrated_mean_abs_weighted_correlation,
+        "selected_gps_method": result.selected_gps_method,
+        "selected_mean_abs_weighted_correlation": balance_aggregates["arcgis_mean_abs_weighted_correlation"],
+        "selected_median_abs_weighted_correlation": balance_aggregates["arcgis_median_abs_weighted_correlation"],
+        "selected_max_abs_weighted_correlation": balance_aggregates["arcgis_max_abs_weighted_correlation"],
+        "selected_balanced_at_0_1": balance_aggregates["arcgis_balanced_at_0_1"],
+        "calibrated_mean_abs_weighted_correlation": calibrated_balance_aggregates[
+            "arcgis_mean_abs_weighted_correlation"
+        ],
+        "calibrated_median_abs_weighted_correlation": calibrated_balance_aggregates[
+            "arcgis_median_abs_weighted_correlation"
+        ],
+        "calibrated_max_abs_weighted_correlation": calibrated_balance_aggregates[
+            "arcgis_max_abs_weighted_correlation"
+        ],
+        "calibrated_balanced_at_0_1": calibrated_balance_aggregates["arcgis_balanced_at_0_1"],
         "calibration": result.calibration_summary,
         "nonzero_weight_n": int((result.weights > 0).sum()),
         "calibrated_nonzero_weight_n": int((result.calibrated_weights > 0).sum()),
@@ -318,7 +362,7 @@ def write_open_gis_package(
     )
     joined = pd.read_csv(joined_path)
     weights = pd.to_numeric(joined["gc_balancing_weight"], errors="coerce").fillna(1.0)
-    balance_path = _write_balance_summary(
+    balance_path, balance_summary = _write_balance_summary(
         package_dir=package_dir,
         features=features,
         spec=spec,
@@ -338,9 +382,14 @@ def write_open_gis_package(
         features=features,
         spec=spec,
     )
+    selected_gps_method = arcgis_style_summary.get("selected_gps_method") or "unavailable"
     joined["gc_arcgis_style_propensity_score"] = arcgis_style_propensity.reset_index(drop=True)
     joined["gc_arcgis_style_matching_weight"] = arcgis_style_weights.reset_index(drop=True)
     joined["gc_arcgis_style_calibrated_weight"] = arcgis_style_calibrated_weights.reset_index(drop=True)
+    joined["gc_arcgis_propensity_score"] = joined["gc_arcgis_style_propensity_score"]
+    joined["gc_arcgis_matching_weight"] = joined["gc_arcgis_style_matching_weight"]
+    joined["gc_arcgis_calibrated_weight"] = joined["gc_arcgis_style_calibrated_weight"]
+    joined["gc_arcgis_gps_method"] = str(selected_gps_method)
     joined.to_csv(joined_path, index=False, encoding="utf-8-sig")
     arcgis_style_erf_path, arcgis_style_erf_summary, arcgis_style_erf_warnings = _write_arcgis_style_erf_200(
         package_dir=package_dir,
@@ -417,6 +466,7 @@ def write_open_gis_package(
         "evidence_grade": manifest.get("evidence_grade"),
         "evidence_grade_reasons": manifest.get("evidence_grade_reasons", []),
         "result_summary": manifest.get("result_summary", {}),
+        "balance_summary": balance_summary,
         "arcgis_style_matching": arcgis_style_summary,
         "preferred_erf": preferred_erf_summary,
         "arcgis_style_erf": arcgis_style_erf_summary,

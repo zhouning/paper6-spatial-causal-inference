@@ -30,7 +30,13 @@ def test_arcgis_parity_matrix_contains_required_capabilities():
         "gap",
         "scca_only_differentiator",
     }
-
+    gps = matrix.loc[matrix["arcgis_capability"] == "ols_or_gradient_boosting_propensity_score"].iloc[0]
+    assert gps["scca_status"] == "matched"
+    assert "OLS/GBM" in gps["evidence_artifact"]
+    assert "arcgis_gps_balance_benchmark" in gps["next_action"]
+    balance = matrix.loc[matrix["arcgis_capability"] == "weighted_correlation_balance_threshold"].iloc[0]
+    assert balance["scca_status"] == "matched"
+    assert "mean/median/max" in balance["evidence_artifact"]
 
 def test_inspect_county_outputs_records_arcgis_parity_metrics(tmp_path):
     from data_agent.experiments.arcgis_commercial_benchmark import (

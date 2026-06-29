@@ -24,13 +24,13 @@ The intended claim is not:
 |---|---|---:|---:|---|
 | Continuous exposure and outcome workflow | Main causal-analysis mode | Matched | P0 | SCCA supports continuous exposure-response workflows through `AnalysisRequest`. |
 | User-declared confounders | Adjustment design input | Matched | P0 | `AnalysisRequest.confounders` supplies the adjustment set. |
-| OLS propensity score model | Default propensity score route | Partial | P0 | SCCA has GPS-style ERF support but needs ArcGIS-named parity output fields. |
-| Gradient boosting propensity score model | ML fallback for harder balancing | Gap | P1 | Add optional gradient boosting parity mode after core product proof. |
+| OLS propensity score model | Default propensity score route | Matched | P0 | Open GIS outputs expose ArcGIS-named GPS score and weight aliases. |
+| Gradient boosting propensity score model | ML fallback for harder balancing | Matched | P1 | ArcGIS-style matching now evaluates OLS and GBM GPS methods and records the selected method. |
 | Propensity score matching | Balancing method | Partial | P0 | Binary Chongqing module supports matching; continuous-exposure matching needs ArcGIS-compatible contract. |
 | Inverse propensity score weighting | Faster balancing method | Partial | P0 | ERF weighting exists; output should expose ArcGIS-compatible weight fields. |
 | 1%-99% exposure trimming | Default support guard | Matched | P0 | Current county workflow uses 1%-99% trimming and retains 3,044 of 3,108 rows. |
 | Propensity-score trimming | Stabilizes weighting | Gap | P1 | Add explicit lower/upper propensity trimming parameters and report fields. |
-| Weighted-correlation balance threshold | Decides whether confounders are balanced | Partial | P0 | SCCA reports balance diagnostics; add ArcGIS-compatible mean/median/max absolute-correlation summary. |
+| Weighted-correlation balance threshold | Decides whether confounders are balanced | Matched | P0 | Open GIS balance CSVs and run summary expose mean/median/max absolute weighted-correlation fields. |
 | ERF curve output | Main effect visualization | Matched | P0 | SCCA writes `erf_curve.csv`; add exact 200-point ArcGIS parity option if needed. |
 | Target exposure values | What-if outcome at specified exposure | Matched | P0 | SCCA target-exposure outputs are already used in county demo. |
 | Target outcome values | Required exposure for specified outcome | Partial | P0 | Verify output contract and add product docs. |
@@ -70,14 +70,13 @@ The executable benchmark now writes:
 
 P0 gaps before a strong commercial demo:
 
-- ArcGIS-compatible balance summary names.
-- Explicit propensity-score and balancing-weight output aliases.
+- Keep ArcGIS-compatible balance summary names stable across GIS package versions.
+- Keep explicit propensity-score and balancing-weight output aliases stable across GIS package versions.
 - Exact ERF row-count option, including 200-point ArcGIS-style output.
 - Target outcome output contract verification.
 
 P1 gaps after the demo:
 
-- Gradient boosting propensity score parity.
 - Propensity-score trimming controls.
 - ArcGIS-style bootstrapped ERF confidence bands.
 

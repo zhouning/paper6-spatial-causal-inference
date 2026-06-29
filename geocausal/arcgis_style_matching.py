@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import statsmodels.api as sm
 from scipy.optimize import minimize
+from sklearn.ensemble import GradientBoostingRegressor
 
 
 BALANCE_THRESHOLD = 0.1
@@ -23,6 +24,7 @@ class ArcGISStyleMatchingResult:
     grid: pd.DataFrame
     selected_num_bins: int | None
     selected_scale: float | None
+    selected_gps_method: str | None
     selected_mean_abs_weighted_correlation: float | None
     calibrated_mean_abs_weighted_correlation: float | None
     calibration_summary: dict[str, object]
@@ -31,6 +33,7 @@ class ArcGISStyleMatchingResult:
 
 @dataclass(frozen=True)
 class _GPSFit:
+    method: str
     exposure_scaled: pd.Series
     covariates_scaled: pd.DataFrame
     observed_gps: pd.Series
@@ -116,11 +119,76 @@ def _fit_regression_gps(frame: pd.DataFrame, exposure: str, covariates: Sequence
         dtype=float,
     )
     return _GPSFit(
+        method="ols",
         exposure_scaled=exposure_scaled,
         covariates_scaled=covariates_scaled,
         observed_gps=observed,
         density_at=density_at,
     )
+
+
+def _fit_gradient_boosting_gps(frame: pd.DataFrame, exposure: str, covariates: Sequence[str]) -> _GPSFit | None:
+    exposure_scaled = _minmax_scale(frame[exposure])
+    if exposure_scaled.nunique() < 2:
+        return None
+    covariates_scaled = pd.DataFrame(
+        {column: _minmax_scale(frame[column]) for column in covariates},
+        index=frame.index,
+    )
+    if covariates_scaled.empty:
+        return None
+    try:
+        model = GradientBoostingRegressor(
+            random_state=0,
+            n_estimators=120,
+            learning_rate=0.05,
+            max_depth=2,
+            subsample=0.9,
+        )
+        x = covariates_scaled.astype(float)
+        y = exposure_scaled.astype(float)
+        model.fit(x, y)
+    except Exception:
+        return None
+
+    predicted = pd.Series(model.predict(covariates_scaled.astype(float)), index=frame.index, dtype=float)
+    residuals = exposure_scaled - predicted
+    residual_sd = float(np.std(residuals.to_numpy(dtype=float), ddof=1))
+    if not np.isfinite(residual_sd) or residual_sd <= 0:
+        return None
+    x_columns = list(covariates_scaled.columns)
+
+    def density_at(exposure_values_scaled: np.ndarray, covariate_values_scaled: pd.DataFrame) -> np.ndarray:
+        design = pd.DataFrame(index=covariate_values_scaled.index)
+        for column in x_columns:
+            design[column] = pd.to_numeric(covariate_values_scaled[column], errors="coerce").astype(float)
+        design = design[x_columns]
+        predicted_values = np.asarray(model.predict(design.astype(float)), dtype=float)
+        z = (np.asarray(exposure_values_scaled, dtype=float) - predicted_values) / residual_sd
+        density = _normal_density(z) / residual_sd
+        return np.maximum(np.asarray(density, dtype=float), np.finfo(float).eps)
+
+    observed = pd.Series(
+        density_at(exposure_scaled.to_numpy(dtype=float), covariates_scaled),
+        index=frame.index,
+        dtype=float,
+    )
+    return _GPSFit(
+        method="gbm",
+        exposure_scaled=exposure_scaled,
+        covariates_scaled=covariates_scaled,
+        observed_gps=observed,
+        density_at=density_at,
+    )
+
+
+def _fit_gps_method(frame: pd.DataFrame, exposure: str, covariates: Sequence[str], method: str) -> _GPSFit | None:
+    normalized = str(method).strip().lower()
+    if normalized == "ols":
+        return _fit_regression_gps(frame, exposure, covariates)
+    if normalized == "gbm":
+        return _fit_gradient_boosting_gps(frame, exposure, covariates)
+    return None
 
 
 def _weighted_midrank(values: np.ndarray, weights: np.ndarray) -> np.ndarray:
@@ -423,6 +491,7 @@ def _empty_result(frame: pd.DataFrame, warnings: list[str]) -> ArcGISStyleMatchi
         ),
         grid=pd.DataFrame(
             columns=[
+                "gps_method",
                 "num_bins",
                 "scale",
                 "mean_abs_weighted_correlation",
@@ -433,6 +502,7 @@ def _empty_result(frame: pd.DataFrame, warnings: list[str]) -> ArcGISStyleMatchi
         ),
         selected_num_bins=None,
         selected_scale=None,
+        selected_gps_method=None,
         selected_mean_abs_weighted_correlation=None,
         calibrated_mean_abs_weighted_correlation=None,
         calibration_summary={"status": "skipped"},
@@ -447,6 +517,7 @@ def arcgis_style_matching_search(
     confounders: Sequence[str],
     num_bins: Sequence[int] | None = None,
     scales: Sequence[float] | None = None,
+    gps_methods: Sequence[str] | None = None,
 ) -> ArcGISStyleMatchingResult:
     available_confounders = _available_numeric_columns(frame, confounders)
     warnings: list[str] = []
@@ -461,9 +532,19 @@ def arcgis_style_matching_search(
     if complete[exposure].nunique() < 2:
         return _empty_result(frame, ["Exposure has no variation for ArcGIS-style matching."])
 
-    gps = _fit_regression_gps(complete, exposure, available_confounders)
-    if gps is None:
-        return _empty_result(frame, ["Regression GPS fit failed for ArcGIS-style matching."])
+    requested_methods = tuple(dict.fromkeys(str(value).strip().lower() for value in (gps_methods or ("ols", "gbm"))))
+    gps_by_method: dict[str, _GPSFit] = {}
+    for method in requested_methods:
+        if method not in {"ols", "gbm"}:
+            warnings.append(f"GPS method '{method}' is not supported for ArcGIS-style matching.")
+            continue
+        fit = _fit_gps_method(complete, exposure, available_confounders, method)
+        if fit is None:
+            warnings.append(f"{method.upper()} GPS fit failed for ArcGIS-style matching.")
+            continue
+        gps_by_method[method] = fit
+    if not gps_by_method:
+        return _empty_result(frame, warnings or ["No GPS method fit succeeded for ArcGIS-style matching."])
 
     bin_candidates = tuple(int(value) for value in (num_bins or candidate_num_bins(len(complete))))
     bin_candidates = tuple(sorted({value for value in bin_candidates if 2 <= value <= len(complete)}))
@@ -474,28 +555,30 @@ def arcgis_style_matching_search(
         return _empty_result(frame, ["No valid scale candidates are available for ArcGIS-style matching."])
 
     rows: list[dict[str, object]] = []
-    weights_by_candidate: dict[tuple[int, float], pd.Series] = {}
-    for bins in bin_candidates:
-        for scale in scale_candidates:
-            candidate_weights = _matching_count_weights(gps, num_bins=bins, scale=scale)
-            weights_by_candidate[(bins, scale)] = candidate_weights
-            balance = _balance_summary(
-                complete,
-                exposure=exposure,
-                confounders=available_confounders,
-                weights=candidate_weights,
-            )
-            abs_values = pd.to_numeric(balance["absolute_weighted_correlation"], errors="coerce").dropna()
-            rows.append(
-                {
-                    "num_bins": int(bins),
-                    "scale": float(scale),
-                    "mean_abs_weighted_correlation": _mean_abs_balance(balance),
-                    "max_abs_weighted_correlation": float(abs_values.max()) if not abs_values.empty else np.inf,
-                    "nonzero_weight_n": int((candidate_weights > 0).sum()),
-                    "selected": False,
-                }
-            )
+    weights_by_candidate: dict[tuple[str, int, float], pd.Series] = {}
+    for method, gps in gps_by_method.items():
+        for bins in bin_candidates:
+            for scale in scale_candidates:
+                candidate_weights = _matching_count_weights(gps, num_bins=bins, scale=scale)
+                weights_by_candidate[(method, bins, scale)] = candidate_weights
+                balance = _balance_summary(
+                    complete,
+                    exposure=exposure,
+                    confounders=available_confounders,
+                    weights=candidate_weights,
+                )
+                abs_values = pd.to_numeric(balance["absolute_weighted_correlation"], errors="coerce").dropna()
+                rows.append(
+                    {
+                        "gps_method": method,
+                        "num_bins": int(bins),
+                        "scale": float(scale),
+                        "mean_abs_weighted_correlation": _mean_abs_balance(balance),
+                        "max_abs_weighted_correlation": float(abs_values.max()) if not abs_values.empty else np.inf,
+                        "nonzero_weight_n": int((candidate_weights > 0).sum()),
+                        "selected": False,
+                    }
+                )
 
     grid = pd.DataFrame(rows)
     finite_objective = pd.to_numeric(grid["mean_abs_weighted_correlation"], errors="coerce")
@@ -505,12 +588,14 @@ def arcgis_style_matching_search(
     selected_index = int(finite_objective.idxmin())
     grid.loc[selected_index, "selected"] = True
     selected_row = grid.loc[selected_index]
-    selected_key = (int(selected_row["num_bins"]), float(selected_row["scale"]))
+    selected_method = str(selected_row["gps_method"])
+    selected_key = (selected_method, int(selected_row["num_bins"]), float(selected_row["scale"]))
     selected_complete_weights = weights_by_candidate[selected_key]
+    selected_gps = gps_by_method[selected_method]
     full_weights = pd.Series(0.0, index=frame.index, dtype=float)
     full_weights.loc[selected_complete_weights.index] = selected_complete_weights.astype(float)
     full_propensity = pd.Series(np.nan, index=frame.index, dtype=float)
-    full_propensity.loc[gps.observed_gps.index] = gps.observed_gps.astype(float)
+    full_propensity.loc[selected_gps.observed_gps.index] = selected_gps.observed_gps.astype(float)
     selected_balance = _balance_summary(
         frame,
         exposure=exposure,
@@ -539,6 +624,7 @@ def arcgis_style_matching_search(
         grid=grid,
         selected_num_bins=int(selected_row["num_bins"]),
         selected_scale=float(selected_row["scale"]),
+        selected_gps_method=selected_method,
         selected_mean_abs_weighted_correlation=selected_objective,
         calibrated_mean_abs_weighted_correlation=calibrated_objective,
         calibration_summary=calibration_summary,
