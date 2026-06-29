@@ -151,6 +151,7 @@ The new-version paper centers on SCCA as a spatial causal workflow and evaluates
 - **Snow cholera case**: South London subdistrict cholera data for spatial-context causal reasoning and robustness diagnostics.
 - **Soho Broad Street pump mechanism case**: household-level mechanism-oriented SCCA demonstration.
 - **US CountyData case**: county social capital and longevity example with CSV, shapefile, ArcGIS comparison, and map-ready joins.
+- **EPA Green Book benchmark**: PM2.5 county-year nonattainment structure and Census county geometry for a policy-structure semi-synthetic SCCA benchmark.
 - **Synthetic and audit cases**: multi-seed benchmarks, estimator stress tests, GeoFM/AlphaEarth ablation, LLM DAG validation, and world-model holdout validation used as supporting evidence rather than the main SCCA software boundary.
 
 Representative commands:
@@ -160,6 +161,7 @@ python -m data_agent.experiments.run_scca_snow8 --csv-path examples/data/snow8/s
 python -m data_agent.experiments.run_scca_soho --csv-path examples/data/snow1/deaths_nd_by_house.csv
 python -m data_agent.experiments.run_scca_county_social_capital --workbook-path examples/data/county/CountyData_TableToExcel.xlsx
 python -m data_agent.experiments.run_scca_robustness_summary
+python -m data_agent.experiments.epa_airdata_benchmark --raw-dir data/raw/epa_airdata --output-dir paper/ijgis_submission_20260605/07_results/epa_nonattainment_airdata
 ```
 
 For the restricted Chongqing UHI analysis sample:
@@ -188,6 +190,7 @@ Expected Chongqing result files are written under `paper/ijgis_submission_202606
 - Cross-platform county CSV: `examples/data/county_social_capital.csv`
 - Original county workbook copy used for SCCA reproduction: `examples/data/county/CountyData_TableToExcel.xlsx`
 - Snow/Soho SCCA inputs: `examples/data/snow8/subdistricts.csv` and `examples/data/snow1/deaths_nd_by_house.csv`
+- EPA Green Book/Census benchmark inputs: `data/raw/epa_airdata/`
 
 The intended GIS pattern is:
 

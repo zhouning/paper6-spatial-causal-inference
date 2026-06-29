@@ -31,6 +31,8 @@ relative paths:
 - `data/CountyData.*`
 - `data/States.*`
 
+The EPA policy-structure benchmark inputs are also committed under `data/raw/epa_airdata/`; other `data/raw` contents remain ignored.
+
 Restricted Chongqing inputs are expected only in a local approved workspace:
 
 - Chongqing DEM 2020

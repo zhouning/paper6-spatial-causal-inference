@@ -34,7 +34,14 @@ data_agent/weights/raw_data/
 *.aux.xml.tmp
 *.ovr.tmp
 *.gpkg-journal
-data/raw/
+data/raw/*
+!data/raw/epa_airdata/
+data/raw/epa_airdata/*
+!data/raw/epa_airdata/README.md
+!data/raw/epa_airdata/areadata.xls
+!data/raw/epa_airdata/cb_2024_us_county_500k.zip
+!data/raw/epa_airdata/nayro.xls
+!data/raw/epa_airdata/phistory.xls
 paper/ijgis_submission_20260605/07_results/chongqing_uhi_analysis_sample.csv
 paper/ijgis_submission_20260605/07_results/examples/county_social_capital_notebook_demo/
 paper/ijgis_submission_20260605/07_results/examples/county_social_capital_notebook_demo_smoke/

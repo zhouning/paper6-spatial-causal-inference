@@ -1,6 +1,8 @@
 *.pdf binary
 *.docx binary
 *.xlsx binary
+*.xls binary
+*.zip binary
 examples/data/*.csv text eol=lf
 examples/data/*/*.csv text eol=lf
 *.png binary
