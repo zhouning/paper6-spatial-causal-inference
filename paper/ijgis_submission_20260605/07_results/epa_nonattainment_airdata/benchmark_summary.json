@@ -1,0 +1,319 @@
+{
+  "generated_at_utc": "2026-06-26T00:40:52.379792Z",
+  "benchmark_role": "policy_structure_semisynthetic_until_airdata_download_recovers",
+  "airdata_status": "AQS AirData downloads and API timed out from this environment; Green Book and Census inputs were acquired.",
+  "raw_sources": {
+    "greenbook_nayro": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\data\\raw\\epa_airdata\\nayro.xls",
+    "census_counties": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\data\\raw\\epa_airdata\\cb_2024_us_county_500k.zip"
+  },
+  "real_data": {
+    "effect_estimate": -0.9999999999561664,
+    "evidence_grade": "bounded_support",
+    "grade_rule_ids": [
+      "weak_credibility",
+      "bounded_robustness",
+      "material_residual_moran"
+    ],
+    "grade_reasons": [
+      "Credibility diagnostics indicate weak or failed support.",
+      "Robustness checks support only a bounded interpretation.",
+      "Residual spatial autocorrelation is both statistically significant and materially large (Moran's I=0.876, p=0.010)."
+    ],
+    "row_count": 4880,
+    "panel_year_min": 2005,
+    "panel_year_max": 2024,
+    "true_effect": -1.0,
+    "absolute_error": 4.3833603413645505e-11
+  },
+  "semi_synthetic": {
+    "scenario_count": 3,
+    "median_absolute_error": 4.3586023679154096e-11,
+    "mean_absolute_error": 3.8291888178794885e-11,
+    "max_absolute_error": 4.3833603413645505e-11,
+    "spatial_caution_scenarios": [
+      "spatial_confounding",
+      "spillover",
+      "stable_known_effect"
+    ],
+    "scenario_metrics": [
+      {
+        "scenario": "stable_known_effect",
+        "effect_estimate": -0.9999999999561664,
+        "true_effect": -1.0,
+        "absolute_error": 4.3833603413645505e-11,
+        "evidence_grade": "bounded_support",
+        "grade_rule_ids": [
+          "weak_credibility",
+          "bounded_robustness",
+          "material_residual_moran"
+        ],
+        "grade_reasons": [
+          "Credibility diagnostics indicate weak or failed support.",
+          "Robustness checks support only a bounded interpretation.",
+          "Residual spatial autocorrelation is both statistically significant and materially large (Moran's I=0.876, p=0.010)."
+        ],
+        "run_dir": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results\\epa_nonattainment_airdata\\scca_run",
+        "config_path": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results\\epa_nonattainment_airdata\\epa_policy_structure_semisynthetic.yaml",
+        "scenario_role": "recoverable"
+      },
+      {
+        "scenario": "spatial_confounding",
+        "effect_estimate": -0.999999999972544,
+        "true_effect": -1.0,
+        "absolute_error": 2.7456037443585046e-11,
+        "evidence_grade": "bounded_support",
+        "grade_rule_ids": [
+          "weak_credibility",
+          "bounded_robustness",
+          "material_residual_moran"
+        ],
+        "grade_reasons": [
+          "Credibility diagnostics indicate weak or failed support.",
+          "Robustness checks support only a bounded interpretation.",
+          "Residual spatial autocorrelation is both statistically significant and materially large (Moran's I=0.816, p=0.010)."
+        ],
+        "run_dir": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results\\epa_nonattainment_airdata\\scca_run_spatial_confounding",
+        "config_path": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results\\epa_nonattainment_airdata\\epa_policy_structure_semisynthetic_spatial_confounding.yaml",
+        "scenario_role": "spatial_confounding"
+      },
+      {
+        "scenario": "spillover",
+        "effect_estimate": -0.999999999956414,
+        "true_effect": -1.0,
+        "absolute_error": 4.3586023679154096e-11,
+        "evidence_grade": "bounded_support",
+        "grade_rule_ids": [
+          "weak_credibility",
+          "fragile_robustness",
+          "material_residual_moran"
+        ],
+        "grade_reasons": [
+          "Credibility diagnostics indicate weak or failed support.",
+          "Robustness checks indicate fragile support.",
+          "Residual spatial autocorrelation is both statistically significant and materially large (Moran's I=0.808, p=0.010)."
+        ],
+        "run_dir": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results\\epa_nonattainment_airdata\\scca_run_spillover",
+        "config_path": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results\\epa_nonattainment_airdata\\epa_policy_structure_semisynthetic_spillover.yaml",
+        "spillover_effect": -0.6,
+        "scenario_role": "neighbor_spillover"
+      }
+    ],
+    "scenario_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results\\epa_nonattainment_airdata\\semi_synthetic_scenarios.csv",
+    "scenario_metrics_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results\\epa_nonattainment_airdata\\semi_synthetic_scenario_metrics.csv",
+    "scenario_manifest_paths": {
+      "stable_known_effect": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results\\epa_nonattainment_airdata\\scca_run\\manifest.json",
+      "spatial_confounding": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results\\epa_nonattainment_airdata\\scca_run_spatial_confounding\\manifest.json",
+      "spillover": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results\\epa_nonattainment_airdata\\scca_run_spillover\\manifest.json"
+    }
+  },
+  "policy_structure_semisynthetic": {
+    "effect_estimate": -0.9999999999561664,
+    "evidence_grade": "bounded_support",
+    "grade_rule_ids": [
+      "weak_credibility",
+      "bounded_robustness",
+      "material_residual_moran"
+    ],
+    "grade_reasons": [
+      "Credibility diagnostics indicate weak or failed support.",
+      "Robustness checks support only a bounded interpretation.",
+      "Residual spatial autocorrelation is both statistically significant and materially large (Moran's I=0.876, p=0.010)."
+    ],
+    "row_count": 4880,
+    "panel_year_min": 2005,
+    "panel_year_max": 2024,
+    "true_effect": -1.0,
+    "absolute_error": 4.3833603413645505e-11
+  },
+  "scca_manifest": {
+    "geocausal_version": "0.1.0",
+    "generated_at_utc": "2026-06-26T00:39:55.547046Z",
+    "case_name": "epa_nonattainment_airdata",
+    "study": "epa_nonattainment_airdata",
+    "config_path": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results\\epa_nonattainment_airdata\\epa_policy_structure_semisynthetic.yaml",
+    "input_path": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results\\epa_nonattainment_airdata\\semi_synthetic\\stable_known_effect.csv",
+    "input_format": "csv",
+    "row_count": 4880,
+    "column_count": 15,
+    "preprocessing": {},
+    "exposure": "nonattainment_lag1",
+    "outcome": "annual_mean",
+    "unit_id": "county_year_id",
+    "baseline_outcome": "baseline_annual_mean",
+    "confounders": [
+      "baseline_annual_mean",
+      "monitor_count",
+      "year_index"
+    ],
+    "context_columns": [
+      "x",
+      "y",
+      "neighbor_nonattainment_lag1"
+    ],
+    "targets": {
+      "outcome_values": []
+    },
+    "credibility_decision": "weak_or_failed_support",
+    "robustness_interpretation": "bounded_support",
+    "evidence_grade": "bounded_support",
+    "evidence_grade_rule_ids": [
+      "weak_credibility",
+      "bounded_robustness",
+      "material_residual_moran"
+    ],
+    "evidence_grade_reasons": [
+      "Credibility diagnostics indicate weak or failed support.",
+      "Robustness checks support only a bounded interpretation.",
+      "Residual spatial autocorrelation is both statistically significant and materially large (Moran's I=0.876, p=0.010)."
+    ],
+    "rule_version": "scca-evidence-grade-rules-2026-06-20",
+    "result_summary": {
+      "baseline_adjusted_ols": {
+        "status": "unstable",
+        "coef": -0.9999999999561664,
+        "p_value": 0.0,
+        "ci_lower": -1.0000000000874107,
+        "ci_upper": -0.999999999824922,
+        "n": 4880.0
+      },
+      "spatial_neighbor_adjusted_ols": {
+        "status": "ok",
+        "coef": -0.999999999919542,
+        "neighbor_exposure_coef": 5.542299952310259e-11,
+        "neighbor_exposure_p_value": 0.3421413946457365,
+        "coef_delta": 3.6624481225544514e-11,
+        "relative_change": 3.66244812271499e-11,
+        "sign_stable": true,
+        "n": 4880.0
+      },
+      "spatial_slx_model": {
+        "status": "unstable",
+        "model": "SLX",
+        "direct_effect": null,
+        "direct_p_value": null,
+        "indirect_effect": null,
+        "indirect_p_value": null,
+        "total_effect": null,
+        "total_se": null,
+        "total_p_value": null,
+        "total_ci_lower": null,
+        "total_ci_upper": null,
+        "r_squared": null,
+        "lag_covariate_count": null,
+        "lag_covariates_significant": null,
+        "coefficient_count": null,
+        "n": 4880.0,
+        "interpretation": null
+      },
+      "spatial_diagnostics": {
+        "graph_method": "coordinate_knn",
+        "edge_count": 20740,
+        "exposure_moran_i": -0.07945112125714242,
+        "exposure_moran_p_value": 0.01,
+        "residual_moran_i": 0.8763564976614805,
+        "residual_moran_p_value": 0.01,
+        "interpretation": "spatial_caution"
+      },
+      "spatial_block_bootstrap": {
+        "status": "ok",
+        "n_replicates_requested": 50,
+        "n_replicates_valid": 50,
+        "failure_count": 0,
+        "coef_mean": -1.0000000000107656,
+        "coef_median": -1.0000000000074722,
+        "coef_std": 7.411404061258054e-11,
+        "ci_lower_2_5": -1.0000000001492548,
+        "ci_upper_97_5": -0.9999999998780217,
+        "sign_stability": 1.0
+      },
+      "spatial_graph_sensitivity": {
+        "status": "ok",
+        "n_graphs_requested": 4,
+        "n_graphs_valid": 4,
+        "graph_specs": [
+          "coordinate_knn_k2",
+          "coordinate_knn_k4",
+          "coordinate_knn_k6",
+          "coordinate_knn_k8"
+        ],
+        "neighbor_adjusted_coef_min": -1.0000000001465934,
+        "neighbor_adjusted_coef_max": -0.9999999999195419,
+        "neighbor_adjusted_coef_range": 2.2705148872148584e-10,
+        "neighbor_adjusted_relative_change_max": 1.9042700750428843e-10,
+        "neighbor_adjusted_sign_stability": true
+      },
+      "spatial_spillover_decomposition": {
+        "status": "ok",
+        "models": [
+          "neighbor_adjusted",
+          "coordinate_knn_k2",
+          "coordinate_knn_k4",
+          "coordinate_knn_k6",
+          "coordinate_knn_k8"
+        ],
+        "direct_effect_proxy_main": -0.9999999999195419,
+        "spillover_effect_proxy_main": 5.542299952310259e-11,
+        "spillover_share_abs_main": 5.542299952449011e-11,
+        "spillover_share_abs_min": 2.001110388313111e-11,
+        "spillover_share_abs_max": 9.541145650517758e-11,
+        "spillover_to_direct_ratio_min": -9.541145651428093e-11,
+        "spillover_to_direct_ratio_max": 6.900835457611461e-11,
+        "interpretation": "spillover_signal_not_established",
+        "note": "This decomposition is a spatial sensitivity summary based on neighbor-average exposure models; it is not a formal causal interference identification result."
+      },
+      "spatial_exposure_mapping": {
+        "status": "ok",
+        "model": "neighbor_exposure_model",
+        "direct_effect": -0.9999999999195419,
+        "spillover_coefficient": 5.542299952310259e-11,
+        "mean_indirect_effect": 5.542299952310261e-11,
+        "median_indirect_effect": 1.458499987450068e-11,
+        "mean_total_effect": -0.9999999998641189,
+        "median_total_effect": -0.9999999999049569,
+        "indirect_effect_p10": 1.458499987450068e-11,
+        "indirect_effect_p90": 1.7793699846890837e-10,
+        "incoming_weight_sum_mean": 1.0000000000000004,
+        "incoming_weight_sum_min": 0.2631578947368421,
+        "incoming_weight_sum_max": 3.210526315789475,
+        "interpretation": "exposure_mapping_sensitivity",
+        "note": "Effects are implied by the fitted neighbor-exposure model and row-standardized spatial graph. They are an exposure-mapping sensitivity analysis, not a fully identified network experiment."
+      }
+    },
+    "warnings": [],
+    "files": {
+      "data_profile": "data_profile.json",
+      "variable_candidates": "variable_candidates.csv",
+      "context_features": "context_features.csv",
+      "context_manifest": "context_feature_manifest.json",
+      "design_plan": "design_plan.json",
+      "effect_estimates": "effect_estimates.csv",
+      "erf_curve": "erf_curve.csv",
+      "model_diagnostics": "model_diagnostics.json",
+      "balance_summary": "balance_summary.csv",
+      "overlap_summary": "overlap_summary.json",
+      "spatial_robustness": "spatial_robustness.csv",
+      "credibility_report": "credibility_report.json",
+      "analysis_report": "analysis_report.md",
+      "manifest": "manifest.json",
+      "spatial_diagnostics": "spatial_diagnostics.json",
+      "spatial_bootstrap_robustness": "spatial_bootstrap_robustness.csv",
+      "spatial_bootstrap_summary": "spatial_bootstrap_summary.json",
+      "spatial_graph_sensitivity": "spatial_graph_sensitivity.csv",
+      "spatial_graph_sensitivity_summary": "spatial_graph_sensitivity_summary.json",
+      "spatial_slx_estimates": "spatial_slx_estimates.csv",
+      "spatial_slx_summary": "spatial_slx_summary.json",
+      "spatial_spillover_decomposition": "spatial_spillover_decomposition.csv",
+      "spatial_spillover_summary": "spatial_spillover_summary.json",
+      "spatial_exposure_mapping": "spatial_exposure_mapping.csv",
+      "spatial_exposure_mapping_summary": "spatial_exposure_mapping_summary.json",
+      "result_summary_markdown": "result_summary.md",
+      "context_ablation": "context_ablation.csv",
+      "placebo_tests": "placebo_tests.csv",
+      "bootstrap_robustness": "bootstrap_robustness.csv",
+      "bootstrap_summary": "bootstrap_summary.json",
+      "erf_stability": "erf_stability.json",
+      "robustness_report": "robustness_report.md",
+      "robustness_manifest": "robustness_manifest.json"
+    }
+  }
+}

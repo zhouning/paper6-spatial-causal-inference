@@ -1,0 +1,17 @@
+{
+  "status": "ok",
+  "model": "neighbor_exposure_model",
+  "direct_effect": -0.9999999999195419,
+  "spillover_coefficient": 5.542299952310259e-11,
+  "mean_indirect_effect": 5.542299952310261e-11,
+  "median_indirect_effect": 1.458499987450068e-11,
+  "mean_total_effect": -0.9999999998641189,
+  "median_total_effect": -0.9999999999049569,
+  "indirect_effect_p10": 1.458499987450068e-11,
+  "indirect_effect_p90": 1.7793699846890837e-10,
+  "incoming_weight_sum_mean": 1.0000000000000004,
+  "incoming_weight_sum_min": 0.2631578947368421,
+  "incoming_weight_sum_max": 3.210526315789475,
+  "interpretation": "exposure_mapping_sensitivity",
+  "note": "Effects are implied by the fitted neighbor-exposure model and row-standardized spatial graph. They are an exposure-mapping sensitivity analysis, not a fully identified network experiment."
+}

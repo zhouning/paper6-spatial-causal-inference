@@ -1,0 +1,13 @@
+{
+  "case": "epa_nonattainment_airdata",
+  "bootstrap_type": "county_fips",
+  "n_replicates_requested": 50,
+  "n_replicates_valid": 50,
+  "coef_mean": -0.9999999999999418,
+  "coef_median": -0.9999999999793799,
+  "coef_std": 1.2167875611792573e-10,
+  "ci_lower_2_5": -1.000000000268859,
+  "ci_upper_97_5": -0.9999999998011884,
+  "sign_stability": 1.0,
+  "failure_count": 0
+}

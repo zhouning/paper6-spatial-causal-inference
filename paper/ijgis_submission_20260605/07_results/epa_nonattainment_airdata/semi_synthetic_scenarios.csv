@@ -1,0 +1,4 @@
+scenario,path,true_effect,scenario_role,spillover_effect
+stable_known_effect,D:\adk\paper6-spatial-causal-inference\.worktrees\scca-epa-airdata-benchmark\paper\ijgis_submission_20260605\07_results\epa_nonattainment_airdata\semi_synthetic\stable_known_effect.csv,-1.0,recoverable,
+spatial_confounding,D:\adk\paper6-spatial-causal-inference\.worktrees\scca-epa-airdata-benchmark\paper\ijgis_submission_20260605\07_results\epa_nonattainment_airdata\semi_synthetic\spatial_confounding.csv,-1.0,spatial_confounding,
+spillover,D:\adk\paper6-spatial-causal-inference\.worktrees\scca-epa-airdata-benchmark\paper\ijgis_submission_20260605\07_results\epa_nonattainment_airdata\semi_synthetic\spillover.csv,-1.0,neighbor_spillover,-0.6

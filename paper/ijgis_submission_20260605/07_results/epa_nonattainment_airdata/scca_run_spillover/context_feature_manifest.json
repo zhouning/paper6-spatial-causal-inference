@@ -1,0 +1,25 @@
+{
+  "study": "epa_nonattainment_airdata",
+  "n_rows": 4880,
+  "n_features": 17,
+  "source_columns": [
+    "nonattainment_lag1",
+    "annual_mean",
+    "baseline_annual_mean",
+    "monitor_count",
+    "year_index",
+    "x",
+    "y",
+    "neighbor_nonattainment_lag1",
+    "county_fips"
+  ],
+  "generated_columns": [
+    "outcome_change",
+    "baseline_annual_mean_centered",
+    "monitor_count_centered",
+    "year_index_centered",
+    "x_centered",
+    "y_centered",
+    "neighbor_nonattainment_lag1_centered"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "parity_matrix_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results\\arcgis_causal_inference_parity\\arcgis_parity_matrix.csv",
+  "parity_summary_md": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results\\arcgis_causal_inference_parity\\arcgis_parity_summary.md",
+  "manifest_json": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results\\arcgis_causal_inference_parity\\arcgis_commercial_benchmark_manifest.json",
+  "results_dir": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-epa-airdata-benchmark\\paper\\ijgis_submission_20260605\\07_results",
+  "official_arcgis_url": "https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-statistics/causal-inference-analysis.htm",
+  "status_counts": {
+    "partial": 5,
+    "matched": 4,
+    "gap": 1,
+    "scca_only_differentiator": 1
+  },
+  "county_metrics": {
+    "input_rows": 3108,
+    "included_rows": 3044,
+    "baseline_coef": 0.1812445027232004,
+    "spatial_neighbor_adjusted_coef": 0.1463926156710202,
+    "spatial_lag_adjusted_coef": 0.1445547494456812,
+    "residual_moran_i": 0.3127560212403792,
+    "residual_moran_p_value": 0.01,
+    "spatial_files_available": true,
+    "visualization_files_available": true
+  }
+}

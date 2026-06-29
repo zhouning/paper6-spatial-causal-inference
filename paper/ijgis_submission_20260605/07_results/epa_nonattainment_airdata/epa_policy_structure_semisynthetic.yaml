@@ -1,0 +1,30 @@
+case_name: epa_nonattainment_airdata
+input:
+  path: D:/adk/paper6-spatial-causal-inference/.worktrees/scca-epa-airdata-benchmark/paper/ijgis_submission_20260605/07_results/epa_nonattainment_airdata/semi_synthetic/stable_known_effect.csv
+  x: x
+  y: y
+variables:
+  unit_id: county_year_id
+  exposure: nonattainment_lag1
+  outcome: annual_mean
+  baseline_outcome: baseline_annual_mean
+  confounders:
+    - baseline_annual_mean
+    - monitor_count
+    - year_index
+context:
+  columns:
+    - x
+    - y
+    - neighbor_nonattainment_lag1
+robustness:
+  bootstrap:
+    group_column: county_fips
+    n_replicates: 50
+  placebo_exposures:
+    - name: neighbor_nonattainment_lag1
+      column: neighbor_nonattainment_lag1
+      role: spatial_neighbor_exposure
+      expected_relation: weaker_than_main
+output:
+  directory: D:/adk/paper6-spatial-causal-inference/.worktrees/scca-epa-airdata-benchmark/paper/ijgis_submission_20260605/07_results/epa_nonattainment_airdata/scca_run
