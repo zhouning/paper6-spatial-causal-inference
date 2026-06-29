@@ -21,6 +21,18 @@ public/example county data, and model weights where redistribution is permitted.
 It does not include the Chongqing raw geospatial inputs or building-level UHI
 analysis sample.
 
+The Windows-tested SCCA example inputs are committed under cross-platform
+relative paths:
+
+- `examples/data/county_social_capital.csv`
+- `examples/data/county/CountyData_TableToExcel.xlsx`
+- `examples/data/snow8/subdistricts.csv`
+- `examples/data/snow1/deaths_nd_by_house.csv`
+- `data/CountyData.*`
+- `data/States.*`
+
+The EPA policy-structure benchmark inputs are also committed under `data/raw/epa_airdata/`; other `data/raw` contents remain ignored.
+
 Restricted Chongqing inputs are expected only in a local approved workspace:
 
 - Chongqing DEM 2020
@@ -60,6 +72,17 @@ Run the focused Paper6 tests:
 ```
 
 The LLM causal tests use mocks for Gemini calls. The world-model tests mock remote Earth Engine-dependent calls where needed.
+
+Run the real SCCA reproduction cases with committed example inputs:
+
+```powershell
+.\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_snow8 --csv-path examples\data\snow8\subdistricts.csv
+.\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_soho --csv-path examples\data\snow1\deaths_nd_by_house.csv
+.\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_county_social_capital --workbook-path examples\data\county\CountyData_TableToExcel.xlsx
+```
+
+For Linux/macOS, replace `.\.venv\Scripts\python.exe` with `./.venv/bin/python`
+and use forward slashes in the paths.
 
 ## 4. Synthetic Experiments
 

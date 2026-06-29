@@ -379,6 +379,7 @@ def collect_report_files(paths: SCCAPaths) -> dict[str, str]:
         "effect_estimates": paths.effect_estimates.name,
         "erf_curve": paths.erf_curve.name,
         "model_diagnostics": paths.model_diagnostics.name,
+        "generalized_propensity_scores": paths.generalized_propensity_scores.name,
         "balance_summary": paths.balance_summary.name,
         "overlap_summary": paths.overlap_summary.name,
         "spatial_robustness": paths.spatial_robustness.name,

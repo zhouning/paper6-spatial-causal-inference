@@ -9,6 +9,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 PROVIDER_PATH = REPO_ROOT / "qgis_provider" / "geocausal_scca_algorithm.py"
 PROVIDER_MODULE_PATH = REPO_ROOT / "qgis_provider" / "provider.py"
 PLUGIN_MODULE_PATH = REPO_ROOT / "qgis_provider" / "plugin.py"
+METADATA_PATH = REPO_ROOT / "qgis_provider" / "metadata.txt"
 
 
 def test_qgis_provider_skeleton_exists_and_avoids_case_specific_fields():
@@ -44,6 +45,20 @@ def test_qgis_plugin_entrypoint_imports_without_qgis_runtime():
     module = importlib.import_module("qgis_provider.plugin")
     assert hasattr(module, "GeoCausalPlugin")
     assert hasattr(module, "classFactory")
+
+
+def test_qgis_package_exports_class_factory_for_plugin_loader():
+    module = importlib.import_module("qgis_provider")
+    assert hasattr(module, "classFactory")
+
+
+def test_qgis_processing_metadata_and_lifecycle_hooks_are_declared():
+    metadata = METADATA_PATH.read_text(encoding="utf-8")
+    plugin_module = importlib.import_module("qgis_provider.plugin")
+    plugin = plugin_module.GeoCausalPlugin(iface=None)
+
+    assert "hasProcessingProvider=yes" in metadata
+    assert hasattr(plugin, "initProcessing")
 
 
 def test_qgis_provider_factory_returns_runtime_light_provider_without_qgis():
@@ -83,6 +98,43 @@ def test_qgis_algorithm_runs_from_parameter_dict(tmp_path):
     assert manifest["files"]["result_summary_markdown"] == "result_summary.md"
     assert (case_dir / "result_summary.md").exists()
 
+
+def test_qgis_open_gis_output_mapping_uses_manifest_package_files(tmp_path):
+    module = importlib.import_module("qgis_provider.geocausal_scca_algorithm")
+    algorithm = module.GeoCausalSCCAAlgorithm()
+    case_dir = tmp_path / "case"
+    manifest = {
+        "open_gis_package": {
+            "package_dir": "open_gis_analysis_package",
+            "generated_files": {
+                "analysis_joined": "analysis_joined.csv",
+                "gis_balance_summary": "gis_balance_summary.csv",
+                "gis_erf_curve_200": "gis_erf_curve_200.csv",
+                "gis_preferred_erf_curve_200": "gis_preferred_erf_curve_200.csv",
+                "gis_arcgis_style_erf_curve_200": "gis_arcgis_style_erf_curve_200.csv",
+                "arcgis_style_matching_grid": "arcgis_style_matching_grid.csv",
+                "arcgis_style_balance_summary": "arcgis_style_balance_summary.csv",
+                "arcgis_style_calibrated_balance_summary": "arcgis_style_calibrated_balance_summary.csv",
+                "gis_run_summary_json": "gis_run_summary.json",
+                "gis_run_summary_markdown": "gis_run_summary.md",
+            },
+        }
+    }
+
+    outputs = algorithm.open_gis_package_outputs(case_dir, manifest)
+
+    package_dir = case_dir / "open_gis_analysis_package"
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_PACKAGE] == str(package_dir)
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_JOINED] == str(package_dir / "analysis_joined.csv")
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_BALANCE] == str(package_dir / "gis_balance_summary.csv")
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_ERF_200] == str(package_dir / "gis_erf_curve_200.csv")
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_PREFERRED_ERF_200] == str(package_dir / "gis_preferred_erf_curve_200.csv")
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_ARCGIS_STYLE_ERF_200] == str(package_dir / "gis_arcgis_style_erf_curve_200.csv")
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_ARCGIS_STYLE_GRID] == str(package_dir / "arcgis_style_matching_grid.csv")
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_ARCGIS_STYLE_BALANCE] == str(package_dir / "arcgis_style_balance_summary.csv")
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_ARCGIS_STYLE_CALIBRATED_BALANCE] == str(package_dir / "arcgis_style_calibrated_balance_summary.csv")
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_SUMMARY_JSON] == str(package_dir / "gis_run_summary.json")
+    assert outputs[algorithm.OUTPUT_OPEN_GIS_SUMMARY_MD] == str(package_dir / "gis_run_summary.md")
 
 def test_qgis_required_fields_preserve_order_and_uniqueness():
     module = importlib.import_module("qgis_provider.geocausal_scca_algorithm")

@@ -1,0 +1,36 @@
+{
+  "matrix_csv": "paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_multi_dataset_benchmark_matrix.csv",
+  "report_md": "paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_multi_dataset_benchmark_matrix.md",
+  "manifest_json": "paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_multi_dataset_benchmark_matrix_manifest.json",
+  "surpass_scorecard_csv": "paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_arcgis_surpass_scorecard.csv",
+  "surpass_scorecard_report_md": "paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\paper6_arcgis_surpass_scorecard.md",
+  "n_rows": 12,
+  "scorecard_rows": 11,
+  "case_ids": [
+    "county_arcgis_builtin",
+    "soho_arcgis_builtin_relaxed",
+    "snow8_arcgis_builtin_relaxed",
+    "county_social_capital",
+    "chongqing_uhi",
+    "synthetic_CausalForest",
+    "synthetic_DiD",
+    "synthetic_ERF",
+    "synthetic_GCCM",
+    "synthetic_Granger",
+    "synthetic_PSM",
+    "epa_nonattainment_airdata"
+  ],
+  "surpass_scorecard_status": "claimable_with_current_evidence",
+  "inputs": {
+    "arcgis_comparison_manifest": null,
+    "arcgis_comparison_manifests": [
+      "D:\\tmp\\paper6_arcgis_builtin_causal_20260627\\geocausal_comparison_arcgis_style_erf_20260627\\arcgis_geocausal_comparison_manifest.json",
+      "paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\soho_arcgis_relaxed_comparison_snapshot.json",
+      "paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\snow8_arcgis_relaxed_comparison_snapshot.json"
+    ],
+    "method_comparison_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\scca_method_comparison.csv",
+    "synthetic_scenario_summary_csv": "D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\open-gis-parity-package\\paper\\ijgis_submission_20260605\\07_results\\synthetic_benchmark_audit\\scenario_fragility_summary.csv",
+    "epa_benchmark_summary_json": "paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\epa_nonattainment_airdata_benchmark_summary_snapshot.json",
+    "arcgis_runtime_audit_json": "paper\\ijgis_submission_20260605\\07_results\\paper6_multi_dataset_benchmark_matrix\\arcgis_runtime_audit_snapshot.json"
+  }
+}

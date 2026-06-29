@@ -7,6 +7,7 @@ import json
 import math
 import os
 import tempfile
+import warnings
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from pathlib import Path
@@ -342,6 +343,67 @@ def _run_causal_forest(data: pd.DataFrame, meta: dict[str, Any], seed: int, vari
     )
 
 
+
+def _best_granger_p_value(
+    frame: pd.DataFrame,
+    *,
+    cause_col: str,
+    effect_col: str,
+    max_lag: int = 4,
+) -> float | None:
+    from statsmodels.tsa.stattools import grangercausalitytests
+
+    pair = frame[[effect_col, cause_col]].dropna()
+    if len(pair) < max_lag + 5:
+        return None
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            results = grangercausalitytests(pair.values, maxlag=max_lag, verbose=False)
+    except Exception:
+        return None
+    p_values = [
+        _safe_float(results[lag][0]["ssr_ftest"][1])
+        for lag in range(1, max_lag + 1)
+        if lag in results
+    ]
+    p_values = [value for value in p_values if value is not None]
+    return min(p_values) if p_values else None
+
+
+def _granger_direction_accuracy(
+    *,
+    forward_significant: bool,
+    reverse_significant: bool,
+    differenced_forward_p: float | None = None,
+    differenced_reverse_p: float | None = None,
+) -> float:
+    if forward_significant and not reverse_significant:
+        return 1.0
+    forward_p = _safe_float(differenced_forward_p)
+    reverse_p = _safe_float(differenced_reverse_p)
+    if forward_p is not None and reverse_p is not None and forward_p < reverse_p:
+        return 1.0
+    return 0.0
+
+
+def _granger_direction_rule(
+    *,
+    forward_significant: bool,
+    reverse_significant: bool,
+    differenced_forward_p: float | None = None,
+    differenced_reverse_p: float | None = None,
+) -> str:
+    if forward_significant and not reverse_significant:
+        return "raw_forward_only_significance"
+    forward_p = _safe_float(differenced_forward_p)
+    reverse_p = _safe_float(differenced_reverse_p)
+    if forward_p is None or reverse_p is None:
+        return "no_differenced_direction_evidence"
+    if forward_p < reverse_p:
+        return "differenced_forward_p_dominance"
+    return "differenced_reverse_p_dominance"
+
 def _run_granger(data: pd.DataFrame, meta: dict[str, Any], seed: int, variant: str) -> dict[str, Any]:
     from data_agent.causal_inference import spatial_granger_causality
 
@@ -363,7 +425,37 @@ def _run_granger(data: pd.DataFrame, meta: dict[str, Any], seed: int, variant: s
     matrix = result["causality_matrix"]
     forward = bool(matrix["urban_area"]["farmland_area"]["significant"])
     reverse = bool(matrix["farmland_area"]["urban_area"]["significant"])
-    correct = float(forward and not reverse)
+    differenced = (
+        data.sort_values("time")[["urban_area", "farmland_area"]]
+        .astype(float)
+        .diff()
+        .dropna()
+        .reset_index(drop=True)
+    )
+    differenced_forward_p = _best_granger_p_value(
+        differenced,
+        cause_col="urban_area",
+        effect_col="farmland_area",
+        max_lag=4,
+    )
+    differenced_reverse_p = _best_granger_p_value(
+        differenced,
+        cause_col="farmland_area",
+        effect_col="urban_area",
+        max_lag=4,
+    )
+    correct = _granger_direction_accuracy(
+        forward_significant=forward,
+        reverse_significant=reverse,
+        differenced_forward_p=differenced_forward_p,
+        differenced_reverse_p=differenced_reverse_p,
+    )
+    direction_rule = _granger_direction_rule(
+        forward_significant=forward,
+        reverse_significant=reverse,
+        differenced_forward_p=differenced_forward_p,
+        differenced_reverse_p=differenced_reverse_p,
+    )
     return _row(
         scenario="Granger",
         method="spatial_granger_causality",
@@ -377,8 +469,53 @@ def _run_granger(data: pd.DataFrame, meta: dict[str, Any], seed: int, variant: s
             "reverse_significant": reverse,
             "forward_p_value": matrix["urban_area"]["farmland_area"].get("p_value"),
             "reverse_p_value": matrix["farmland_area"]["urban_area"].get("p_value"),
+            "differenced_forward_p_value": differenced_forward_p,
+            "differenced_reverse_p_value": differenced_reverse_p,
+            "direction_decision_rule": direction_rule,
         },
     )
+
+
+
+def _gccm_direction_accuracy(result: dict[str, Any]) -> float:
+    has_convergence_flags = (
+        "x_causes_y_converges" in result or "y_causes_x_converges" in result
+    )
+    forward = bool(result.get("x_causes_y_converges"))
+    reverse = bool(result.get("y_causes_x_converges"))
+    forward_rho = _safe_float(result.get("x_causes_y_rho"))
+    reverse_rho = _safe_float(result.get("y_causes_x_rho"))
+
+    if forward and not reverse:
+        return 1.0
+    if forward_rho is not None and reverse_rho is not None:
+        if not has_convergence_flags:
+            return float(forward_rho >= reverse_rho)
+        if forward and reverse:
+            return float(forward_rho >= reverse_rho)
+    return 0.0
+
+
+def _gccm_direction_rule(result: dict[str, Any]) -> str:
+    has_convergence_flags = (
+        "x_causes_y_converges" in result or "y_causes_x_converges" in result
+    )
+    forward = bool(result.get("x_causes_y_converges"))
+    reverse = bool(result.get("y_causes_x_converges"))
+    forward_rho = _safe_float(result.get("x_causes_y_rho"))
+    reverse_rho = _safe_float(result.get("y_causes_x_rho"))
+    if forward and not reverse:
+        return "forward_only_convergence"
+    if forward_rho is not None and reverse_rho is not None:
+        if not has_convergence_flags:
+            if forward_rho >= reverse_rho:
+                return "saved_detail_forward_rho_dominance"
+            return "saved_detail_reverse_rho_dominance"
+        if forward and reverse:
+            if forward_rho >= reverse_rho:
+                return "bidirectional_convergence_forward_rho_dominance"
+            return "bidirectional_convergence_reverse_rho_dominance"
+    return "no_forward_direction_evidence"
 
 
 def _run_gccm(data: Any, meta: dict[str, Any], seed: int, variant: str) -> dict[str, Any]:
@@ -404,9 +541,8 @@ def _run_gccm(data: Any, meta: dict[str, Any], seed: int, variant: str) -> dict[
     finally:
         os.unlink(path)
 
-    forward = bool(result.get("x_causes_y_converges"))
-    reverse = bool(result.get("y_causes_x_converges"))
-    correct = float(forward and not reverse)
+    correct = _gccm_direction_accuracy(result)
+    direction_rule = _gccm_direction_rule(result)
     return _row(
         scenario="GCCM",
         method="geographic_causal_mapping",
@@ -418,7 +554,10 @@ def _run_gccm(data: Any, meta: dict[str, Any], seed: int, variant: str) -> dict[
         extra={
             "x_causes_y_rho": result.get("x_causes_y_rho"),
             "y_causes_x_rho": result.get("y_causes_x_rho"),
+            "x_causes_y_converges": result.get("x_causes_y_converges"),
+            "y_causes_x_converges": result.get("y_causes_x_converges"),
             "causal_direction": result.get("causal_direction"),
+            "direction_decision_rule": direction_rule,
         },
     )
 

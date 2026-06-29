@@ -10,7 +10,9 @@ import pytest
 
 from geocausal.config import load_config
 from geocausal.errors import GeoCausalConfigError
+from geocausal.open_gis import write_open_gis_package
 from geocausal.pipeline import diagnose_config, rebuild_report, run_analysis
+from data_agent.scca.specs import SCCAPaths
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -249,6 +251,154 @@ output:
     assert set(targets["method"]) == {"adjusted_ols_prediction", "erf_delta_anchor"}
 
 
+def test_run_analysis_writes_open_gis_parity_package(tmp_path):
+    _fixture_frame().to_csv(tmp_path / "fixture.csv", index=False)
+    config = load_config(_write_fixture_config(tmp_path))
+
+    manifest = run_analysis(config)
+
+    output_dir = config.resolve_output_dir()
+    package_dir = output_dir / "open_gis_analysis_package"
+    expected_files = {
+        "analysis_joined.csv",
+        "gis_balance_summary.csv",
+        "gis_erf_curve_200.csv",
+        "gis_preferred_erf_curve_200.csv",
+        "gis_run_summary.json",
+        "gis_run_summary.md",
+    }
+    assert expected_files.issubset({path.name for path in package_dir.iterdir()})
+    assert manifest["files"]["open_gis_analysis_package"] == "open_gis_analysis_package"
+    assert manifest["open_gis_package"]["package_dir"] == "open_gis_analysis_package"
+
+    joined = pd.read_csv(package_dir / "analysis_joined.csv")
+    assert {
+        "gc_unit_id",
+        "gc_exposure",
+        "gc_outcome",
+        "gc_propensity_score",
+        "gc_balancing_weight",
+        "gc_arcgis_propensity_score",
+        "gc_arcgis_matching_weight",
+        "gc_arcgis_calibrated_weight",
+        "gc_arcgis_gps_method",
+        "gc_included",
+        "gc_trim_status",
+    }.issubset(joined.columns)
+    assert len(joined) == manifest["row_count"]
+    assert joined["gc_included"].all()
+    assert joined["gc_balancing_weight"].notna().all()
+
+    balance = pd.read_csv(package_dir / "gis_balance_summary.csv")
+    assert {"baseline", "confounder", "context"}.issubset(set(balance["variable"]))
+    assert {
+        "raw_correlation",
+        "weighted_correlation",
+        "absolute_weighted_correlation",
+        "balanced_at_0_1",
+        "arcgis_mean_abs_weighted_correlation",
+        "arcgis_median_abs_weighted_correlation",
+        "arcgis_max_abs_weighted_correlation",
+        "arcgis_balanced_at_0_1",
+    }.issubset(balance.columns)
+    erf_200 = pd.read_csv(package_dir / "gis_erf_curve_200.csv")
+    assert len(erf_200) == 200
+    assert {"exposure", "response", "source"}.issubset(erf_200.columns)
+    assert set(erf_200["source"]) == {"interpolated_from_erf_curve"}
+
+    summary = json.loads((package_dir / "gis_run_summary.json").read_text(encoding="utf-8"))
+    assert summary["case_name"] == "geocausal_fixture"
+    assert summary["generated_files"]["analysis_joined"] == "analysis_joined.csv"
+    assert summary["generated_files"]["gis_preferred_erf_curve_200"] == "gis_preferred_erf_curve_200.csv"
+    assert summary["preferred_erf"]["selected_curve"] == "gis_erf_curve_200"
+    assert {
+        "arcgis_mean_abs_weighted_correlation",
+        "arcgis_median_abs_weighted_correlation",
+        "arcgis_max_abs_weighted_correlation",
+        "arcgis_balanced_at_0_1",
+    }.issubset(summary["balance_summary"])
+    assert summary["arcgis_style_matching"]["selected_gps_method"] in {"ols", "gbm"}
+    assert {
+        "selected_median_abs_weighted_correlation",
+        "selected_max_abs_weighted_correlation",
+        "selected_balanced_at_0_1",
+    }.issubset(summary["arcgis_style_matching"])
+    assert summary["evidence_grade"] in {"core_support", "bounded_support", "fragile_support"}
+    assert "Open GIS" in (package_dir / "gis_run_summary.md").read_text(encoding="utf-8")
+
+
+def test_open_gis_balance_summary_aligns_weights_by_row_position(tmp_path):
+    features = pd.DataFrame(
+        {
+            "unit_id": ["u10", "u20", "u30", "u40"],
+            "exposure": [1.0, 2.0, 3.0, 4.0],
+            "outcome": [2.0, 2.5, 3.2, 4.3],
+            "confounder": [1.0, 2.1, 2.7, 4.4],
+            "context": [10.0, 9.5, 7.2, 6.0],
+        },
+        index=[10, 20, 30, 40],
+    )
+    config_path = tmp_path / "analysis.yaml"
+    config_path.write_text(
+        """
+case_name: open_gis_index_alignment
+input:
+  path: fixture.csv
+variables:
+  unit_id: unit_id
+  exposure: exposure
+  outcome: outcome
+  confounders:
+    - confounder
+context:
+  columns:
+    - context
+robustness:
+  bootstrap:
+    group_column: unit_id
+    n_replicates: 3
+output:
+  directory: results/open_gis_index_alignment
+""",
+        encoding="utf-8",
+    )
+    config = load_config(config_path)
+    spec = config.to_study_spec()
+    paths = SCCAPaths(output_dir=config.resolve_output_dir())
+    paths.ensure()
+    pd.DataFrame(
+        {
+            "unit_id": ["u10", "u20", "u30", "u40"],
+            "gc_propensity_score": [0.2, 0.4, 0.8, 1.2],
+            "gc_balancing_weight": [1.0, 2.0, 3.0, 4.0],
+        }
+    ).to_csv(paths.generalized_propensity_scores, index=False)
+    pd.DataFrame(
+        {
+            "exposure": [1.0, 4.0],
+            "response": [2.0, 4.3],
+        }
+    ).to_csv(paths.erf_curve, index=False)
+
+    write_open_gis_package(
+        config=config,
+        features=features,
+        spec=spec,
+        paths=paths,
+        manifest={
+            "row_count": 4,
+            "evidence_grade": "core_support",
+            "evidence_grade_reasons": [],
+            "result_summary": {},
+        },
+    )
+
+    balance = pd.read_csv(paths.output_dir / "open_gis_analysis_package" / "gis_balance_summary.csv")
+    assert set(balance["variable"]) == {"confounder", "context"}
+    assert balance["weighted_correlation"].notna().all()
+    assert balance["n_complete"].tolist() == [4, 4]
+
+
 def test_run_analysis_bootstrap_falls_back_to_input_coordinates(tmp_path):
     _fixture_frame().to_csv(tmp_path / "fixture.csv", index=False)
     config = load_config(_write_fixture_config(tmp_path, include_bootstrap_group=False))
@@ -428,3 +578,62 @@ def test_cli_report_rebuilds_markdown(tmp_path):
 
     assert "reported_case" in result.stdout
     assert (output_dir / "geocausal_report.md").exists()
+
+
+def test_cli_spatial_package_calls_existing_builder(tmp_path, monkeypatch, capsys):
+    from geocausal import cli
+
+    calls = {}
+
+    def fake_build_spatial_analysis_outputs(**kwargs):
+        calls.update(kwargs)
+        return {"manifest": str(tmp_path / "spatial_output_manifest.json"), "row_count": 2}
+
+    monkeypatch.setattr(
+        cli,
+        "build_spatial_analysis_outputs",
+        fake_build_spatial_analysis_outputs,
+        raising=False,
+    )
+
+    result = cli.main(
+        [
+            "spatial-package",
+            "--boundary",
+            "boundary.shp",
+            "--analysis-joined",
+            "analysis_joined.csv",
+            "--output-dir",
+            str(tmp_path / "spatial_outputs"),
+            "--analysis-dir",
+            str(tmp_path / "analysis"),
+            "--boundary-key",
+            "FIPS",
+            "--analysis-key",
+            "gc_unit_id",
+            "--output-stem",
+            "county_open_gis",
+            "--formats",
+            "gpkg,geojson",
+            "--states",
+            "states.shp",
+            "--map-field",
+            "gc_target_70_exposure_change",
+        ]
+    )
+
+    payload = json.loads(capsys.readouterr().out)
+    assert result == 0
+    assert payload["row_count"] == 2
+    assert calls == {
+        "boundary_path": Path("boundary.shp"),
+        "analysis_joined_csv": Path("analysis_joined.csv"),
+        "output_dir": tmp_path / "spatial_outputs",
+        "analysis_dir": tmp_path / "analysis",
+        "boundary_key": "FIPS",
+        "analysis_key": "gc_unit_id",
+        "output_stem": "county_open_gis",
+        "formats": ("gpkg", "geojson"),
+        "states_path": Path("states.shp"),
+        "map_field": "gc_target_70_exposure_change",
+    }

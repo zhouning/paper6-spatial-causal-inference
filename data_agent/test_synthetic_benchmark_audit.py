@@ -92,3 +92,57 @@ def test_synthetic_benchmark_audit_includes_settings_variants_and_report(tmp_pat
     assert "Strongest Rows" in report
     assert "PSM" in report
     assert "GCCM" in report
+
+
+def test_synthetic_fragility_prefers_robust_variant_without_hiding_diagnostics():
+    from data_agent.experiments.synthetic_benchmark_audit import (
+        summarize_audit_details,
+        summarize_fragility,
+    )
+
+    details = []
+    for seed in range(5):
+        details.append(
+            {
+                "scenario": "PSM",
+                "setting": "baseline",
+                "stress_level": "baseline",
+                "variant": "standard",
+                "method": "propensity_score_matching",
+                "seed": seed,
+                "status": "ok",
+                "metric_name": "att",
+                "true_value": 100.0,
+                "estimate": 180.0 + seed,
+                "ci_lower": 170.0,
+                "ci_upper": 190.0,
+                "covered": False,
+            }
+        )
+        details.append(
+            {
+                "scenario": "PSM",
+                "setting": "baseline",
+                "stress_level": "baseline",
+                "variant": "ols_adjusted",
+                "method": "ols_adjusted",
+                "seed": seed,
+                "status": "ok",
+                "metric_name": "ate",
+                "true_value": 100.0,
+                "estimate": 101.0,
+                "ci_lower": 95.0,
+                "ci_upper": 105.0,
+                "covered": True,
+            }
+        )
+
+    summary = summarize_audit_details(details)
+    scenario_summary = summarize_fragility(summary)
+
+    psm = scenario_summary.loc[scenario_summary["scenario"] == "PSM"].iloc[0]
+    assert psm["n_fragile"] == 1
+    assert psm["preferred_variant"] == "ols_adjusted"
+    assert psm["preferred_fragility"] == "robust"
+    assert psm["preferred_fragile_rows"] == 0
+    assert psm["diagnostic_fragile_rows"] == 1

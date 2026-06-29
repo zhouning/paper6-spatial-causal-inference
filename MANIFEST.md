@@ -14,6 +14,7 @@ Created from the author's local Paper6 workspace on 2026-06-07 for Paper6 review
 - historical diagnostic outputs referenced by JSON files: `data_agent/uploads/anonymous/`
 - public county example shapefiles: `data/CountyData.*`, `data/States.*`
 - public/example county social-capital CSV: `examples/data/county_social_capital.csv`
+- original small example inputs used by the SCCA reproduction commands: `examples/data/county/CountyData_TableToExcel.xlsx`, `examples/data/snow8/subdistricts.csv`, and `examples/data/snow1/deaths_nd_by_house.csv`
 - case-study, AlphaEarth validation, and local AlphaEarth encoder helper scripts: `scripts/`
 - supporting technical notes: `docs/background/`
 - small demos: `demos/`

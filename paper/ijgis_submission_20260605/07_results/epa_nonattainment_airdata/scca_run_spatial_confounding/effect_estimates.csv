@@ -1,0 +1,5 @@
+estimator,status,coef,se,p_value,ci_lower,ci_upper,r_squared,n,complete_n,dropped_n,warnings,neighbor_exposure_coef,neighbor_exposure_p_value,baseline_exposure_coef,coef_delta,relative_change,sign_stable
+baseline_adjusted_ols,unstable,-0.999999999972544,6.849513981933099e-11,0.0,-1.0000000001068252,-0.9999999998382626,1.0,4880,4880.0,0,['Design matrix rank is lower than the number of columns.'],,,,,,
+difference_outcome_ols,unstable,-1.000000000026422,7.343256174427226e-11,0.0,-1.0000000001703828,-0.999999999882461,1.0,4880,4880.0,0,['Design matrix rank is lower than the number of columns.'],,,,,,
+generalized_propensity_erf,ok,-0.7348943915398296,0.0859365334309167,,-0.903368704911085,-0.5664200781685746,,4880,,0,,,,,,,
+spatial_neighbor_adjusted_ols,ok,-0.9999999999195457,,,,,1.0,4880,4880.0,0,[],5.542388770152229e-11,0.3444828695187284,-0.999999999972544,5.299827243732125e-11,5.299827243877637e-11,True

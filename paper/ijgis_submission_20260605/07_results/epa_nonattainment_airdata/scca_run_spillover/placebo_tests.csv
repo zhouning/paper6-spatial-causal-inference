@@ -1,0 +1,2 @@
+case,test_name,exposure,role,expected_relation,estimator,coef,se,p_value,ci_lower,ci_upper,n,status,interpretation
+epa_nonattainment_airdata,neighbor_nonattainment_lag1,neighbor_nonattainment_lag1,spatial_neighbor_exposure,weaker_than_main,baseline_adjusted_ols,-1.5124692195621476,0.006987606998526737,0.0,-1.5261680787549075,-1.4987703603693878,4880,unstable,not_estimable

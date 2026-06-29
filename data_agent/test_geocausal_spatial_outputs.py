@@ -76,6 +76,17 @@ def test_build_spatial_analysis_outputs_writes_spatial_files_and_visuals(tmp_pat
         ),
         encoding="utf-8",
     )
+    (analysis_dir / "manifest.json").write_text(
+        json.dumps(
+            {
+                "case_name": "county_analysis_smoke",
+                "evidence_grade": "core_support",
+                "credibility_decision": "strong_support",
+                "robustness_interpretation": "robust_support",
+            }
+        ),
+        encoding="utf-8",
+    )
     pd.DataFrame(
         {
             "unit_id": ["01001", "01003", "01005"],
@@ -127,3 +138,16 @@ def test_build_spatial_analysis_outputs_writes_spatial_files_and_visuals(tmp_pat
     assert spatial_joined["gc_spatial_indirect_effect"].notna().sum() == 3
     qml_text = Path(manifest["qgis_styles"]["spatial_indirect_effect_qml"]).read_text(encoding="utf-8")
     assert "gc_spatial_indirect_effect" in qml_text
+
+    report_path = Path(manifest["open_report"])
+    assert report_path.exists()
+    report_text = report_path.read_text(encoding="utf-8")
+    assert "GeoCausal Open Spatial Report" in report_text
+    assert "Matched analysis units" in report_text
+    assert "Evidence grade" in report_text
+    assert "core_support" in report_text
+    assert "county_analysis_smoke.gpkg" in report_text
+    assert "target_exposure_change_map.html" in report_text
+    assert "<iframe" in report_text
+    assert "<img" in report_text
+    assert "erf_curve.png" in report_text

@@ -148,3 +148,73 @@ def test_synthetic_multiseed_extended_variants_add_sensitivity_rows(tmp_path):
         "ols_adjusted",
     }
     assert gccm_variants == {"standard", "knn_k2", "queen"}
+
+
+def test_gccm_direction_accuracy_uses_rho_dominance_when_both_converge():
+    from data_agent.experiments.synthetic_multiseed import _gccm_direction_accuracy
+
+    result = {
+        "x_causes_y_converges": True,
+        "y_causes_x_converges": True,
+        "x_causes_y_rho": 0.801,
+        "y_causes_x_rho": 0.798,
+    }
+
+    assert _gccm_direction_accuracy(result) == 1.0
+
+
+def test_gccm_direction_accuracy_rejects_reverse_rho_dominance():
+    from data_agent.experiments.synthetic_multiseed import _gccm_direction_accuracy
+
+    result = {
+        "x_causes_y_converges": True,
+        "y_causes_x_converges": True,
+        "x_causes_y_rho": 0.790,
+        "y_causes_x_rho": 0.810,
+    }
+
+    assert _gccm_direction_accuracy(result) == 0.0
+
+
+def test_gccm_direction_accuracy_supports_saved_details_without_convergence_flags():
+    from data_agent.experiments.synthetic_multiseed import _gccm_direction_accuracy
+
+    saved_detail = {
+        "x_causes_y_rho": 0.801,
+        "y_causes_x_rho": 0.798,
+    }
+
+    assert _gccm_direction_accuracy(saved_detail) == 1.0
+
+
+def test_granger_direction_accuracy_keeps_strict_raw_direction():
+    from data_agent.experiments.synthetic_multiseed import _granger_direction_accuracy
+
+    assert _granger_direction_accuracy(
+        forward_significant=True,
+        reverse_significant=False,
+        differenced_forward_p=0.20,
+        differenced_reverse_p=0.10,
+    ) == 1.0
+
+
+def test_granger_direction_accuracy_uses_differenced_p_dominance_fallback():
+    from data_agent.experiments.synthetic_multiseed import _granger_direction_accuracy
+
+    assert _granger_direction_accuracy(
+        forward_significant=False,
+        reverse_significant=False,
+        differenced_forward_p=0.20,
+        differenced_reverse_p=0.40,
+    ) == 1.0
+
+
+def test_granger_direction_accuracy_rejects_reverse_differenced_dominance():
+    from data_agent.experiments.synthetic_multiseed import _granger_direction_accuracy
+
+    assert _granger_direction_accuracy(
+        forward_significant=False,
+        reverse_significant=False,
+        differenced_forward_p=0.40,
+        differenced_reverse_p=0.20,
+    ) == 0.0

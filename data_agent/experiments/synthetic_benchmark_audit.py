@@ -566,6 +566,72 @@ def summarize_audit_details(details: list[dict[str, Any]]) -> pd.DataFrame:
     ).reset_index(drop=True)
 
 
+def _variant_fragility_label(counts: pd.Series) -> str:
+    if int(counts.get("fragile", 0)) > 0:
+        return "fragile"
+    if int(counts.get("bounded", 0)) > 0:
+        return "bounded"
+    if int(counts.get("robust", 0)) > 0:
+        return "robust"
+    return "missing"
+
+
+def _preferred_variant_summary(group: pd.DataFrame) -> dict[str, Any]:
+    candidates: list[dict[str, Any]] = []
+    for variant, variant_group in group.groupby("variant", dropna=False):
+        counts = variant_group["fragility"].value_counts()
+        scores = pd.to_numeric(variant_group["score"], errors="coerce").dropna()
+        min_score = float(scores.min()) if len(scores) else np.nan
+        mean_score = float(scores.mean()) if len(scores) else np.nan
+        candidates.append(
+            {
+                "variant": str(variant),
+                "n_rows": int(len(variant_group)),
+                "n_robust": int(counts.get("robust", 0)),
+                "n_bounded": int(counts.get("bounded", 0)),
+                "n_fragile": int(counts.get("fragile", 0)),
+                "fragility": _variant_fragility_label(counts),
+                "min_score": min_score,
+                "mean_score": mean_score,
+            }
+        )
+
+    if not candidates:
+        return {
+            "preferred_variant": "",
+            "preferred_fragility": "missing",
+            "preferred_rows": 0,
+            "preferred_robust_rows": 0,
+            "preferred_bounded_rows": 0,
+            "preferred_fragile_rows": 0,
+            "preferred_min_score": np.nan,
+            "preferred_mean_score": np.nan,
+        }
+
+    def _sort_key(candidate: dict[str, Any]) -> tuple[float, float, float, float, str]:
+        min_score = candidate["min_score"] if math.isfinite(candidate["min_score"]) else -math.inf
+        mean_score = candidate["mean_score"] if math.isfinite(candidate["mean_score"]) else -math.inf
+        return (
+            float(candidate["n_fragile"]),
+            -float(candidate["n_robust"]),
+            -float(min_score),
+            -float(mean_score),
+            candidate["variant"],
+        )
+
+    preferred = min(candidates, key=_sort_key)
+    return {
+        "preferred_variant": preferred["variant"],
+        "preferred_fragility": preferred["fragility"],
+        "preferred_rows": preferred["n_rows"],
+        "preferred_robust_rows": preferred["n_robust"],
+        "preferred_bounded_rows": preferred["n_bounded"],
+        "preferred_fragile_rows": preferred["n_fragile"],
+        "preferred_min_score": preferred["min_score"],
+        "preferred_mean_score": preferred["mean_score"],
+    }
+
+
 def summarize_fragility(summary: pd.DataFrame) -> pd.DataFrame:
     if summary.empty:
         return pd.DataFrame()
@@ -573,19 +639,24 @@ def summarize_fragility(summary: pd.DataFrame) -> pd.DataFrame:
     rows = []
     for scenario, group in summary.groupby("scenario", dropna=False):
         counts = group["fragility"].value_counts()
+        preferred = _preferred_variant_summary(group)
+        n_fragile = int(counts.get("fragile", 0))
         rows.append(
             {
                 "scenario": scenario,
                 "n_summary_rows": int(len(group)),
                 "n_robust": int(counts.get("robust", 0)),
                 "n_bounded": int(counts.get("bounded", 0)),
-                "n_fragile": int(counts.get("fragile", 0)),
+                "n_fragile": n_fragile,
                 "min_score": float(group["score"].min()),
                 "max_score": float(group["score"].max()),
+                **preferred,
+                "diagnostic_fragile_rows": max(
+                    n_fragile - int(preferred["preferred_fragile_rows"]), 0
+                ),
             }
         )
     return pd.DataFrame(rows).sort_values("scenario").reset_index(drop=True)
-
 
 def _format_row_brief(row: pd.Series) -> str:
     return (
@@ -609,9 +680,11 @@ def render_audit_report(summary: pd.DataFrame, scenario_summary: pd.DataFrame) -
         lines.append(
             f"- `{row['scenario']}`: robust={int(row['n_robust'])}, "
             f"bounded={int(row['n_bounded'])}, fragile={int(row['n_fragile'])}, "
+            f"preferred=`{row['preferred_variant']}`/{row['preferred_fragility']}, "
+            f"preferred_fragile={int(row['preferred_fragile_rows'])}, "
+            f"diagnostic_fragile={int(row['diagnostic_fragile_rows'])}, "
             f"score_range=[{row['min_score']:.2f}, {row['max_score']:.2f}]"
         )
-
     fragile = summary.sort_values("score", ascending=True).head(8)
     strongest = summary.sort_values("score", ascending=False).head(8)
 

@@ -3,13 +3,10 @@ from __future__ import annotations
 import csv
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from geocausal.adapters import (
-    AnalysisRequest,
-    build_analysis_joined_table,
-    run_scca_analysis,
-)
+if TYPE_CHECKING:
+    from geocausal.adapters import AnalysisRequest
 
 
 @dataclass(frozen=True)
@@ -58,6 +55,17 @@ class GeoCausalSCCAAlgorithm:
     OUTPUT_MANIFEST = "OUTPUT_MANIFEST"
     OUTPUT_REPORT = "OUTPUT_REPORT"
     OUTPUT_RESULT_SUMMARY = "OUTPUT_RESULT_SUMMARY"
+    OUTPUT_OPEN_GIS_PACKAGE = "OUTPUT_OPEN_GIS_PACKAGE"
+    OUTPUT_OPEN_GIS_JOINED = "OUTPUT_OPEN_GIS_ANALYSIS_JOINED"
+    OUTPUT_OPEN_GIS_BALANCE = "OUTPUT_OPEN_GIS_BALANCE_SUMMARY"
+    OUTPUT_OPEN_GIS_ERF_200 = "OUTPUT_OPEN_GIS_ERF_200"
+    OUTPUT_OPEN_GIS_PREFERRED_ERF_200 = "OUTPUT_OPEN_GIS_PREFERRED_ERF_200"
+    OUTPUT_OPEN_GIS_ARCGIS_STYLE_ERF_200 = "OUTPUT_OPEN_GIS_ARCGIS_STYLE_ERF_200"
+    OUTPUT_OPEN_GIS_ARCGIS_STYLE_GRID = "OUTPUT_OPEN_GIS_ARCGIS_STYLE_GRID"
+    OUTPUT_OPEN_GIS_ARCGIS_STYLE_BALANCE = "OUTPUT_OPEN_GIS_ARCGIS_STYLE_BALANCE"
+    OUTPUT_OPEN_GIS_ARCGIS_STYLE_CALIBRATED_BALANCE = "OUTPUT_OPEN_GIS_ARCGIS_STYLE_CALIBRATED_BALANCE"
+    OUTPUT_OPEN_GIS_SUMMARY_JSON = "OUTPUT_OPEN_GIS_SUMMARY_JSON"
+    OUTPUT_OPEN_GIS_SUMMARY_MD = "OUTPUT_OPEN_GIS_SUMMARY_MD"
 
     def name(self) -> str:
         return "geocausal_scca"
@@ -167,7 +175,9 @@ class GeoCausalSCCAAlgorithm:
                 writer.writerow(row)
         return output_csv, coordinate_columns
 
-    def create_request(self, run_request: QGISRunRequest) -> AnalysisRequest:
+    def create_request(self, run_request: QGISRunRequest) -> "AnalysisRequest":
+        from geocausal.adapters import AnalysisRequest
+
         return AnalysisRequest(
             case_name=run_request.case_name,
             input_path=run_request.input_csv,
@@ -189,6 +199,8 @@ class GeoCausalSCCAAlgorithm:
         )
 
     def run_from_csv(self, run_request: QGISRunRequest) -> dict[str, object]:
+        from geocausal.adapters import build_analysis_joined_table, run_scca_analysis
+
         request = self.create_request(run_request)
         manifest = run_scca_analysis(request)
         target_file = manifest.get("files", {}).get("target_exposures")
@@ -200,6 +212,42 @@ class GeoCausalSCCAAlgorithm:
                 unit_id_field=run_request.unit_id_field,
             )
         return manifest
+
+    @classmethod
+    def open_gis_package_outputs(cls, output_dir: Path, manifest: dict[str, object]) -> dict[str, str]:
+        package = manifest.get("open_gis_package")
+        package_data = package if isinstance(package, dict) else {}
+        generated = package_data.get("generated_files")
+        generated_files = generated if isinstance(generated, dict) else {}
+        package_dir = output_dir / str(package_data.get("package_dir") or "open_gis_analysis_package")
+
+        def generated_path(key: str, default_name: str) -> str:
+            return str(package_dir / str(generated_files.get(key) or default_name))
+
+        return {
+            cls.OUTPUT_OPEN_GIS_PACKAGE: str(package_dir),
+            cls.OUTPUT_OPEN_GIS_JOINED: generated_path("analysis_joined", "analysis_joined.csv"),
+            cls.OUTPUT_OPEN_GIS_BALANCE: generated_path("gis_balance_summary", "gis_balance_summary.csv"),
+            cls.OUTPUT_OPEN_GIS_ERF_200: generated_path("gis_erf_curve_200", "gis_erf_curve_200.csv"),
+            cls.OUTPUT_OPEN_GIS_PREFERRED_ERF_200: generated_path(
+                "gis_preferred_erf_curve_200", "gis_preferred_erf_curve_200.csv"
+            ),
+            cls.OUTPUT_OPEN_GIS_ARCGIS_STYLE_ERF_200: generated_path(
+                "gis_arcgis_style_erf_curve_200", "gis_arcgis_style_erf_curve_200.csv"
+            ),
+            cls.OUTPUT_OPEN_GIS_ARCGIS_STYLE_GRID: generated_path(
+                "arcgis_style_matching_grid", "arcgis_style_matching_grid.csv"
+            ),
+            cls.OUTPUT_OPEN_GIS_ARCGIS_STYLE_BALANCE: generated_path(
+                "arcgis_style_balance_summary", "arcgis_style_balance_summary.csv"
+            ),
+            cls.OUTPUT_OPEN_GIS_ARCGIS_STYLE_CALIBRATED_BALANCE: generated_path(
+                "arcgis_style_calibrated_balance_summary",
+                "arcgis_style_calibrated_balance_summary.csv",
+            ),
+            cls.OUTPUT_OPEN_GIS_SUMMARY_JSON: generated_path("gis_run_summary_json", "gis_run_summary.json"),
+            cls.OUTPUT_OPEN_GIS_SUMMARY_MD: generated_path("gis_run_summary_markdown", "gis_run_summary.md"),
+        }
 
     def run_from_parameters(self, parameters: dict[str, Any]) -> dict[str, object]:
         output_dir = Path(str(parameters[self.PARAM_OUTPUT_FOLDER]))
@@ -300,6 +348,17 @@ class GeoCausalSCCAAlgorithm:
                 self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_REPORT, "Analysis Report"))
                 self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_RESULT_SUMMARY, "Result Summary"))
                 self.addOutput(QgsProcessingOutputFile(cls.PARAM_OUTPUT_JOINED, "Analysis Joined CSV"))
+                self.addOutput(QgsProcessingOutputFolder(cls.OUTPUT_OPEN_GIS_PACKAGE, "Open GIS Package Folder"))
+                self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_JOINED, "Open GIS Analysis Joined CSV"))
+                self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_BALANCE, "Open GIS Balance Summary CSV"))
+                self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_ERF_200, "Open GIS ERF 200 CSV"))
+                self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_PREFERRED_ERF_200, "Open GIS Preferred ERF 200 CSV"))
+                self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_ARCGIS_STYLE_ERF_200, "Open GIS ArcGIS-style ERF 200 CSV"))
+                self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_ARCGIS_STYLE_GRID, "Open GIS ArcGIS-style Matching Grid CSV"))
+                self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_ARCGIS_STYLE_BALANCE, "Open GIS ArcGIS-style Balance CSV"))
+                self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_ARCGIS_STYLE_CALIBRATED_BALANCE, "Open GIS Calibrated Balance CSV"))
+                self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_SUMMARY_JSON, "Open GIS Summary JSON"))
+                self.addOutput(QgsProcessingOutputFile(cls.OUTPUT_OPEN_GIS_SUMMARY_MD, "Open GIS Summary Markdown"))
 
             def processAlgorithm(self, parameters, context, feedback):
                 source = self.parameterAsSource(parameters, cls.PARAM_INPUT, context)
@@ -357,6 +416,7 @@ class GeoCausalSCCAAlgorithm:
                     cls.OUTPUT_REPORT: str(output_dir / manifest["files"]["analysis_report"]),
                     cls.OUTPUT_RESULT_SUMMARY: str(output_dir / manifest["files"]["result_summary_markdown"]),
                 }
+                result.update(cls.open_gis_package_outputs(output_dir, manifest))
                 joined_path = output_dir / "analysis_joined.csv"
                 result[cls.PARAM_OUTPUT_JOINED] = str(joined_path) if joined_path.exists() else ""
                 return result

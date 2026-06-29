@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+from html import escape as html_escape
 import re
 from pathlib import Path
 from typing import Any, Iterable
@@ -794,6 +795,183 @@ def write_analysis_visualizations(
     return outputs
 
 
+def _report_href(path_value: str, output_dir: Path) -> str:
+    path = Path(path_value)
+    try:
+        return path.resolve().relative_to(output_dir.resolve()).as_posix()
+    except (OSError, ValueError):
+        return path.as_posix()
+
+
+def _report_link_rows(files: dict[str, str], output_dir: Path) -> str:
+    rows: list[str] = []
+    for key, path_value in sorted(files.items()):
+        href = _report_href(path_value, output_dir)
+        label = Path(path_value).name or str(path_value)
+        rows.append(
+            "<tr>"
+            f"<td>{html_escape(key)}</td>"
+            f"<td><a href=\"{html_escape(href)}\">{html_escape(label)}</a></td>"
+            "</tr>"
+        )
+    return "\n".join(rows) if rows else "<tr><td colspan=\"2\">No files generated.</td></tr>"
+
+
+def _report_analysis_manifest(spatial_manifest: dict[str, Any]) -> dict[str, Any]:
+    analysis_dir = spatial_manifest.get("analysis_dir")
+    if not analysis_dir:
+        return {}
+    return _load_json_if_exists(Path(str(analysis_dir)) / "manifest.json")
+
+
+def _report_evidence_cards(analysis_manifest: dict[str, Any]) -> str:
+    evidence_fields = (
+        ("case_name", "Case name"),
+        ("evidence_grade", "Evidence grade"),
+        ("credibility_decision", "Credibility decision"),
+        ("robustness_interpretation", "Robustness interpretation"),
+    )
+    cards: list[str] = []
+    for key, label in evidence_fields:
+        value = analysis_manifest.get(key)
+        if value is None or value == "":
+            continue
+        cards.append(
+            "<div class=\"metric evidence-metric\">"
+            f"{html_escape(label)}<strong>{html_escape(str(value))}</strong>"
+            "</div>"
+        )
+    if not cards:
+        return ""
+    return (
+        "<section><h2>Evidence summary</h2>"
+        "<div class=\"summary evidence-summary\">"
+        f"{''.join(cards)}"
+        "</div></section>"
+    )
+
+
+def _report_image_previews(visualizations: dict[str, str], output_dir: Path) -> str:
+    preview_fields = (
+        ("erf_curve_png", "Exposure-response curve"),
+        ("effect_estimates_png", "Effect estimates"),
+        ("spatial_slx_effects_png", "Spatial spillover effects"),
+        ("target_exposure_change_histogram_png", "Exposure change distribution"),
+        ("target_exposure_change_map_png", "Target exposure change map"),
+        ("spatial_indirect_effect_map_png", "Spatial indirect effect map"),
+    )
+    figures: list[str] = []
+    for key, title in preview_fields:
+        path_value = visualizations.get(key)
+        if not path_value:
+            continue
+        href = _report_href(path_value, output_dir)
+        filename = Path(path_value).name or str(path_value)
+        figures.append(
+            "<figure>"
+            f"<a href=\"{html_escape(href)}\"><img src=\"{html_escape(href)}\" "
+            f"alt=\"{html_escape(title)}\"></a>"
+            f"<figcaption>{html_escape(title)} "
+            f"<span>{html_escape(filename)}</span></figcaption>"
+            "</figure>"
+        )
+    if not figures:
+        return ""
+    return (
+        "<section><h2>Image previews</h2>"
+        "<div class=\"preview-grid\">"
+        f"{''.join(figures)}"
+        "</div></section>"
+    )
+
+
+def _report_map_preview(visualizations: dict[str, str], output_dir: Path) -> str:
+    path_value = visualizations.get("target_exposure_change_map_html")
+    title = "Interactive target exposure change map"
+    if not path_value:
+        path_value = visualizations.get("spatial_indirect_effect_map_html")
+        title = "Interactive spatial indirect effect map"
+    if not path_value:
+        return ""
+    href = _report_href(path_value, output_dir)
+    label = Path(path_value).name or str(path_value)
+    return (
+        "<section><h2>Interactive map</h2>"
+        "<div class=\"map-preview\">"
+        f"<iframe src=\"{html_escape(href)}\" title=\"{html_escape(title)}\"></iframe>"
+        f"<p><a href=\"{html_escape(href)}\">Open {html_escape(label)}</a></p>"
+        "</div></section>"
+    )
+
+
+def write_open_spatial_report(*, output_dir: str | Path, manifest: dict[str, Any]) -> str:
+    output_dir = Path(output_dir)
+    report_path = output_dir / "open_gis_spatial_report.html"
+    analysis_manifest = _report_analysis_manifest(manifest)
+    visualizations = {k: v for k, v in manifest.get("visualizations", {}).items() if v}
+    sections = {
+        "Spatial files": manifest.get("spatial_files", {}),
+        "Visualizations": visualizations,
+        "QGIS styles": manifest.get("qgis_styles", {}),
+        "Manifest": {"spatial_output_manifest": manifest.get("manifest", "")},
+    }
+    section_html = []
+    for title, files in sections.items():
+        section_html.append(
+            f"<section><h2>{html_escape(title)}</h2>"
+            "<table><thead><tr><th>Output</th><th>File</th></tr></thead><tbody>"
+            f"{_report_link_rows({k: v for k, v in files.items() if v}, output_dir)}"
+            "</tbody></table></section>"
+        )
+    html = f"""<!doctype html>
+<html lang=\"en\">
+<head>
+  <meta charset=\"utf-8\">
+  <title>GeoCausal Open Spatial Report</title>
+  <style>
+    body {{ font-family: Arial, sans-serif; margin: 32px; color: #1f2933; }}
+    header {{ border-bottom: 1px solid #d5dbe3; margin-bottom: 24px; padding-bottom: 16px; }}
+    h1 {{ margin: 0 0 8px; font-size: 28px; }}
+    h2 {{ margin-top: 28px; font-size: 20px; }}
+    .summary {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }}
+    .metric {{ border: 1px solid #d5dbe3; padding: 12px; }}
+    .metric strong {{ display: block; font-size: 22px; margin-top: 4px; }}
+    .evidence-metric strong {{ font-size: 18px; }}
+    .preview-grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }}
+    figure {{ border: 1px solid #d5dbe3; margin: 0; padding: 10px; }}
+    img {{ display: block; width: 100%; height: auto; }}
+    figcaption {{ font-weight: 700; margin-top: 8px; }}
+    figcaption span {{ color: #52616b; display: block; font-size: 12px; font-weight: 400; margin-top: 2px; }}
+    .map-preview {{ border: 1px solid #d5dbe3; padding: 10px; }}
+    iframe {{ border: 0; display: block; height: 520px; width: 100%; }}
+    table {{ border-collapse: collapse; width: 100%; }}
+    th, td {{ border: 1px solid #d5dbe3; padding: 8px 10px; text-align: left; }}
+    th {{ background: #f3f6f8; }}
+    a {{ color: #155e75; }}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>GeoCausal Open Spatial Report</h1>
+    <p>Open GIS deliverables generated without ArcGIS.</p>
+  </header>
+  <section class=\"summary\">
+    <div class=\"metric\">Spatial units<strong>{html_escape(str(manifest.get("row_count", "")))}</strong></div>
+    <div class=\"metric\">Matched analysis units<strong>{html_escape(str(manifest.get("matched_count", "")))}</strong></div>
+    <div class=\"metric\">Map field<strong>{html_escape(str(manifest.get("map_field", "")))}</strong></div>
+    <div class=\"metric\">CRS<strong>{html_escape(str(manifest.get("crs", "")))}</strong></div>
+  </section>
+  {_report_evidence_cards(analysis_manifest)}
+  {_report_map_preview(visualizations, output_dir)}
+  {_report_image_previews(visualizations, output_dir)}
+  {chr(10).join(section_html)}
+</body>
+</html>
+"""
+    report_path.write_text(html, encoding="utf-8")
+    return str(report_path)
+
+
 def build_spatial_analysis_outputs(
     *,
     boundary_path: str | Path,
@@ -864,6 +1042,10 @@ def build_spatial_analysis_outputs(
         "qgis_styles": qgis_styles,
     }
     manifest_path = output_dir / "spatial_output_manifest.json"
-    _write_json(manifest_path, manifest)
     manifest["manifest"] = str(manifest_path)
+    manifest["open_report"] = write_open_spatial_report(
+        output_dir=output_dir,
+        manifest=manifest,
+    )
+    _write_json(manifest_path, manifest)
     return manifest

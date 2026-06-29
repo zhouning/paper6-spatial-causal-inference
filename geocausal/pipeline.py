@@ -44,6 +44,7 @@ from . import __version__
 from .config import GeoCausalConfig, validate_config
 from .errors import GeoCausalConfigError, GeoCausalPipelineError
 from .io import LoadedDataset, load_dataset
+from .open_gis import PACKAGE_DIR_NAME, write_open_gis_package
 
 
 def _json_ready(value: object) -> object:
@@ -390,6 +391,8 @@ def _write_target_exposures(
 def _write_geocausal_manifest(
     config: GeoCausalConfig,
     loaded: LoadedDataset,
+    features: pd.DataFrame,
+    spec: Any,
     paths: SCCAPaths,
     credibility: dict[str, Any],
     robustness_manifest: dict[str, Any],
@@ -479,6 +482,20 @@ def _write_geocausal_manifest(
         "warnings": warnings,
         "files": files,
     }
+    open_gis_package = write_open_gis_package(
+        config=config,
+        features=features,
+        spec=spec,
+        paths=paths,
+        manifest=manifest,
+    )
+    files["open_gis_analysis_package"] = PACKAGE_DIR_NAME
+    manifest["open_gis_package"] = open_gis_package
+    if open_gis_package.get("warnings"):
+        manifest["warnings"] = list(
+            dict.fromkeys([*manifest.get("warnings", []), *open_gis_package["warnings"]])
+        )
+
     write_result_summary_markdown(
         paths,
         title=str(config.case_name),
@@ -580,7 +597,16 @@ def run_analysis(config: GeoCausalConfig) -> dict[str, Any]:
             bootstrap_summary=bootstrap_summary,
             erf_summary=erf_summary,
         )
-        return _write_geocausal_manifest(config, loaded, paths, credibility, robustness_manifest, warnings)
+        return _write_geocausal_manifest(
+            config,
+            loaded,
+            features,
+            spec,
+            paths,
+            credibility,
+            robustness_manifest,
+            warnings,
+        )
     except GeoCausalConfigError:
         raise
     except Exception as exc:

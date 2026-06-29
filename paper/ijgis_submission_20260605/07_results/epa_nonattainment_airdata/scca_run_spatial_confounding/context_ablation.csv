@@ -1,0 +1,5 @@
+case,specification,estimator,coef,se,p_value,ci_lower,ci_upper,r_squared,n,included_columns,status
+epa_nonattainment_airdata,exposure_only,baseline_adjusted_ols,-1.9336474396716614,0.06920921625397292,1.788539026735153e-159,-2.0693286769969266,-1.7979662023463963,0.13794881650025204,4880,nonattainment_lag1,ok
+epa_nonattainment_airdata,confounders_only,baseline_adjusted_ols,-1.043747016585887,0.006320593564575848,0.0,-1.0561382281786669,-1.0313558049931073,0.9945864002061527,4880,"nonattainment_lag1,baseline_annual_mean,monitor_count,year_index",unstable
+epa_nonattainment_airdata,context_only,baseline_adjusted_ols,-0.9795438556012324,0.003635950325782759,0.0,-0.9866719570464437,-0.972415754156021,0.9996243429653207,4880,"nonattainment_lag1,x,y,neighbor_nonattainment_lag1",ok
+epa_nonattainment_airdata,confounders_plus_context,baseline_adjusted_ols,-0.999999999972544,6.849513981933099e-11,0.0,-1.0000000001068252,-0.9999999998382626,1.0,4880,"nonattainment_lag1,baseline_annual_mean,monitor_count,year_index,x,y,neighbor_nonattainment_lag1",unstable

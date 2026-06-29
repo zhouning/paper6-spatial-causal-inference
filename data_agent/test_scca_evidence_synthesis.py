@@ -91,6 +91,7 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
     expected_cases = {
         "synthetic_benchmark_audit",
         "chongqing_uhi",
+        "epa_nonattainment_airdata",
         "county_social_capital_spatial_notebook",
     }
     assert set(synthesis["case"]) == expected_cases

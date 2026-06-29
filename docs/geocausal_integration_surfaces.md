@@ -41,6 +41,24 @@ summaries, SLX direct/indirect/total effect summaries, exposure-mapping
 summaries, `manifest.json`, and `result_summary.md` when those diagnostics are
 estimable from the supplied data.
 
+The shared core also writes an Open GIS analysis package for ArcGIS-free use:
+`open_gis_analysis_package/analysis_joined.csv`,
+`open_gis_analysis_package/gis_balance_summary.csv`,
+`open_gis_analysis_package/gis_erf_curve_200.csv`,
+`open_gis_analysis_package/gis_arcgis_style_erf_curve_200.csv`,
+`open_gis_analysis_package/arcgis_style_matching_grid.csv`,
+`open_gis_analysis_package/arcgis_style_balance_summary.csv`,
+`open_gis_analysis_package/arcgis_style_calibrated_balance_summary.csv`,
+`open_gis_analysis_package/gis_run_summary.json`, and
+`open_gis_analysis_package/gis_run_summary.md`. These files expose retained
+analysis rows, generalized propensity scores, balancing weights, ArcGIS-style
+count matching, calibrated balance summaries, the default 200-point exposure-response
+curve, an ArcGIS-style count-weighted kernel ERF benchmark, spatial diagnostics,
+and evidence grading through ordinary
+CSV/JSON/Markdown outputs. ArcGIS Pro is an optional adapter, not a runtime
+dependency for the causal evidence package. The ArcGIS-free quickstart and
+acceptance checklist are maintained in `docs/open_gis_analysis_package.md`.
+
 ## Notebook Use
 
 Notebook users can prepare a CSV or GeoPackage, construct `AnalysisRequest`, and
@@ -111,9 +129,10 @@ spatial_manifest = build_spatial_analysis_outputs(
 ```
 
 This writes GeoPackage, GeoJSON, Shapefile, chart PNGs, a static choropleth PNG,
-and an interactive Folium HTML map. GeoPackage and GeoJSON preserve long analysis
-field names; Shapefile output is compatibility-only because DBF field names are
-limited to 10 characters.
+and an interactive Folium HTML map. The same builder is available from the CLI
+through `python -m geocausal.cli spatial-package ...`, including `open_gis_spatial_report.html` as a browser entry point with evidence fields, embedded image previews, and an embedded Folium map. GeoPackage and GeoJSON
+preserve long analysis field names; Shapefile output is compatibility-only
+because DBF field names are limited to 10 characters.
 
 When target outcomes are configured, notebook users can also build a one-row-per-
 unit joined analysis table from the original input and `target_exposures.csv`:
@@ -141,6 +160,12 @@ The toolbox only handles ArcGIS UI parameters, ArcPy data export, and optional
 copying of CSV outputs back to ArcGIS tables. It delegates algorithm execution to
 `geocausal.adapters.AnalysisRequest` and reuses the same
 `build_analysis_joined_table` helper to create an ArcGIS-ready analysis table.
+
+For direct comparison against Esri's built-in Causal Inference Analysis tool,
+run `python -m geocausal.cli arcgis-causal` through ArcGIS Pro `propy.bat`. The
+benchmark wrapper and county smoke command are documented in
+`docs/arcgis_builtin_causal_benchmark.md`.
+
 It also validates requested fields before opening the ArcPy cursor and reports
 the core spatial-diagnostic and SLX summaries in the geoprocessing messages.
 
@@ -154,6 +179,24 @@ For a reproducible toolbox smoke test, import
 `examples/data/county_social_capital.csv` into a file geodatabase table and use
 the fields documented in `examples/data/README.md`.
 
+
+### Commercial Benchmark Positioning
+
+The ArcGIS Pro toolbox is also the natural surface for benchmarking SCCA against
+ArcGIS Pro's Causal Inference Analysis tool. This comparison is a product
+positioning layer, not a second causal engine. ArcGIS defines the commercial
+baseline vocabulary: continuous exposure, outcome, confounders, exposure
+trimming, propensity scores, balancing weights, exposure-response functions, and
+target exposure or target outcome fields. SCCA should match those operational
+concepts where possible while preserving its own open output contract.
+
+The SCCA differentiators are the outputs ArcGIS-style causal tools usually do
+not foreground: residual Moran diagnostics, neighboring-exposure sensitivity,
+SLX-style spatial sensitivity, graph-sensitivity checks, spatial block
+bootstrap, and machine-readable evidence grades. The county social-capital case
+is the primary ArcGIS-facing parity benchmark because it exercises the same
+continuous-exposure workflow and records both ArcGIS-compatible sample
+accounting and SCCA-only spatial downgrades.
 ## QGIS Path
 
 The QGIS Processing provider follows the same adapter pattern:

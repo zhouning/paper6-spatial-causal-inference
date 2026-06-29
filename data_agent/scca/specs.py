@@ -118,6 +118,10 @@ class SCCAPaths:
         return self.output_dir / "model_diagnostics.json"
 
     @property
+    def generalized_propensity_scores(self) -> Path:
+        return self.output_dir / "generalized_propensity_scores.csv"
+
+    @property
     def balance_summary(self) -> Path:
         return self.output_dir / "balance_summary.csv"
 

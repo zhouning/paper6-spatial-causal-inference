@@ -1,0 +1,154 @@
+{
+  "decision": "weak_or_failed_support",
+  "reasons": [
+    "Exposure boundary mass is high (0.512).",
+    "Maximum exposure-balance correlation is high (0.915).",
+    "Leave-one-subgroup-out spatial robustness is not estimable.",
+    "Core estimator status is unstable: baseline_adjusted_ols, difference_outcome_ols.",
+    "Residual spatial autocorrelation detected (Moran's I=0.808, p=0.010)."
+  ],
+  "evidence_grade": "bounded_support",
+  "evidence_grade_rule_ids": [
+    "weak_credibility",
+    "high_exposure_balance_correlation",
+    "high_overlap_boundary_mass",
+    "material_residual_moran"
+  ],
+  "evidence_grade_reasons": [
+    "Credibility diagnostics indicate weak or failed support.",
+    "Maximum exposure-balance correlation exceeds the threshold (0.915 > 0.50).",
+    "Exposure boundary mass exceeds the threshold (0.512 > 0.25).",
+    "Residual spatial autocorrelation is both statistically significant and materially large (Moran's I=0.808, p=0.010)."
+  ],
+  "rule_version": "scca-evidence-grade-rules-2026-06-20",
+  "max_balance_corr": 0.9148508819249878,
+  "overlap_boundary_mass": 0.5116803278688524,
+  "leave_group_sign_stable": null,
+  "estimator_statuses": {
+    "baseline_adjusted_ols": "unstable",
+    "difference_outcome_ols": "unstable",
+    "generalized_propensity_erf": "ok"
+  },
+  "spatial_diagnostics": {
+    "status": "ok",
+    "graph": {
+      "method": "coordinate_knn",
+      "n_units": 4880,
+      "edge_count": 20740,
+      "average_degree": 8.5,
+      "max_degree": 19,
+      "isolate_count": 0,
+      "isolate_share": 0.0,
+      "warnings": [
+        "Coordinate graph used columns: x, y.",
+        "k=4."
+      ]
+    },
+    "residual_model": {
+      "status": "ok",
+      "n": 4880
+    },
+    "exposure_moran": {
+      "moran_i": -0.07945112125714242,
+      "expected_i": -0.00020496003279360525,
+      "n": 4880,
+      "s0": 41480,
+      "status": "ok",
+      "permutation_p_value": 0.01,
+      "n_permutations": 99
+    },
+    "residual_moran": {
+      "moran_i": 0.8077676099424554,
+      "expected_i": -0.00020496003279360525,
+      "n": 4880,
+      "s0": 41480,
+      "status": "ok",
+      "permutation_p_value": 0.01,
+      "n_permutations": 99
+    },
+    "neighbor_exposure_model": {
+      "status": "ok",
+      "n": 4880,
+      "exposure_coef": -0.9999999999195451,
+      "coef": 5.5423665656917365e-11,
+      "p_value": 0.36442321813708833,
+      "ci_lower": -6.434712560955632e-11,
+      "ci_upper": 1.7519445692339105e-10,
+      "r_squared": 1.0,
+      "spatial_adjustment_sensitivity": {
+        "baseline_exposure_coef": -0.9999999999564141,
+        "spatial_adjusted_exposure_coef": -0.9999999999195451,
+        "coef_delta": 3.6868952335566973e-11,
+        "relative_change": 3.686895233717394e-11,
+        "sign_stable": true
+      }
+    },
+    "spatial_lag_model": {
+      "status": "unstable",
+      "n": 4880,
+      "warning": "Spatial lag adjustment design matrix is rank deficient."
+    },
+    "graph_sensitivity_summary": {
+      "status": "ok",
+      "n_graphs_requested": 4,
+      "n_graphs_valid": 4,
+      "graph_specs": [
+        "coordinate_knn_k2",
+        "coordinate_knn_k4",
+        "coordinate_knn_k6",
+        "coordinate_knn_k8"
+      ],
+      "neighbor_adjusted_coef_min": -1.0000000001465965,
+      "neighbor_adjusted_coef_max": -0.9999999999195451,
+      "neighbor_adjusted_coef_range": 2.2705137769918338e-10,
+      "neighbor_adjusted_relative_change_max": 1.9018242537190568e-10,
+      "neighbor_adjusted_sign_stability": true
+    },
+    "spatial_slx_model": {
+      "status": "unstable",
+      "model": "SLX",
+      "n": 4880,
+      "warning": "SLX design matrix is rank deficient."
+    },
+    "spillover_summary": {
+      "status": "ok",
+      "models": [
+        "neighbor_adjusted",
+        "coordinate_knn_k2",
+        "coordinate_knn_k4",
+        "coordinate_knn_k6",
+        "coordinate_knn_k8"
+      ],
+      "direct_effect_proxy_main": -0.9999999999195451,
+      "spillover_effect_proxy_main": 5.5423665656917365e-11,
+      "spillover_share_abs_main": 5.542366565830468e-11,
+      "spillover_share_abs_min": 2.0009660593199226e-11,
+      "spillover_share_abs_max": 9.541056832675788e-11,
+      "spillover_to_direct_ratio_min": -9.541056833586105e-11,
+      "spillover_to_direct_ratio_max": 6.900857662071929e-11,
+      "interpretation": "spillover_signal_not_established",
+      "note": "This decomposition is a spatial sensitivity summary based on neighbor-average exposure models; it is not a formal causal interference identification result."
+    },
+    "exposure_mapping_summary": {
+      "status": "ok",
+      "model": "neighbor_exposure_model",
+      "direct_effect": -0.9999999999195451,
+      "spillover_coefficient": 5.5423665656917365e-11,
+      "mean_indirect_effect": 5.5423665656917384e-11,
+      "median_indirect_effect": 1.458517517287299e-11,
+      "mean_total_effect": -0.9999999998641211,
+      "median_total_effect": -0.9999999999049599,
+      "indirect_effect_p10": 1.458517517287299e-11,
+      "indirect_effect_p90": 1.7793913710905055e-10,
+      "incoming_weight_sum_mean": 1.0000000000000004,
+      "incoming_weight_sum_min": 0.2631578947368421,
+      "incoming_weight_sum_max": 3.210526315789475,
+      "interpretation": "exposure_mapping_sensitivity",
+      "note": "Effects are implied by the fitted neighbor-exposure model and row-standardized spatial graph. They are an exposure-mapping sensitivity analysis, not a fully identified network experiment."
+    },
+    "flags": [
+      "Residual spatial autocorrelation detected (Moran's I=0.808, p=0.010)."
+    ],
+    "interpretation": "spatial_caution"
+  }
+}

@@ -1,0 +1,14 @@
+{
+    "parameters":  {
+                       "output_stem":  "soho_arcgis_builtin_relaxed",
+                       "balance_threshold":  0.2
+                   },
+    "summary":  {
+                    "original_n":  1852,
+                    "final_n":  1814,
+                    "mean_weighted_correlation":  0.1778,
+                    "selected_num_bins":  9,
+                    "selected_propensity_exposure_scale":  0
+                },
+    "note":  "Sanitized ArcGIS Pro relaxed-threshold run snapshot for Paper 6 multi-dataset matrix."
+}

@@ -37,6 +37,9 @@ class GeoCausalPlugin:
             return getattr(iface, "processingRegistry", lambda: None)()
 
     def initGui(self) -> None:
+        self.initProcessing()
+
+    def initProcessing(self) -> None:
         self.provider = create_qgis_provider()
         self.registry = self._processing_registry(self.iface)
         if self.registry is not None:

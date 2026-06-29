@@ -1,0 +1,13 @@
+{
+  "case": "epa_nonattainment_airdata",
+  "n_grid": 50,
+  "response_at_min_exposure": 8.022957625397138,
+  "response_at_median_exposure": 7.651593103491053,
+  "response_at_max_exposure": 7.295083162461211,
+  "range_effect": -0.7278744629359277,
+  "median_split_effect": -0.35650994102984246,
+  "monotonic_direction": "decreasing",
+  "monotonic_fraction": 1.0,
+  "max_adjacent_response_jump": 0.014854580876244583,
+  "interpretation": "ERF is mostly decreasing with monotonic fraction 1.000."
+}

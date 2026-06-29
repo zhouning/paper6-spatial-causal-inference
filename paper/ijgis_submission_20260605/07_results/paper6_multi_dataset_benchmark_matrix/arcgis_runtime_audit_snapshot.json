@@ -1,0 +1,45 @@
+{
+  "runtime_available": true,
+  "tool": "arcpy.stats.CausalInferenceAnalysis",
+  "doc_url": "https://pro.arcgis.com/en/pro-app/latest/tool-reference/spatial-statistics/causal-inference-analysis.htm",
+  "arcgis_version": "3.7",
+  "product": "ArcInfo",
+  "tool_signature": "(in_features=None, outcome_field=None, exposure_field=None, confounding_variables=None, out_features=None, ps_method: \"Literal['REGRESSION', 'GRADIENT_BOOSTING'] | None\" = None, balancing_method: \"Literal['MATCHING', 'WEIGHTING'] | None\" = None, enable_erf_popups: \"Literal['CREATE_POPUP', 'NO_POPUP'] | None\" = None, out_erf_table=None, target_outcomes=None, target_exposures=None, lower_exp_trim=None, upper_exp_trim=None, lower_ps_trim=None, upper_ps_trim=None, num_bins=None, scale=None, balance_type: \"Literal['MEAN', 'MEDIAN', 'MAXIMUM'] | None\" = None, balance_threshold=None, bw_method: \"Literal['PLUG_IN', 'CV', 'MANUAL'] | None\" = None, bandwidth=None, create_bootstrap_ci: \"Literal['CREATE_CI', 'NO_CI'] | None\" = None) -> 'Result2[str | Path, str | Path]'",
+  "tool_doc_excerpt": "CausalInferenceAnalysis_stats(in_features, outcome_field, exposure_field, confounding_variables;confounding_variables..., out_features, {ps_method}, {balancing_method}, {enable_erf_popups}, {out_erf_table}, {target_outcomes;target_outcomes...}, {target_exposures;target_exposures...}, {lower_exp_trim}, {upper_exp_trim}, {lower_ps_trim}, {upper_ps_trim}, {num_bins}, {scale}, {balance_type}, {balance_threshold}, {bw_method}, {bandwidth}, {create_bootstrap_ci})\n\n   Estimates the causal effect of a continuous exposure variable on a\n   continuous outcome variable by approximating a randomized experiment\n   and controlling for confounding variables.\n\nINPUTS:\n in_features (Table View):\n     The input features or table containing fields of the exposure,\n     outcome, and confounding variables.\n outcome_field (Field):\n     The numeric field of the outcome variable. This is the variable that\n     responds to changes in the exposure variable. The outcome variable\n     must be continuous or binary (not categorical).\n exposure_field (Field):\n     The numeric field of the exposure variable (sometimes called the\n     treatment variable). This is the variable that causes changes in the\n     outcome",
+  "n_direct_comparison_manifests": 3,
+  "n_calibrated_balance_wins": 3,
+  "comparison_case_ids": [
+    "county_arcgis_builtin",
+    "soho_arcgis_builtin_relaxed",
+    "snow8_arcgis_builtin_relaxed"
+  ],
+  "comparison_manifests": [
+    {
+      "case_id": "county_arcgis_builtin",
+      "comparison_manifest": "D:\\tmp\\paper6_arcgis_builtin_causal_20260627\\geocausal_comparison_arcgis_style_erf_20260627\\arcgis_geocausal_comparison_manifest.json",
+      "arcgis_manifest_path": "D:\\tmp\\paper6_arcgis_builtin_causal_20260627\\arcgis_causal_manifest_final.json",
+      "arcgis_balance": 0.0559,
+      "geocausal_calibrated_balance": 0.04527880279569707,
+      "calibrated_balance_win": true,
+      "preferred_erf_response_mae": 0.04289852606440611
+    },
+    {
+      "case_id": "soho_arcgis_builtin_relaxed",
+      "comparison_manifest": "D:\\tmp\\paper6_soho_arcgis_direct_20260627\\geocausal_comparison_relaxed\\arcgis_geocausal_comparison_manifest.json",
+      "arcgis_manifest_path": "D:\\tmp\\paper6_soho_arcgis_direct_20260627\\arcgis_causal_manifest_relaxed.json",
+      "arcgis_balance": 0.1778,
+      "geocausal_calibrated_balance": 0.110919218464313,
+      "calibrated_balance_win": true,
+      "preferred_erf_response_mae": 0.14812605498397902
+    },
+    {
+      "case_id": "snow8_arcgis_builtin_relaxed",
+      "comparison_manifest": "D:\\tmp\\paper6_snow8_arcgis_direct_20260627\\geocausal_comparison_relaxed\\arcgis_geocausal_comparison_manifest.json",
+      "arcgis_manifest_path": "D:\\tmp\\paper6_snow8_arcgis_direct_20260627\\arcgis_causal_manifest_relaxed.json",
+      "arcgis_balance": 0.1026,
+      "geocausal_calibrated_balance": 0.08632899712143095,
+      "calibrated_balance_win": true,
+      "preferred_erf_response_mae": 5.570589375950973
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "status": "ok",
+  "n_replicates_requested": 50,
+  "n_replicates_valid": 50,
+  "failure_count": 0,
+  "coef_mean": -1.0000000000107658,
+  "coef_median": -1.0000000000074705,
+  "coef_std": 7.411447356697015e-11,
+  "ci_lower_2_5": -1.000000000149255,
+  "ci_upper_97_5": -0.9999999998780217,
+  "sign_stability": 1.0
+}

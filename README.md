@@ -12,7 +12,7 @@ SCCA is not presented as a new causal estimator. It is an engineering-grade diag
 - `data_agent/scca/`: the SCCA method modules used by the paper, including profiling, context construction, design selection, estimators, diagnostics, robustness, spatial diagnostics, reporting, and evidence rules.
 - `arcgis_toolbox/`: ArcGIS Pro toolbox wrapper and county social-capital workflow notes.
 - `qgis_provider/`: QGIS Processing provider skeleton for running GeoCausal SCCA.
-- `examples/`: cross-platform county social-capital configuration and CSV input for a runnable smoke case.
+- `examples/`: cross-platform county social-capital configuration and example inputs for county, Snow8, and Soho smoke/reproduction cases.
 - `data/`: CountyData and States shapefiles used for GIS joins, map rendering, and ArcGIS/QGIS demonstrations.
 - `paper/ijgis_submission_20260605/`: IJGIS-oriented manuscript package, generated results, reports, figures, and internal review materials.
 
@@ -131,6 +131,18 @@ A completed SCCA run is designed to be machine-readable as well as reviewer-read
 
 These files are intentionally stable because they are consumed by notebooks, ArcGIS/QGIS workflows, GIS Data Agent integration surfaces, and paper result tables.
 
+Every successful `geocausal run` also writes an Open GIS analysis package under the run output directory:
+
+- `open_gis_analysis_package/analysis_joined.csv`
+- `open_gis_analysis_package/gis_balance_summary.csv`
+- `open_gis_analysis_package/gis_erf_curve_200.csv`
+- `open_gis_analysis_package/gis_run_summary.json`
+- `open_gis_analysis_package/gis_run_summary.md`
+
+This package is designed for ArcGIS-free use in Python, QGIS, notebooks, Excel, or BI tools while preserving the GIS causal-analysis concepts users expect: retained analysis rows, generalized propensity scores, balancing weights, balance diagnostics, a 200-point exposure-response curve, target-outcome outputs, spatial diagnostics, and evidence grading.
+
+See `docs/open_gis_analysis_package.md` for the ArcGIS-free quickstart, file semantics, spatial-package CLI command, QGIS/Python workflows, and acceptance checklist.
+
 ## Reproduction Cases
 
 The new-version paper centers on SCCA as a spatial causal workflow and evaluates it through multiple cases:
@@ -139,15 +151,17 @@ The new-version paper centers on SCCA as a spatial causal workflow and evaluates
 - **Snow cholera case**: South London subdistrict cholera data for spatial-context causal reasoning and robustness diagnostics.
 - **Soho Broad Street pump mechanism case**: household-level mechanism-oriented SCCA demonstration.
 - **US CountyData case**: county social capital and longevity example with CSV, shapefile, ArcGIS comparison, and map-ready joins.
+- **EPA Green Book benchmark**: PM2.5 county-year nonattainment structure and Census county geometry for a policy-structure semi-synthetic SCCA benchmark.
 - **Synthetic and audit cases**: multi-seed benchmarks, estimator stress tests, GeoFM/AlphaEarth ablation, LLM DAG validation, and world-model holdout validation used as supporting evidence rather than the main SCCA software boundary.
 
 Representative commands:
 
 ```bash
-python -m data_agent.experiments.run_scca_snow8 --csv-path /path/to/subdistricts.csv
-python -m data_agent.experiments.run_scca_soho --csv-path /path/to/deaths_nd_by_house.csv
-python -m data_agent.experiments.run_scca_county_social_capital --workbook-path /path/to/CountyData_TableToExcel.xlsx
+python -m data_agent.experiments.run_scca_snow8 --csv-path examples/data/snow8/subdistricts.csv
+python -m data_agent.experiments.run_scca_soho --csv-path examples/data/snow1/deaths_nd_by_house.csv
+python -m data_agent.experiments.run_scca_county_social_capital --workbook-path examples/data/county/CountyData_TableToExcel.xlsx
 python -m data_agent.experiments.run_scca_robustness_summary
+python -m data_agent.experiments.epa_airdata_benchmark --raw-dir data/raw/epa_airdata --output-dir paper/ijgis_submission_20260605/07_results/epa_nonattainment_airdata
 ```
 
 For the restricted Chongqing UHI analysis sample:
@@ -174,6 +188,9 @@ Expected Chongqing result files are written under `paper/ijgis_submission_202606
 - QGIS Processing provider skeleton: `qgis_provider/geocausal_scca_algorithm.py`
 - Map-ready county shapefile: `data/CountyData.shp`
 - Cross-platform county CSV: `examples/data/county_social_capital.csv`
+- Original county workbook copy used for SCCA reproduction: `examples/data/county/CountyData_TableToExcel.xlsx`
+- Snow/Soho SCCA inputs: `examples/data/snow8/subdistricts.csv` and `examples/data/snow1/deaths_nd_by_house.csv`
+- EPA Green Book/Census benchmark inputs: `data/raw/epa_airdata/`
 
 The intended GIS pattern is:
 
