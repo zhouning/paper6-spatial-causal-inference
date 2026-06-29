@@ -1,5 +1,7 @@
 *.pdf binary
 *.docx binary
+*.xls binary
+*.zip binary
 *.png binary
 *.tif binary
 *.shp binary

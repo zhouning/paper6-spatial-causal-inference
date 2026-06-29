@@ -21,6 +21,9 @@ public/example county data, and model weights where redistribution is permitted.
 It does not include the Chongqing raw geospatial inputs or building-level UHI
 analysis sample.
 
+The EPA policy-structure benchmark inputs are committed under
+`data/raw/epa_airdata/`; other `data/raw` contents remain ignored.
+
 Restricted Chongqing inputs are expected only in a local approved workspace:
 
 - Chongqing DEM 2020

@@ -85,6 +85,15 @@ This writes:
 - `paper/ijgis_submission_20260605/07_results/synthetic_benchmark_audit/synthetic_benchmark_audit_report.md`
 - `paper/ijgis_submission_20260605/07_results/synthetic_benchmark_audit/scenario_fragility_summary.csv`
 
+Run the EPA Green Book policy-structure SCCA benchmark from the committed public
+source inputs:
+
+```bash
+python -m data_agent.experiments.epa_airdata_benchmark \
+  --raw-dir data/raw/epa_airdata \
+  --output-dir paper/ijgis_submission_20260605/07_results/epa_nonattainment_airdata
+```
+
 Write the unified SCCA evidence synthesis used to frame the manuscript:
 
 ```powershell
