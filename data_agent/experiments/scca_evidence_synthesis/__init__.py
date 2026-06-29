@@ -146,4 +146,3 @@ def main() -> None:
         results_dir=args.results_dir,
     )
     print(json.dumps(manifest, indent=2, ensure_ascii=False))
-

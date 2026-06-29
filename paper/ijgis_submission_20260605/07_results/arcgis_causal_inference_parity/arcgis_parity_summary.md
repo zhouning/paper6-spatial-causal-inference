@@ -4,7 +4,7 @@ Official ArcGIS baseline: https://pro.arcgis.com/en/pro-app/latest/tool-referenc
 
 ## Positioning
 
-SCCA is positioned as an open spatial-diagnostic enhancement layer for GIS causal workflows. 
+SCCA is positioned as an open spatial-diagnostic enhancement layer for GIS causal workflows.
 The benchmark does not claim that SCCA reproduces proprietary ArcGIS internals or fully replaces ArcGIS Pro.
 
 ## Status Counts
