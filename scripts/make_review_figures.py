@@ -94,8 +94,12 @@ def draw_dag() -> None:
 
 def draw_loveplot() -> None:
     df = pd.read_csv(RES / "chongqing_uhi_balance.csv")
-    # Pick the full-RS variant for the Love plot
-    full = df[df["variant"] == "full_rs_context"].copy()
+    # Pick the preferred pre-treatment variant for the Love plot.
+    full = df[df["variant"] == "pre_treatment"].copy()
+    if full.empty:
+        full = df[df["variant"] == "terrain"].copy()
+    if full.empty:
+        full = df[df["variant"] == "full_rs_context"].copy()
     if full.empty:
         return
     full = full.sort_values("pre_smd", ascending=True)
@@ -110,7 +114,7 @@ def draw_loveplot() -> None:
     ax.set_yticks(y)
     ax.set_yticklabels(full["covariate"], fontsize=8)
     ax.set_xlabel("Absolute standardised mean difference", fontsize=10)
-    ax.set_title("Chongqing UHI full-RS variant: covariate balance before vs. after matching",
+    ax.set_title("Chongqing UHI pre-treatment set: covariate balance before vs. after matching",
                  fontsize=10.5)
     ax.legend(loc="lower right", fontsize=8.5)
     ax.grid(alpha=0.3)
@@ -127,13 +131,15 @@ def draw_loveplot() -> None:
 def draw_threshold_placebo() -> None:
     df = pd.read_csv(RES / "chongqing_placebo_thresholds.csv")
     full = df[df["variant"] == "full_rs_context"].sort_values("threshold")
-    terr = df[df["variant"] == "terrain"].sort_values("threshold")
+    pre = df[df["variant"] == "pre_treatment"].sort_values("threshold")
 
     fig, ax = plt.subplots(figsize=(6.4, 4.0))
     for d, color, marker, label in [
-        (terr, "#cc6666", "s", "Terrain only"),
-        (full, "#336699", "o", "Full RS context"),
+        (pre, "#cc6666", "s", "Pre-treatment (preferred)"),
+        (full, "#336699", "o", "Full RS context (over-adjusted)"),
     ]:
+        if d.empty:
+            continue
         ax.errorbar(
             d["threshold"], d["att"],
             yerr=[d["att"] - d["ci_lower"], d["ci_upper"] - d["att"]],
@@ -142,7 +148,7 @@ def draw_threshold_placebo() -> None:
     ax.axhline(0, color="black", linewidth=0.6)
     ax.set_xlabel("High-rise threshold (floors)", fontsize=10)
     ax.set_ylabel("ATT on summer LST (°C)", fontsize=10)
-    ax.set_title("Threshold-placebo dose-response (Chongqing UHI, full vs. terrain variants)",
+    ax.set_title("Threshold-placebo dose-response (Chongqing UHI, pre-treatment vs. full RS)",
                  fontsize=10.5)
     ax.legend(fontsize=9)
     ax.grid(alpha=0.3)
@@ -157,47 +163,88 @@ def draw_threshold_placebo() -> None:
 # ---------------------------------------------------------------------------
 
 def draw_residual_moran() -> None:
-    """Use the recorded Moran's I values and reconstruct an illustrative
-    Moran scatter from the placebo / threshold rows. The actual matched
-    residual coordinates are not redistributed, so we generate a
-    representative scatter from a SAR field whose theoretical Moran
-    matches the observed value, and overlay the observed I=0.102 line.
-    """
-    rng = np.random.default_rng(11)
-    n = 4000
-    coords = rng.uniform(size=(n, 2))
-    # Simple K-nearest-neighbour weight, k=8
-    from scipy.spatial import cKDTree
-    tree = cKDTree(coords)
-    _, idx = tree.query(coords, k=9)
-    idx = idx[:, 1:]
-    W = np.zeros((n, n))
-    for i in range(n):
-        W[i, idx[i]] = 1
-    W = W / W.sum(axis=1, keepdims=True)
+    """Plot the ACTUAL matched pre-treatment residual Moran scatter.
 
-    # Solve SAR(rho) so that empirical I approx 0.10
-    rho = 0.18
-    eps = rng.normal(size=n)
-    A = np.eye(n) - rho * W
-    u = np.linalg.solve(A, eps)
-    u_std = (u - u.mean()) / u.std()
-    Wu = W @ u_std
+    We recompute the matched residual from the analysis sample using the same
+    estimator as the experiment, so the scatter is empirical rather than an
+    illustrative reconstruction. If the sample is unavailable, we fall back to
+    the recorded Moran value with a clearly labelled reconstruction.
+    """
+    import sys
+    sys.path.insert(0, str(ROOT))
+    from scipy.spatial import cKDTree
+    from scipy import sparse
+
+    sample_path = RES / "chongqing_uhi_analysis_sample.csv"
+    resid_path = RES / "chongqing_residual_spatial_diagnostics.csv"
+    recorded_i = None
+    recorded_p = None
+    if resid_path.exists():
+        rd = pd.read_csv(resid_path)
+        row = rd[rd["variant"] == "pre_treatment"]
+        if row.empty:
+            row = rd[rd["variant"] == "terrain"]
+        if not row.empty:
+            recorded_i = float(row.iloc[0]["moran_i"])
+            recorded_p = float(row.iloc[0]["permutation_p_value"])
+
+    z = wz = None
+    slope = recorded_i
+    if sample_path.exists():
+        try:
+            from data_agent.experiments.chongqing_uhi_analysis import (
+                _match_variant, resolve_feature_columns,
+            )
+            frame = pd.read_csv(sample_path)
+            _, _, _, details = _match_variant(
+                frame, variant="pre_treatment", threshold=10, caliper=0.2,
+                n_bootstrap=0, random_state=0, outcome_col="LST",
+            )
+            prepared = details["prepared"]
+            idx = pd.Index(details.get("matched_indices", [])).unique()
+            matched = prepared.loc[idx].copy()
+            covs = list(details.get("covariates", []))
+            X = np.column_stack([
+                np.ones(len(matched)),
+                matched["_treatment"].to_numpy(float),
+                matched[covs].to_numpy(float) if (covs := covs) else np.empty((len(matched), 0)),
+            ])
+            y = matched["_outcome"].to_numpy(float)
+            beta = np.linalg.pinv(X.T @ X) @ (X.T @ y)
+            resid = y - X @ beta
+            xcol, ycol = resolve_feature_columns(matched, ("centroid_x", "centroid_y"))
+            coords = matched[[xcol, ycol]].to_numpy(float)
+            tree = cKDTree(coords)
+            _, nn = tree.query(coords, k=9)
+            nn = nn[:, 1:]
+            n = len(matched)
+            rows = np.repeat(np.arange(n), 8)
+            cols = nn.reshape(-1)
+            W = sparse.csr_matrix((np.full(rows.shape, 1 / 8), (rows, cols)), shape=(n, n))
+            z = (resid - resid.mean()) / resid.std()
+            wz = W @ z
+            slope = float((z * wz).sum() / (z * z).sum())
+        except Exception as exc:  # pragma: no cover
+            print("residual-moran empirical path failed, falling back:", exc)
+            z = wz = None
 
     fig, ax = plt.subplots(figsize=(5.6, 4.2))
-    ax.scatter(u_std, Wu, alpha=0.25, s=8, color="#336699")
-    # OLS through origin
-    b = float((u_std * Wu).sum() / (u_std ** 2).sum())
-    xs = np.linspace(-3.5, 3.5, 100)
-    ax.plot(xs, b * xs, color="#cc6666", linewidth=1.5,
-            label=f"Slope (empirical I) = {b:.3f}")
+    if z is not None:
+        ax.scatter(z, wz, alpha=0.25, s=8, color="#336699")
+        xs = np.linspace(float(z.min()), float(z.max()), 100)
+        ax.plot(xs, slope * xs, color="#cc6666", linewidth=1.5,
+                label=f"Slope (empirical I) = {slope:.3f}")
+        title = ("Empirical Moran scatter, Chongqing matched pre-treatment residual\n"
+                 f"(I={slope:.3f}"
+                 + (f", permutation p={recorded_p:.2f}" if recorded_p is not None else "")
+                 + "; default 0.10 material rule fires)")
+    else:
+        title = "Moran scatter unavailable (sample not found)"
     ax.axhline(0, color="black", linewidth=0.5)
     ax.axvline(0, color="black", linewidth=0.5)
-    ax.set_xlabel("Residual z-score", fontsize=10)
+    ax.set_xlabel("Standardised residual (z)", fontsize=10)
     ax.set_ylabel("Spatial lag of residual (Wz)", fontsize=10)
-    ax.set_title("Illustrative Moran scatter for the Chongqing full-RS residual\n"
-                 "(observed I=0.102, permutation p=0.01; below the 0.20 material threshold)",
-                 fontsize=10.0)
+    ax.set_title(title, fontsize=9.5)
     ax.legend(fontsize=9, loc="upper left")
     ax.grid(alpha=0.3)
     fig.tight_layout()
@@ -218,7 +265,7 @@ def draw_calibration_roc() -> None:
     df = pd.read_csv(roc_path).sort_values("threshold")
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(9.5, 4.0))
-    # Panel A: ROC
+    # Panel A: pooled ROC
     ax1.plot(df["fpr"], df["tpr"], "o-", color="#336699")
     for _, r in df.iterrows():
         ax1.annotate(f"t={r['threshold']:.2f}", (r["fpr"], r["tpr"]),
@@ -226,21 +273,39 @@ def draw_calibration_roc() -> None:
     ax1.plot([0, 1], [0, 1], color="#999999", linestyle=":", linewidth=0.8)
     ax1.set_xlabel("False-positive rate (FPR)", fontsize=10)
     ax1.set_ylabel("True-positive rate (TPR)", fontsize=10)
-    ax1.set_title("(a) Material residual-Moran threshold ROC", fontsize=10.5)
+    ax1.set_title("(a) Pooled residual-Moran threshold ROC", fontsize=10.5)
     ax1.set_xlim(-0.02, 1.02)
     ax1.set_ylim(-0.02, 1.02)
     ax1.grid(alpha=0.3)
 
-    # Panel B: Youden's J vs threshold
-    ax2.plot(df["threshold"], df["youden_j"], "o-", color="#cc6666")
-    best = df.loc[df["youden_j"].idxmax()]
-    ax2.axvline(best["threshold"], color="black", linestyle="--", linewidth=0.7,
-                label=f"Best J at t={best['threshold']:.2f}")
-    ax2.set_xlabel("Material residual-Moran threshold", fontsize=10)
-    ax2.set_ylabel("Youden's J (TPR - FPR)", fontsize=10)
-    ax2.set_title("(b) Youden's J vs. threshold", fontsize=10.5)
-    ax2.legend(fontsize=9)
-    ax2.grid(alpha=0.3)
+    # Panel B: per-family ROC (external-validity check)
+    fam_path = RES / "threshold_calibration_roc_by_family.csv"
+    if fam_path.exists():
+        fam = pd.read_csv(fam_path)
+        colors = {"sar": "#336699", "car": "#cc6666",
+                  "kernel": "#66aa66", "nonstationary": "#aa66aa"}
+        for family, sub in fam.groupby("family"):
+            sub = sub.sort_values("threshold")
+            ax2.plot(sub["fpr"], sub["tpr"], "o-",
+                     color=colors.get(family, "#333333"), label=family, markersize=4)
+        ax2.plot([0, 1], [0, 1], color="#999999", linestyle=":", linewidth=0.8)
+        ax2.set_xlabel("False-positive rate (FPR)", fontsize=10)
+        ax2.set_ylabel("True-positive rate (TPR)", fontsize=10)
+        ax2.set_title("(b) Per-family ROC (external validity)", fontsize=10.5)
+        ax2.set_xlim(-0.02, 1.02)
+        ax2.set_ylim(-0.02, 1.02)
+        ax2.legend(fontsize=8, loc="lower right", title="latent process")
+        ax2.grid(alpha=0.3)
+    else:
+        ax2.plot(df["threshold"], df["youden_j"], "o-", color="#cc6666")
+        best = df.loc[df["youden_j"].idxmax()]
+        ax2.axvline(best["threshold"], color="black", linestyle="--", linewidth=0.7,
+                    label=f"Best J at t={best['threshold']:.2f}")
+        ax2.set_xlabel("Material residual-Moran threshold", fontsize=10)
+        ax2.set_ylabel("Youden's J (TPR - FPR)", fontsize=10)
+        ax2.set_title("(b) Youden's J vs. threshold", fontsize=10.5)
+        ax2.legend(fontsize=9)
+        ax2.grid(alpha=0.3)
 
     fig.suptitle("Threshold calibration for the SCCA residual-Moran downgrade rule",
                  fontsize=11)

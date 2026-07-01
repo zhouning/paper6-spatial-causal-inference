@@ -10,6 +10,7 @@
 - `coordinates_only`: ATT `0.26662119924848376`, max post-match SMD `0.08004424699577341`
 - `geometry`: ATT `0.25168778112337814`, max post-match SMD `0.12530482413910446`
 - `terrain`: ATT `0.3031107503607498`, max post-match SMD `0.10448622385232399`
+- `pre_treatment`: ATT `0.3031107503607498`, max post-match SMD `0.10448622385232399`
 - `sentinel_indices`: ATT `0.156651339165025`, max post-match SMD `0.08338257508162271`
 - `sentinel_bands`: ATT `0.12145516919797432`, max post-match SMD `0.051095932272656346`
 - `full_rs_context`: ATT `0.24412501101612677`, max post-match SMD `0.06130709231666454`

@@ -1,3 +1,4 @@
 variant,threshold,moran_i,permutation_p_value,n,distance_band,matched_treated_n,matched_control_n,status
 terrain,10,0.11176285748407279,0.01,4356,8115.025517264801,2178,2178,ok
+pre_treatment,10,0.11176285748407279,0.01,4356,8115.025517264801,2178,2178,ok
 full_rs_context,10,0.1017969541407118,0.01,3242,8318.408380806874,1621,1621,ok

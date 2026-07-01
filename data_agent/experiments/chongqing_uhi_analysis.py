@@ -25,8 +25,17 @@ FEATURE_SPECS: dict[str, tuple[str, ...]] = {
     "coordinates_only": ("centroid_x", "centroid_y"),
     "geometry": GEOMETRY_COLUMNS,
     "terrain": (*GEOMETRY_COLUMNS, *TERRAIN_COLUMNS),
+    # Primary causal specification: coordinates + geometry + terrain only.
+    # These sources are plausibly fixed *before* high-rise construction, so the
+    # adjustment set avoids conditioning on Sentinel-derived surfaces that may be
+    # post-treatment mediators (see the variable-role audit). This is the
+    # manuscript's preferred confounder-only design.
+    "pre_treatment": (*GEOMETRY_COLUMNS, *TERRAIN_COLUMNS),
     "sentinel_indices": (*GEOMETRY_COLUMNS, *SENTINEL_INDEX_COLUMNS),
     "sentinel_bands": (*GEOMETRY_COLUMNS, *SENTINEL_BAND_COLUMNS),
+    # full_rs_context ADDS Sentinel bands+indices on top of the pre-treatment set.
+    # It is retained as an over-adjustment comparison, NOT as the preferred causal
+    # specification, because Sentinel surfaces may be affected by the treatment.
     "full_rs_context": (
         *GEOMETRY_COLUMNS,
         *SENTINEL_BAND_COLUMNS,
@@ -36,6 +45,13 @@ FEATURE_SPECS: dict[str, tuple[str, ...]] = {
     "pca_context": GEOMETRY_COLUMNS,
 }
 
+# Adjustment sets that only use plausibly pre-treatment context. Used by the
+# evidence synthesis to select the preferred causal specification on a
+# causal-validity basis rather than on post-match balance alone.
+PRE_TREATMENT_VARIANTS = ("coordinates_only", "terrain", "pre_treatment")
+# Adjustment sets that condition on Sentinel-derived surfaces (possible mediators).
+MEDIATOR_RISK_VARIANTS = ("sentinel_indices", "sentinel_bands", "full_rs_context")
+
 
 OUTPUT_FILES = {
     "ablation_csv": "chongqing_uhi_ablation.csv",
@@ -44,6 +60,7 @@ OUTPUT_FILES = {
     "bootstrap_csv": "chongqing_spatial_bootstrap.csv",
     "placebo_csv": "chongqing_placebo_thresholds.csv",
     "residual_csv": "chongqing_residual_spatial_diagnostics.csv",
+    "change_of_support_csv": "chongqing_change_of_support.csv",
     "manifest_json": "chongqing_uhi_analysis_manifest.json",
     "report_md": "chongqing_uhi_analysis_report.md",
 }
@@ -573,7 +590,7 @@ def run_threshold_placebos(
     frame: pd.DataFrame,
     *,
     thresholds: Iterable[int] = (8, 10, 12),
-    variants: Iterable[str] = ("terrain", "full_rs_context"),
+    variants: Iterable[str] = ("pre_treatment", "full_rs_context"),
     caliper: float = 0.2,
     n_bootstrap: int = 100,
     random_state: int = 0,
@@ -822,6 +839,216 @@ def run_residual_spatial_diagnostics(
     return pd.DataFrame(rows)
 
 
+def assign_lst_pixels(
+    frame: pd.DataFrame,
+    *,
+    cell_size_m: float = 1000.0,
+    outcome_col: str = "LST",
+) -> pd.Series:
+    """Assign each building to a coarse outcome pixel.
+
+    The Chongqing outcome (summer LST) is retrieved on a ~1 km MODIS grid, so
+    many buildings share one outcome pixel. We recover that shared-pixel
+    structure with a coordinate grid at ``cell_size_m``. Where an exact outcome
+    value is shared by several buildings (the common case for a coarse thermal
+    product), buildings with the same rounded outcome inside a grid cell are
+    treated as one pixel. The returned Series is a stable pixel id per row.
+    """
+    x_col, y_col = resolve_feature_columns(frame, ("centroid_x", "centroid_y"))
+    x = pd.to_numeric(frame[x_col], errors="coerce")
+    y = pd.to_numeric(frame[y_col], errors="coerce")
+    mean_lat = float(y.mean()) if y.notna().any() else 0.0
+    x_m = (x - x.min()) * 111_000.0 * max(np.cos(np.deg2rad(mean_lat)), 0.1)
+    y_m = (y - y.min()) * 111_000.0
+    gx = np.floor(x_m / max(cell_size_m, 1.0)).astype("Int64")
+    gy = np.floor(y_m / max(cell_size_m, 1.0)).astype("Int64")
+    outcome = _resolve_optional_column(frame, outcome_col, ("lst", "LST"))
+    # Round the outcome to 3 dp so identical retrieved pixel values collapse.
+    lst_key = pd.to_numeric(frame[outcome], errors="coerce").round(3)
+    return gx.astype(str) + "_" + gy.astype(str) + "_" + lst_key.astype(str)
+
+
+def _cluster_robust_ols(
+    y: np.ndarray,
+    X: np.ndarray,
+    clusters: np.ndarray,
+) -> dict[str, float]:
+    """OLS with CR1 cluster-robust (clustered) standard errors.
+
+    Returns the treatment coefficient (column 1, after intercept) with a
+    cluster-robust standard error and a 95% normal-approximation CI. Clustering
+    on the shared outcome pixel corrects the naive building-level SE for the
+    fact that many buildings share one outcome measurement.
+    """
+    n, k = X.shape
+    XtX = X.T @ X
+    XtX_inv = np.linalg.pinv(XtX)
+    beta = XtX_inv @ (X.T @ y)
+    resid = y - X @ beta
+    uniq = np.unique(clusters)
+    g = len(uniq)
+    meat = np.zeros((k, k))
+    for c in uniq:
+        mask = clusters == c
+        Xc = X[mask]
+        uc = resid[mask]
+        sc = Xc.T @ uc
+        meat += np.outer(sc, sc)
+    # CR1 small-sample correction.
+    dof_scale = (g / max(g - 1, 1)) * ((n - 1) / max(n - k, 1))
+    cov = dof_scale * (XtX_inv @ meat @ XtX_inv)
+    se = float(np.sqrt(max(cov[1, 1], 0.0)))
+    coef = float(beta[1])
+    return {
+        "coef": coef,
+        "cluster_robust_se": se,
+        "ci_lower": coef - 1.96 * se,
+        "ci_upper": coef + 1.96 * se,
+        "n_clusters": int(g),
+        "n_obs": int(n),
+    }
+
+
+def run_change_of_support_analysis(
+    frame: pd.DataFrame,
+    *,
+    variants: Iterable[str] = ("pre_treatment", "full_rs_context"),
+    threshold: int = 10,
+    cell_size_m: float = 1000.0,
+    outcome_col: str = "LST",
+    random_state: int = 0,
+) -> pd.DataFrame:
+    """Quantify how the building-level ATT changes under change of support.
+
+    For each adjustment variant we report three estimands that make the
+    treatment/outcome scale mismatch explicit:
+
+    1. ``building_naive`` -- adjusted OLS at the building level, ignoring the
+       fact that ~7 buildings share one outcome pixel (over-states precision).
+    2. ``building_cluster_robust`` -- the same point estimate with standard
+       errors clustered on the shared outcome pixel.
+    3. ``pixel_aggregated`` -- one row per outcome pixel (pixel-mean treatment
+       share vs pixel outcome), the estimand that is actually identified at the
+       outcome resolution.
+
+    The gap between (1) and (2)/(3) is the reviewer-flagged change-of-support
+    problem, now measured rather than only acknowledged.
+    """
+    rows: list[dict[str, Any]] = []
+    working = frame.copy()
+    working["_pixel"] = assign_lst_pixels(
+        working, cell_size_m=cell_size_m, outcome_col=outcome_col
+    )
+    for variant in variants:
+        try:
+            v_frame, covariates, _ = _variant_frame_and_covariates(
+                working, variant, random_state=random_state
+            )
+            v_frame["_pixel"] = working.loc[v_frame.index, "_pixel"].to_numpy()
+            prepared = _coerce_analysis_frame(
+                v_frame,
+                threshold=threshold,
+                outcome_col=outcome_col,
+                covariates=covariates,
+            )
+            prepared["_pixel"] = v_frame.loc[prepared.index, "_pixel"].to_numpy()
+            n_buildings = int(len(prepared))
+            n_pixels = int(prepared["_pixel"].nunique())
+
+            # (1)+(2) building-level adjusted OLS with cluster-robust SE.
+            y = prepared["_outcome"].to_numpy(dtype=float)
+            design = np.column_stack(
+                [
+                    np.ones(len(prepared)),
+                    prepared["_treatment"].to_numpy(dtype=float),
+                    prepared[covariates].to_numpy(dtype=float),
+                ]
+            )
+            clusters = pd.factorize(prepared["_pixel"])[0]
+            cr = _cluster_robust_ols(y, design, clusters)
+            # naive (iid) SE for the same coefficient.
+            resid = y - design @ (np.linalg.pinv(design.T @ design) @ (design.T @ y))
+            sigma2 = float(resid @ resid) / max(len(y) - design.shape[1], 1)
+            naive_cov = sigma2 * np.linalg.pinv(design.T @ design)
+            naive_se = float(np.sqrt(max(naive_cov[1, 1], 0.0)))
+
+            rows.append(
+                {
+                    "variant": variant,
+                    "estimand": "building_naive",
+                    "att": cr["coef"],
+                    "se": naive_se,
+                    "ci_lower": cr["coef"] - 1.96 * naive_se,
+                    "ci_upper": cr["coef"] + 1.96 * naive_se,
+                    "n_units": n_buildings,
+                    "n_pixels": n_pixels,
+                    "buildings_per_pixel": round(n_buildings / max(n_pixels, 1), 3),
+                }
+            )
+            rows.append(
+                {
+                    "variant": variant,
+                    "estimand": "building_cluster_robust",
+                    "att": cr["coef"],
+                    "se": cr["cluster_robust_se"],
+                    "ci_lower": cr["ci_lower"],
+                    "ci_upper": cr["ci_upper"],
+                    "n_units": n_buildings,
+                    "n_pixels": n_pixels,
+                    "buildings_per_pixel": round(n_buildings / max(n_pixels, 1), 3),
+                }
+            )
+
+            # (3) pixel-aggregated estimand: collapse to one row per pixel.
+            agg_cols = {c: "mean" for c in covariates}
+            agg_cols["_outcome"] = "mean"
+            agg_cols["_treatment"] = "mean"
+            pix = prepared.groupby("_pixel").agg(agg_cols)
+            if len(pix) >= 5 and pix["_treatment"].nunique() > 1:
+                yp = pix["_outcome"].to_numpy(dtype=float)
+                Xp = np.column_stack(
+                    [
+                        np.ones(len(pix)),
+                        pix["_treatment"].to_numpy(dtype=float),
+                        pix[covariates].to_numpy(dtype=float),
+                    ]
+                )
+                betap = np.linalg.pinv(Xp.T @ Xp) @ (Xp.T @ yp)
+                rp = yp - Xp @ betap
+                s2p = float(rp @ rp) / max(len(yp) - Xp.shape[1], 1)
+                covp = s2p * np.linalg.pinv(Xp.T @ Xp)
+                sep = float(np.sqrt(max(covp[1, 1], 0.0)))
+                rows.append(
+                    {
+                        "variant": variant,
+                        "estimand": "pixel_aggregated",
+                        "att": float(betap[1]),
+                        "se": sep,
+                        "ci_lower": float(betap[1]) - 1.96 * sep,
+                        "ci_upper": float(betap[1]) + 1.96 * sep,
+                        "n_units": int(len(pix)),
+                        "n_pixels": int(len(pix)),
+                        "buildings_per_pixel": round(n_buildings / max(n_pixels, 1), 3),
+                    }
+                )
+        except Exception as exc:  # pragma: no cover - defensive
+            rows.append(
+                {
+                    "variant": variant,
+                    "estimand": "error",
+                    "att": np.nan,
+                    "se": np.nan,
+                    "ci_lower": np.nan,
+                    "ci_upper": np.nan,
+                    "n_units": 0,
+                    "n_pixels": 0,
+                    "buildings_per_pixel": np.nan,
+                    "status": f"error: {exc}",
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def run_chongqing_uhi_analysis(
     frame: pd.DataFrame,
     *,
@@ -862,10 +1089,18 @@ def run_chongqing_uhi_analysis(
     )
     residuals = run_residual_spatial_diagnostics(
         frame,
+        variants=("terrain", "pre_treatment", "full_rs_context"),
         threshold=threshold,
         caliper=caliper,
         random_state=random_state,
         outcome_col=outcome_col,
+    )
+    change_of_support = run_change_of_support_analysis(
+        frame,
+        variants=("pre_treatment", "full_rs_context"),
+        threshold=threshold,
+        outcome_col=outcome_col,
+        random_state=random_state,
     )
     manifest_metadata = {
         "sample_size": int(len(frame)),
@@ -883,6 +1118,7 @@ def run_chongqing_uhi_analysis(
         bootstrap=bootstrap,
         placebos=placebos,
         residual_diagnostics=residuals,
+        change_of_support=change_of_support,
         metadata=manifest_metadata,
     )
 
@@ -929,6 +1165,7 @@ def write_chongqing_outputs(
     bootstrap: pd.DataFrame,
     placebos: pd.DataFrame,
     residual_diagnostics: pd.DataFrame,
+    change_of_support: pd.DataFrame | None = None,
     metadata: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Write IJGIS-required Chongqing UHI experiment outputs."""
@@ -944,6 +1181,8 @@ def write_chongqing_outputs(
         "placebo_csv": placebos,
         "residual_csv": residual_diagnostics,
     }
+    if change_of_support is not None:
+        frames["change_of_support_csv"] = change_of_support
     manifest: dict[str, Any] = {}
     for key, frame in frames.items():
         path = target / OUTPUT_FILES[key]

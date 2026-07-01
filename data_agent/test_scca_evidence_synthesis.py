@@ -99,12 +99,19 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
     assert required_columns.issubset(synthesis.columns)
     expected_cases = {
         "synthetic_benchmark_audit",
+        "synthetic_core_support_control",
         "chongqing_uhi",
         "county_social_capital_spatial_notebook",
     }
     assert set(synthesis["case"]) == expected_cases
     assert "county_social_capital" not in set(synthesis["case"])
-    assert set(synthesis["evidence_grade"]) == {"bounded_support"}
+    # The core/bounded distinction must be exercised: the positive control is
+    # core_support while the empirical cases remain bounded_support.
+    assert set(synthesis["evidence_grade"]) == {"bounded_support", "core_support"}
+    assert synthesis.loc[
+        synthesis["case"] == "synthetic_core_support_control",
+        "evidence_grade",
+    ].iloc[0] == "core_support"
     assert synthesis.loc[
         synthesis["case"] == "chongqing_uhi",
         "grade_rule_ids",
@@ -126,7 +133,6 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
     assert "county_social_capital_spatial_notebook" in report_text
     assert "county_social_capital\n" not in report_text
     assert report_text.count("### ") == len(expected_cases)
-
     payload = json.loads(expected["manifest_json"].read_text(encoding="utf-8"))
     assert payload["n_rows"] == len(synthesis)
     assert payload["rule_version"]
@@ -147,16 +153,16 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
     }
     assert required_sensitivity_columns.issubset(sensitivity.columns)
     assert {
-        "chongqing_full_rs_context",
+        "chongqing_pre_treatment",
         "county_social_capital_spatial_notebook",
     }.issubset(set(sensitivity["case"]))
     assert sensitivity.loc[
-        (sensitivity["case"] == "chongqing_full_rs_context")
+        (sensitivity["case"] == "chongqing_pre_treatment")
         & (sensitivity["residual_moran_abs_threshold"] == 0.10),
         "evidence_grade",
     ].iloc[0] == "bounded_support"
     assert sensitivity.loc[
-        (sensitivity["case"] == "chongqing_full_rs_context")
+        (sensitivity["case"] == "chongqing_pre_treatment")
         & (sensitivity["residual_moran_abs_threshold"] == 0.20),
         "residual_moran_status",
     ].iloc[0] == "significant_below_material_threshold"

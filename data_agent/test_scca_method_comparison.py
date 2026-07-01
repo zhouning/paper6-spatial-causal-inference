@@ -96,7 +96,10 @@ def test_scca_method_comparison_tracks_county_spatial_downgrade_and_chongqing_ba
     ].iloc[0]
     assert chongqing["baseline_balance_pass"] is False
     assert chongqing["enhanced_balance_pass"] is True
-    assert chongqing["enhanced_grade"] == "core_support"
+    # The full-RS residual Moran (0.102) crosses the shipped 0.10 material
+    # threshold at p=0.01, so the honest grade is bounded_support: matching
+    # improves balance but does not remove the residual-spatial caution.
+    assert chongqing["enhanced_grade"] == "bounded_support"
 
 
 def test_scca_method_comparison_writes_contract_files(tmp_path):

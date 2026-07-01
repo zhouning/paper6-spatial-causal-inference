@@ -1,5 +1,5 @@
 {
-  "rule_set": "scca-evidence-grade-rules-2026-06-20",
+  "rule_set": "scca-evidence-grade-rules-2026-06-30",
   "thresholds_tested": [
     0.05,
     0.1,
@@ -8,20 +8,56 @@
     0.25,
     0.3
   ],
-  "best_threshold_by_youden_j": 0.05,
-  "best_tpr": 0.6927621861152142,
-  "best_fpr": 0.006726457399103139,
-  "best_precision": 0.9968119022316685,
-  "n_rows": 1800,
+  "families": [
+    "sar",
+    "car",
+    "kernel",
+    "nonstationary"
+  ],
+  "best_threshold_by_youden_j_pooled": 0.05,
+  "best_tpr": 0.7916861279775805,
+  "best_fpr": 0.029769959404600813,
+  "best_precision": 0.9871869539895166,
+  "per_family_youden_optimum": [
+    {
+      "family": "car",
+      "threshold": 0.05,
+      "tpr": 0.46368715083798884,
+      "fpr": 0.01092896174863388,
+      "youden_j": 0.45275818908935495
+    },
+    {
+      "family": "kernel",
+      "threshold": 0.2,
+      "tpr": 0.9906367041198502,
+      "fpr": 0.043010752688172046,
+      "youden_j": 0.9476259514316782
+    },
+    {
+      "family": "nonstationary",
+      "threshold": 0.05,
+      "tpr": 1.0,
+      "fpr": 0.0055248618784530384,
+      "youden_j": 0.994475138121547
+    },
+    {
+      "family": "sar",
+      "threshold": 0.05,
+      "tpr": 0.7080979284369114,
+      "fpr": 0.037037037037037035,
+      "youden_j": 0.6710608913998743
+    }
+  ],
+  "n_rows": 2880,
   "rho_grid": [
     0.2,
     0.5,
     0.8
   ],
   "n_grid": [
-    500,
-    2000,
-    5000
+    400,
+    900,
+    1600
   ],
   "sigma_u_grid": [
     0.0,
@@ -29,7 +65,7 @@
     1.0,
     2.0
   ],
-  "reps_per_cell": 50,
+  "reps_per_cell": 20,
   "positive_class": "rel_bias_gt_0_25",
   "rule_predictor": "abs(moran_i) >= t AND moran_p <= 0.05"
 }

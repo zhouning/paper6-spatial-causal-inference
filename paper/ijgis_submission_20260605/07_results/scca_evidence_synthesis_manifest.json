@@ -1,22 +1,23 @@
 {
-  "synthesis_csv": "paper/ijgis_submission_20260605/07_results/scca_evidence_synthesis.csv",
-  "report_md": "paper/ijgis_submission_20260605/07_results/scca_evidence_synthesis_report.md",
-  "manifest_json": "paper/ijgis_submission_20260605/07_results/scca_evidence_synthesis_manifest.json",
-  "threshold_sensitivity_csv": "paper/ijgis_submission_20260605/07_results/scca_grade_threshold_sensitivity.csv",
-  "threshold_sensitivity_md": "paper/ijgis_submission_20260605/07_results/scca_grade_threshold_sensitivity.md",
-  "chongqing_variable_role_audit_csv": "paper/ijgis_submission_20260605/07_results/chongqing_variable_role_audit.csv",
-  "chongqing_variable_role_audit_md": "paper/ijgis_submission_20260605/07_results/chongqing_variable_role_audit.md",
-  "chongqing_reviewer_audit_package_csv": "paper/ijgis_submission_20260605/07_results/chongqing_reviewer_audit_package.csv",
-  "chongqing_reviewer_audit_package_json": "paper/ijgis_submission_20260605/07_results/chongqing_reviewer_audit_package.json",
-  "grade_rules_json": "paper/ijgis_submission_20260605/07_results/scca_evidence_grade_rules.json",
-  "grade_rules_md": "paper/ijgis_submission_20260605/07_results/scca_evidence_grade_rules.md",
-  "results_dir": "paper/ijgis_submission_20260605/07_results",
-  "n_rows": 3,
+  "synthesis_csv": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\scca_evidence_synthesis.csv",
+  "report_md": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\scca_evidence_synthesis_report.md",
+  "manifest_json": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\scca_evidence_synthesis_manifest.json",
+  "threshold_sensitivity_csv": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\scca_grade_threshold_sensitivity.csv",
+  "threshold_sensitivity_md": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\scca_grade_threshold_sensitivity.md",
+  "chongqing_variable_role_audit_csv": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\chongqing_variable_role_audit.csv",
+  "chongqing_variable_role_audit_md": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\chongqing_variable_role_audit.md",
+  "chongqing_reviewer_audit_package_csv": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\chongqing_reviewer_audit_package.csv",
+  "chongqing_reviewer_audit_package_json": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\chongqing_reviewer_audit_package.json",
+  "grade_rules_json": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\scca_evidence_grade_rules.json",
+  "grade_rules_md": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\scca_evidence_grade_rules.md",
+  "results_dir": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results",
+  "n_rows": 4,
   "n_threshold_sensitivity_rows": 6,
-  "n_chongqing_variable_role_rows": 6,
+  "n_chongqing_variable_role_rows": 7,
   "n_chongqing_reviewer_audit_rows": 30,
   "grade_counts": {
-    "bounded_support": 3
+    "bounded_support": 3,
+    "core_support": 1
   },
   "rule_version": "scca-evidence-grade-rules-2026-06-30"
 }

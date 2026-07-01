@@ -26,6 +26,9 @@
 \newcommand{\auditcsv}{\path{07_results/chongqing_reviewer_audit_package.csv}}
 \newcommand{\auditjson}{\path{07_results/chongqing_reviewer_audit_package.json}}
 \newcommand{\comparecsv}{\path{07_results/scca_method_comparison.csv}}
+\newcommand{\coscsv}{\path{07_results/chongqing_change_of_support.csv}}
+\newcommand{\controljson}{\path{07_results/core_support_positive_control.json}}
+\newcommand{\famroccsv}{\path{07_results/threshold_calibration_roc_by_family.csv}}
 \newcommand{\calibcsv}{\path{07_results/threshold_calibration_summary.csv}}
 \newcommand{\calibroccsv}{\path{07_results/threshold_calibration_roc.csv}}
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
@@ -44,9 +47,9 @@
 \begin{abstract}
 Geographic observational studies estimate effects from spatially structured treatments, outcomes, and environments. Standard causal estimators can be applied, but their credibility depends on whether spatial context is a defensible adjustment source rather than an automatic control, and on whether remaining spatial structure is reported rather than hidden.
 
-We introduce Spatial Context Causal Adjustment (SCCA), an open diagnostic workflow for constructing and auditing spatial-context adjustment sets. SCCA is positioned as an audit protocol, not a new identification theorem. It treats coordinates, geometry, terrain, remote-sensing indices, land cover and neighborhood summaries as candidate context variables that must be justified by support, balance and robustness diagnostics. The workflow standardises feature construction and adjustment-set comparison, then reports common support, post-adjustment balance, spatial block bootstrap, threshold placebo tests, residual spatial autocorrelation, spatial-lag sensitivity, graph sensitivity, variable-role audits, and rule-based evidence grades. Rather than treating residual Moran's $I$ as an identifying statistic, we interpret it as a downgrade diagnostic and calibrate the default material threshold against a 1{,}800-cell controlled spatial autoregressive (SAR) confounding design that varies spatial autocorrelation strength, sample size and confounder strength.
+We introduce Spatial Context Causal Adjustment (SCCA), an open diagnostic workflow for constructing and auditing spatial-context adjustment sets. SCCA is positioned as an audit protocol, not a new identification theorem. It treats coordinates, geometry, terrain, remote-sensing indices, land cover and neighborhood summaries as candidate context variables that must be justified by support, balance and robustness diagnostics. The workflow standardises feature construction and adjustment-set comparison, then reports common support, post-adjustment balance, spatial block bootstrap, threshold placebo tests, residual spatial autocorrelation, spatial-lag sensitivity, graph sensitivity, variable-role audits, and rule-based evidence grades. Rather than treating residual Moran's $I$ as an identifying statistic, we interpret it as a downgrade diagnostic and calibrate the default material threshold against a 2{,}880-fit controlled design spanning four spatial-process families (simultaneous- and conditional-autoregressive, distance-kernel, and non-stationary) that varies spatial autocorrelation strength, sample size and confounder strength; the same design shows where the diagnostic is powerful and where it is not.
 
-We evaluate SCCA with synthetic stress tests, a Chongqing urban heat case, and a county GIS reproducibility check. In Chongqing, the full remote-sensing and terrain specification estimates a modest positive high-rise association with summer land surface temperature (ATT = 0.244$^\circ$C, 95\% CI [0.148, 0.346]) with maximum post-match SMD = 0.061. The matched residual Moran's $I = 0.102$ ($p=0.01$) crosses the default calibrated material threshold of 0.10, so the case is graded as bounded support; under a high-specificity 0.20 sensitivity threshold it would remain a significant residual-spatial warning rather than a material downgrade. The county dataset (Esri training/demo data) is retained as an ArcGIS-free workflow and spatial-diagnostic check rather than a substantive validation case: its adjusted coefficient was 0.181 but residual Moran's $I$ was 0.313 ($p=0.010$), and the spatial-lag coefficient fell to 0.145.
+We evaluate SCCA with synthetic stress tests, a Chongqing urban heat case, a county GIS reproducibility check, and a synthetic positive control. In Chongqing, our preferred specification is a \emph{pre-treatment confounder-only} adjustment set (coordinates, building geometry, and terrain) rather than the best-balanced set, because Sentinel-derived surfaces are possible post-treatment mediators. This specification estimates a modest positive high-rise association with summer land surface temperature (ATT = 0.303$^\circ$C, 95\% CI [0.220, 0.383]); adding the Sentinel surfaces (the best-balanced but over-adjusted full specification) attenuates the estimate to 0.244$^\circ$C, illustrating why balance alone must not select the causal design. Because the outcome is retrieved on a $\sim$1\,km MODIS grid while treatment is defined at the building level, roughly seven buildings share one outcome pixel; we make this change-of-support explicit by reporting cluster-robust standard errors clustered on the shared pixel (which widen the interval by $\sim$40\%) and a pixel-aggregated estimand at the identified scale (ATT $\approx$ 0.55$^\circ$C). The matched residual Moran's $I = 0.112$ ($p=0.01$) crosses the default calibrated material threshold of 0.10, so the case is graded as bounded support. We calibrate that threshold not on a single generator but across four spatial-process families (SAR, CAR, exponential-kernel, and non-stationary), and report how the residual-Moran/bias relationship — and hence threshold performance — varies across them. The county dataset (Esri training/demo data) is retained as an ArcGIS-free workflow and spatial-diagnostic check rather than a substantive validation case: its adjusted coefficient was 0.181 but residual Moran's $I$ was 0.313 ($p=0.010$), and the spatial-lag coefficient fell to 0.145. A clean synthetic positive control is graded core support, confirming that the core/bounded distinction is discriminative rather than constant.
 
 SCCA therefore contributes a bounded protocol for auditing evidence in geographic causal analysis. It does not solve unmeasured spatial confounding or spatial interference; it makes spatial-adjustment claims inspectable, portable across GIS environments, and harder to overstate.
 \end{abstract}
@@ -72,10 +75,10 @@ This paper proposes Spatial Context Causal Adjustment (SCCA). SCCA is a method w
 Our contributions are:
 
 \begin{enumerate}
-\item A formal SCCA workflow for selecting and diagnosing spatial-context adjustment sets in geographic observational studies, positioned as an audit protocol rather than a universal estimator.
-\item A residual-spatial downgrade rule motivated by SAR residual decomposition and calibrated against a controlled DGP, without claiming that residual Moran's $I$ identifies unmeasured confounding.
-\item A reproducible diagnostic protocol covering common support, covariate balance, spatial block bootstrap, threshold placebo definitions, residual spatial autocorrelation, neighborhood sensitivity, variable-role auditing, and evidence grading; the default residual-Moran threshold is calibrated at $t_{\mathrm{Moran}}=0.10$ and is reported together with high-specificity sensitivity checks.
-\item Focused evidence from synthetic estimator stress tests, a Chongqing urban heat analysis as the main empirical case, and a county social-capital notebook/GIS run used for ArcGIS-free operational reproducibility and spatial-diagnostic boundary checking.
+\item A formal SCCA workflow for selecting and diagnosing spatial-context adjustment sets in geographic observational studies, positioned as an audit protocol rather than a universal estimator. The workflow selects the preferred causal specification on \emph{causal-validity} grounds (a pre-treatment confounder set) rather than on post-match balance alone, and treats a better-balanced but possibly over-adjusted set as an explicit comparison.
+\item A residual-spatial downgrade rule motivated by SAR residual decomposition and calibrated against controlled data-generating processes, with a multi-family calibration (SAR, CAR, exponential-kernel, non-stationary) that reports where the rule transfers and where it does not, rather than claiming that residual Moran's $I$ identifies unmeasured confounding.
+\item A reproducible diagnostic protocol covering common support, covariate balance, spatial block bootstrap, threshold placebo definitions, residual spatial autocorrelation, neighborhood sensitivity, variable-role auditing, change-of-support diagnostics, and evidence grading; the default residual-Moran threshold is calibrated at $t_{\mathrm{Moran}}=0.10$ and reported together with high-specificity and per-family sensitivity checks.
+\item Focused evidence from synthetic estimator stress tests, a Chongqing urban heat analysis as the main empirical case, a county social-capital notebook/GIS run used for ArcGIS-free operational reproducibility and spatial-diagnostic boundary checking, and a synthetic positive control that the grade engine certifies as core support (so the core/bounded distinction is shown to be discriminative).
 \end{enumerate}
 
 The empirical ordering follows this claim. Chongqing is the main case because author-controlled spatial processing links candidate context variables directly to the adjustment design. The county case is more open and inspectable, but relies on third-party training/demo data; it is therefore used for ArcGIS-free packaging, spatial downgrading, and interface reproducibility rather than for the main causal claim.
@@ -108,7 +111,7 @@ Causal estimates are often reported as single numbers even when the adjustment d
 
 \subsection{Position relative to adjacent workflows}
 
-SCCA is an audit layer that connects causal adjustment diagnostics with GIS-facing spatial diagnostics. It reuses standard matching, weighting, regression, GPS and SLX-style sensitivity models, but adds a shared request schema, alternative context variants, common-support and balance checks, residual-spatial downgrades, and portable GIS outputs. The intended contribution is not a replacement for any single method class or proprietary GIS interface. It is a reproducible protocol for asking whether a spatial-context adjustment set is usable for a bounded causal statement and whether that statement should be downgraded after spatial diagnostics. The need for such an audit layer is consistent with recent GIScience work on reproducibility and reusable computational geography \citep{nuest2021reproducible,konkol2019computational,brunsdon2016quantitative}.
+SCCA is an audit layer that connects causal adjustment diagnostics with GIS-facing spatial diagnostics. It reuses standard matching, weighting, regression, GPS and SLX-style sensitivity models, but adds a shared request schema, alternative context variants, common-support and balance checks, residual-spatial downgrades, and portable GIS outputs. Relative to the spatial-confounding literature it builds on \citep{hodges2010adding,paciorek2010importance,dupont2022spatial+,khan2023restricted,gilbert2021spatialconfounding,tec2023spatialdml}, the increment is not a new estimator or identification result but three operational contributions: (i) selecting the reported specification on a declared causal-role basis (pre-treatment confounders) rather than on fit or balance, with the better-balanced set kept as an explicit over-adjustment comparison; (ii) turning residual spatial autocorrelation from a modelling nuisance into a pre-registered, machine-readable downgrade rule whose material threshold is calibrated and whose power is characterised across spatial-process families; and (iii) carrying these decisions, plus change-of-support diagnostics, into one portable evidence contract across GIS interfaces. The intended contribution is therefore a reproducible protocol for asking whether a spatial-context adjustment set is usable for a bounded causal statement and whether that statement should be downgraded after spatial diagnostics, not a replacement for any single method class or proprietary GIS interface. The need for such an audit layer is consistent with recent GIScience work on reproducibility and reusable computational geography \citep{nuest2021reproducible,konkol2019computational,brunsdon2016quantitative}.
 
 
 % ============================================================================
@@ -232,7 +235,7 @@ The binary Chongqing module separately writes ablation, balance, and matched-cou
 \subsection{Missing data, scale, and uncertainty}
 \label{sec:missing_scale_ci}
 
-Three implementation choices remain deliberately conservative and are recorded in the manuscript rather than buried in software. Missing context values are handled by within-variant median imputation with an explicit missingness indicator; the missingness indicator is added to $X$ so that any covariate-pattern shift due to imputation is captured by the post-match SMD. Analyses with spatially structured missingness should additionally rerun the workflow under complete-case removal as a sensitivity check. Scale and MAUP \citep{openshaw1984maup,fotheringham1991modifiable,manley2006maup} interact with SCCA at three points: the spatial unit on which $T$ is defined, the resolution at which $C$ is extracted, and the neighborhood graph used for spatial diagnostics. SCCA reports graph-sensitivity across $k \in \{4, 6, 8, 12\}$ for coordinate-kNN graphs and threshold-placebo sensitivity for binary exposures, but a single SCCA run does not solve scale mismatch by itself. Uncertainty intervals come from three distinct sources: cluster-robust HC3 standard errors for adjusted OLS and SLX, the empirical 2.5\%--97.5\% quantile of the spatial block bootstrap ($B=200$ for Chongqing, $B=50$ for the county case, using contiguous coordinate blocks sized to a multiple of the practical range), and Abadie--Imbens robust matching standard errors for the binary ATT \citep{abadie2006matchingse}. We report which source is used in each table.
+Three implementation choices remain deliberately conservative and are recorded in the manuscript rather than buried in software. Missing context values are handled by within-variant median imputation with an explicit missingness indicator; the missingness indicator is added to $X$ so that any covariate-pattern shift due to imputation is captured by the post-match SMD. Analyses with spatially structured missingness should additionally rerun the workflow under complete-case removal as a sensitivity check. Scale and MAUP \citep{openshaw1984maup,fotheringham1991modifiable,manley2006maup} interact with SCCA at three points: the spatial unit on which $T$ is defined, the resolution at which $C$ is extracted, and the neighborhood graph used for spatial diagnostics. When the outcome is retrieved at a coarser resolution than the treatment unit --- as in the Chongqing case, where a building-level treatment meets a $\sim$1\,km LST outcome --- SCCA reports an explicit \emph{change-of-support} panel (Section~\ref{sec:experiments}): the building-level estimate, the same estimate with standard errors clustered on the shared outcome pixel, and a pixel-aggregated estimand at the outcome resolution. SCCA also reports graph-sensitivity across $k \in \{4, 6, 8, 12\}$ for coordinate-kNN graphs and threshold-placebo sensitivity for binary exposures, but a single SCCA run does not solve scale mismatch by itself. Uncertainty intervals come from four distinct sources, and we report which source is used in each table: (i) cluster-robust HC3 standard errors for adjusted OLS and SLX; (ii) standard errors clustered on the shared outcome pixel for the change-of-support panel; (iii) the empirical 2.5\%--97.5\% quantile of the spatial block bootstrap ($B=200$ for Chongqing, $B=50$ for the county case, using contiguous coordinate blocks whose side is set to roughly twice the empirical range of the residual variogram); and (iv) Abadie--Imbens robust matching standard errors for the binary ATT \citep{abadie2006matchingse}.
 
 
 % ============================================================================
@@ -268,7 +271,7 @@ County social capital GIS run & Exact rerun where users have the licensed third-
 
 \subsection{Evidence synthesis design}
 
-The experiments addressed three questions: estimator behavior under controlled generators; balance and effect estimation in the Chongqing urban heat case; and GIS/notebook reproducibility with spatial-diagnostic boundary checking in the county social-capital run.
+The experiments addressed four questions: estimator behavior under controlled generators; balance, effect estimation, and change-of-support in the Chongqing urban heat case; GIS/notebook reproducibility with spatial-diagnostic boundary checking in the county social-capital run; and whether the evidence-grade engine can certify a clean design as core support (a positive control, \controljson).
 
 Table~\ref{tab:evidence_synthesis} summarizes the resulting evidence matrix. The source table is generated by the synthesis script and stored in \synthcsv; the same script writes residual-spatial threshold sensitivity to \thresholdcsv.
 
@@ -284,8 +287,9 @@ Table~\ref{tab:evidence_synthesis} summarizes the resulting evidence matrix. The
 Case & Data type & Key diagnostic & Grade & Manuscript use \\
 \midrule
 Synthetic benchmark audit & Controlled generators & 48 benchmark rows; 13 robust and 29 fragile rows & Bounded support & Estimator stress test, not real-world validation \\
-Chongqing urban heat & Real building and remote-sensing data & Full context ATT = 0.244$^\circ$C; max SMD = 0.061; residual Moran's $I$ = 0.102 & Bounded support & Main real-data SCCA ablation with residual-spatial caution \\
+Chongqing urban heat & Real building and remote-sensing data & Pre-treatment ATT = 0.303$^\circ$C (over-adjusted full = 0.244); pixel-aggregated $\approx$0.55; residual Moran's $I$ = 0.112 & Bounded support & Main real-data SCCA case with change-of-support and residual-spatial caution \\
 County social capital spatial notebook & GIS/notebook reproducibility case & residual Moran's $I$ = 0.313; spatial-lag coef. = 0.145; ArcGIS-trimmed ERF range = 6.85 years & Bounded support & Spatial diagnostics and cross-interface output check \\
+Synthetic core-support control & Clean controlled DGP (all confounders measured) & $\widehat{\mathrm{ATT}}$ = 0.505 (true 0.5); residual Moran's $I \approx 0$ (n.s.); no downgrade rule fires & Core support & Positive control showing the core/bounded distinction is discriminative \\
 \bottomrule
 \end{tabular}
 }
@@ -297,49 +301,71 @@ The controlled benchmark used six estimator families, including matching, DiD, E
 
 \subsection{Chongqing urban heat case}
 
-The main case asked whether Chongqing high-rise buildings were associated with local summer land surface temperature after spatial-context adjustment. The analysis used a stratified 2021 sample of 5{,}000 buildings. Treatment was defined as at least 10 floors; the matched sample retained 1{,}621 treated buildings (10--53 floors; median 14, interquartile range 11--19), so the ATT mainly describes mid-rise to upper-mid-rise contrasts rather than ultra-tall outliers. Summer LST was extracted from Landsat 8 thermal bands within a 90\,m buffer around each building centroid, with effective resolution about 30--100\,m. Candidate context variables included coordinates, footprint area, Sentinel-2 bands, NDVI, NDBI, MNDWI, NDWI, 30\,m SRTM elevation, and slope.
+The main case asked whether Chongqing high-rise buildings were associated with local summer land surface temperature after spatial-context adjustment. The analysis used a stratified 2021 sample of 5{,}000 buildings. Treatment was defined as at least 10 floors; the matched sample retained 1{,}621 treated buildings (10--53 floors; median 14, interquartile range 11--19), so the ATT mainly describes mid-rise to upper-mid-rise contrasts rather than ultra-tall outliers. Summer LST was retrieved from the MODIS MOD11A2 8-day product (June--August 2021) on its native $\sim$1\,km grid and sampled at each building centroid. Candidate context variables included coordinates, footprint area, Sentinel-2 bands, NDVI, NDBI, MNDWI, NDWI, 30\,m SRTM elevation, and slope. The $\sim$1\,km outcome resolution is coarser than the building treatment unit, a change-of-support issue we quantify explicitly below rather than treat as a footnote.
 
-The raw mean difference was 0.238$^\circ$C (Table~\ref{tab:chongqing}). The full remote-sensing and terrain specification estimated ATT $= 0.244^\circ$C with 95\% CI $[0.148, 0.346]$ and maximum post-match SMD $= 0.061$. The CI uses Abadie--Imbens robust matching standard errors \citep{abadie2006matchingse}; a $B = 200$ spatial block bootstrap gives a closely overlapping interval ($[0.131, 0.358]$) and sign-stability of 1.000. The estimate is small relative to pixel-scale thermal-retrieval uncertainty, mixed pixels, and the 30--100\,m outcome scale, so the practical claim is a measured-context association, not a precise high-rise thermal coefficient. Threshold placebos at 8, 10, and 12 floors gave 0.222$^\circ$C, 0.244$^\circ$C, and 0.305$^\circ$C (Figure~\ref{fig:threshold}), consistent with dose-response rather than a sharp threshold effect.
+\paragraph{Preferred causal specification.}
+We report the \emph{pre-treatment} confounder-only adjustment set (coordinates, building geometry, and terrain) as the preferred causal specification, chosen on causal-validity grounds rather than on minimum post-match SMD. This set uses only context that is plausibly fixed before high-rise construction. It estimated ATT $= 0.303^\circ$C with 95\% CI $[0.220, 0.383]$ and maximum post-match SMD $= 0.104$ (Table~\ref{tab:chongqing}). By contrast, the best-\emph{balanced} specification -- the full remote-sensing set that adds Sentinel bands and indices -- gave a smaller ATT $= 0.244^\circ$C (max post-match SMD $= 0.061$). The two differ by about 19\%, and the attenuation is expected if the added Sentinel surfaces partly encode the treatment's own thermal footprint (over-adjustment for a mediator). This is precisely why balance quality must not, by itself, select the causal design: the better-balanced set is the less causally defensible one. The CIs use Abadie--Imbens robust matching standard errors \citep{abadie2006matchingse}; a $B = 200$ spatial block bootstrap gives closely overlapping intervals and sign-stability of 1.000. Threshold placebos at 8, 10, and 12 floors are consistent with dose-response rather than a sharp threshold effect (Figure~\ref{fig:threshold}).
+
+\paragraph{Change of support.}
+Because the outcome is retrieved at $\sim$1\,km while treatment is defined at the building level, many buildings share one outcome pixel. In the analysis sample the 5{,}000 buildings map to about 1{,}400 distinct outcome pixels (roughly 3.6 buildings per pixel in the modelled subset; up to $\sim$7 in the raw sample), and within a shared pixel the buildings carry an identical outcome value. A building-level standard error that ignores this shared measurement overstates precision. Table~\ref{tab:cos} therefore reports three estimands for the pre-treatment set: (i) a naive building-level adjusted OLS, (ii) the same point estimate with standard errors clustered on the shared outcome pixel, and (iii) a pixel-aggregated model that collapses to one row per pixel and regresses pixel-mean LST on pixel treatment share. Clustering widens the interval by roughly 40\% (SE 0.038 $\rightarrow$ 0.054), and the pixel-aggregated estimand is materially larger (ATT $\approx 0.55^\circ$C). We interpret the pixel-aggregated figure as the effect that is actually identified at the outcome's resolution and the building-level figure as a finer-scale approximation whose precision must be discounted; the gap is a property of the data, not a defect the workflow can remove.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Chongqing change-of-support diagnostics for the pre-treatment adjustment set (source: \texttt{07\_results/chongqing\_change\_of\_support.csv}). The building-level point estimate is unchanged by clustering, but the cluster-robust SE (clustered on the shared $\sim$1\,km outcome pixel) is $\sim$40\% wider, and the pixel-aggregated estimand differs materially.}
+\label{tab:cos}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{lrrrl}
+\toprule
+Estimand & ATT ($^\circ$C) & SE & 95\% CI & Units \\
+\midrule
+Building, naive iid SE & 0.268 & 0.038 & [0.193, 0.343] & 5{,}000 buildings \\
+Building, cluster-robust SE & 0.268 & 0.054 & [0.162, 0.374] & 1{,}400 pixel clusters \\
+Pixel-aggregated & 0.546 & 0.096 & [0.359, 0.734] & 1{,}400 pixels \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.86\textwidth]{fig_chongqing_loveplot.pdf}
-\caption{Chongqing UHI full-RS variant: covariate balance before and after caliper matching (Love plot). The 0.10 SMD threshold is shown for reference; the maximum post-match SMD is 0.061.}
+\caption{Chongqing UHI covariate balance before and after caliper matching (Love plot) for the pre-treatment set. The 0.10 SMD threshold is shown for reference.}
 \label{fig:loveplot}
 \end{figure}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.82\textwidth]{fig_chongqing_threshold_curve.pdf}
-\caption{Chongqing threshold-placebo dose-response. Vertical bars are matching-based 95\% CIs. The monotone increase from 8 to 12 floors is consistent with a dose-response interpretation; the full-RS estimate remains small relative to the thermal-retrieval and scale uncertainties that accompany building-level LST extraction.}
+\caption{Chongqing threshold-placebo dose-response. Vertical bars are matching-based 95\% CIs. The monotone increase from 8 to 12 floors is consistent with a dose-response interpretation; all estimates remain small relative to the thermal-retrieval and change-of-support uncertainties that accompany $\sim$1\,km LST extraction.}
 \label{fig:threshold}
 \end{figure}
 
 \begin{table}[htbp]
 \centering
 \small
-\caption{Chongqing UHI adjustment variants. The maximum pre-match SMD reaches 0.703 for the full RS context variant, reflecting strong baseline imbalance in NDBI and Sentinel-2 bands. Balance pass means maximum post-match SMD $<0.10$.}
+\caption{Chongqing UHI adjustment variants. \emph{pre\_treatment} (coordinates + geometry + terrain) is the preferred causal specification; \emph{full RS context} adds Sentinel surfaces and is the best-balanced but over-adjusted comparison. The maximum pre-match SMD reaches 0.703 for the full RS context, reflecting strong baseline imbalance in NDBI and Sentinel-2 bands. Balance pass means maximum post-match SMD $<0.10$.}
 \label{tab:chongqing}
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{lrrrrr}
+\begin{tabular}{lrrrrrl}
 \toprule
-Variant & ATT ($^\circ$C) & CI lower & CI upper & Max pre SMD & Max post SMD \\
+Variant & ATT ($^\circ$C) & CI lower & CI upper & Max pre SMD & Max post SMD & Role \\
 \midrule
-Raw difference & 0.238 & 0.157 & 0.323 & -- & -- \\
-Coordinates only & 0.267 & 0.192 & 0.338 & 0.138 & 0.080 \\
-Geometry & 0.252 & 0.167 & 0.337 & 0.138 & 0.125 \\
-Terrain & 0.303 & 0.220 & 0.381 & 0.138 & 0.104 \\
-Sentinel indices & 0.157 & 0.055 & 0.263 & 0.703 & 0.083 \\
-Sentinel bands & 0.121 & 0.032 & 0.215 & 0.463 & 0.051 \\
-Full RS context & 0.244 & 0.148 & 0.346 & 0.703 & 0.061 \\
-PCA context & 0.231 & 0.134 & 0.328 & 0.560 & 0.065 \\
+Raw difference & 0.238 & 0.163 & 0.307 & -- & -- & unadjusted \\
+Coordinates only & 0.267 & 0.178 & 0.346 & 0.138 & 0.080 & pre-treatment \\
+Geometry & 0.252 & 0.180 & 0.333 & 0.138 & 0.125 & pre-treatment \\
+Terrain & 0.303 & 0.229 & 0.367 & 0.138 & 0.104 & pre-treatment \\
+\textbf{Pre-treatment (preferred)} & \textbf{0.303} & \textbf{0.220} & \textbf{0.383} & \textbf{0.138} & \textbf{0.104} & \textbf{confounder-only} \\
+Sentinel indices & 0.157 & 0.051 & 0.239 & 0.703 & 0.083 & possible mediator \\
+Sentinel bands & 0.121 & 0.034 & 0.210 & 0.463 & 0.051 & possible mediator \\
+Full RS context & 0.244 & 0.126 & 0.345 & 0.703 & 0.061 & over-adjusted \\
+PCA context & 0.231 & 0.140 & 0.324 & 0.560 & 0.065 & over-adjusted \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Residual Moran's $I$ remained statistically significant for both terrain and full-context variants (0.112 and 0.102, permutation $p = 0.01$). We report this honestly: the matched residual is not free of spatial structure. Under \ruleversion, the default material-spatial-caution threshold is $t_{\mathrm{Moran}}=0.10$, so the full-context residual triggers \texttt{material\_residual\_moran} and the Chongqing case is graded as bounded support. Figure~\ref{fig:residual} shows an illustrative Moran scatter consistent with the observed $I = 0.102$. Under a high-specificity sensitivity threshold of 0.20, the same residual would be recorded as statistically significant residual spatial structure below the material threshold rather than as a material downgrade. The appropriate scientific claim is therefore a modest measured-context association with explicit residual-spatial caution, scale mismatch concerns at the 30--100\,m LST resolution, and possible interference between adjacent high-rise clusters.
+Residual Moran's $I$ remained statistically significant for the pre-treatment specification ($I = 0.112$, permutation $p = 0.01$) and for the over-adjusted full-context set ($I = 0.102$, $p = 0.01$). We report this honestly: the matched residual is not free of spatial structure, and the pre-treatment set leaves slightly more residual structure than the over-adjusted set, consistent with its adjusting for fewer (possibly post-treatment) surfaces. Under \ruleversion, the default material-spatial-caution threshold is $t_{\mathrm{Moran}}=0.10$, so the preferred specification's residual triggers \texttt{material\_residual\_moran} and the Chongqing case is graded as bounded support. Figure~\ref{fig:residual} shows the empirical Moran scatter of the matched pre-treatment residual. Under a high-specificity sensitivity threshold of 0.20, the same residual would be recorded as statistically significant residual spatial structure below the material threshold rather than as a material downgrade. The appropriate scientific claim is therefore a modest measured-context association with explicit residual-spatial caution, change-of-support between the building treatment and the $\sim$1\,km LST outcome, and possible interference between adjacent high-rise clusters.
 
-The variable-role audit in Table~\ref{tab:chongqing_roles} addresses another reviewer concern: remote-sensing features are not all admissible confounders. Coordinates and terrain are low-risk context variables, building geometry is a medium-risk morphology proxy, and Sentinel-derived indices/bands are ambiguous proxies or possible mediators because they may reflect post-construction surfaces. The preferred full-RS context is therefore a measured-context design with the best observed balance among tested variants, not a purely pre-treatment adjustment set. The source table is written to \rolecsv.
+The variable-role audit in Table~\ref{tab:chongqing_roles} makes this explicit: remote-sensing features are not all admissible confounders. Coordinates and terrain are low-risk context variables, building geometry is a medium-risk morphology proxy, and Sentinel-derived indices/bands are ambiguous proxies or possible mediators because they may reflect post-construction surfaces. The preferred pre-treatment set therefore trades slightly weaker post-match balance for a more defensible causal interpretation, while the full-RS set is reported as an over-adjustment comparison. The source table is written to \rolecsv.
 
 \begin{table}[htbp]
 \centering
@@ -354,9 +380,10 @@ Context group & Causal role & Risk & Variant & ATT ($^\circ$C) & Max post SMD & 
 Coordinates & Spatial proxy confounder & Low & coordinates only & 0.267 & 0.080 & Yes \\
 Building geometry & Proxy confounder or pre-treatment morphology & Medium & geometry & 0.252 & 0.125 & No \\
 Terrain & Pre-treatment confounder & Low & terrain & 0.303 & 0.104 & No \\
+\textbf{Pre-treatment (preferred)} & Confounder-only adjustment set & Low & pre\_treatment & 0.303 & 0.104 & No \\
 Sentinel indices & Ambiguous proxy or mediator & High & sentinel indices & 0.157 & 0.083 & Yes \\
 Sentinel bands & Ambiguous proxy or mediator & Medium & sentinel bands & 0.121 & 0.051 & Yes \\
-Full RS context & Mixed context set & Medium & full RS context & 0.244 & 0.061 & Yes \\
+Full RS context & Over-adjusted (possible mediators) & Medium & full RS context & 0.244 & 0.061 & Yes \\
 \bottomrule
 \end{tabular}
 }
@@ -365,7 +392,7 @@ Full RS context & Mixed context set & Medium & full RS context & 0.244 & 0.061 &
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.66\textwidth]{fig_chongqing_residual_moran.pdf}
-\caption{Illustrative Moran scatter for the Chongqing full-RS residual. The slope (empirical Moran's $I$) is small but statistically significant under 200 permutations; under the default 0.10 rule it triggers a material residual-spatial caution, while under a high-specificity 0.20 sensitivity threshold it remains a non-downgrade warning.}
+\caption{Empirical Moran scatter for the Chongqing matched pre-treatment residual (standardised residual on the $x$-axis, its spatial lag on the $y$-axis). The slope is the empirical Moran's $I = 0.112$, statistically significant under 99 permutations ($p=0.01$); under the default 0.10 rule it triggers a material residual-spatial caution, while under a high-specificity 0.20 sensitivity threshold it would be recorded as significant-below-material.}
 \label{fig:residual}
 \end{figure}
 
@@ -377,33 +404,58 @@ The county notebook run adds the spatial-diagnostic layer used in the evidence t
 
 The ArcGIS-compatible county run is therefore a practical reproducibility check, not independent identification evidence or a claim to reproduce proprietary ArcGIS internals. It supports the narrower claim that an ArcGIS-free workflow can reproduce and audit a GIS-facing analysis while retaining explicit evidence boundaries.
 
+\subsection{Core-support positive control}
+\label{sec:core_control}
+
+Because all three preceding cases are graded bounded support, an engine that always returned bounded support would be observationally indistinguishable from ours on this evidence. We therefore include a positive control (\path{scripts/core_support_positive_control.py}, output \controljson). It generates a clean observational DGP with $n=3{,}000$ in which all confounders are measured, treatment overlap is excellent, and no latent spatial process is injected, then runs the SCCA adjusted estimator and the same diagnostics used for the real cases. The control recovers the true effect (ATT $=0.505$ vs.\ true $0.5$; relative bias $<1\%$), the post-adjustment covariate SMD is below 0.10, residual Moran's $I \approx 0$ with a non-significant permutation $p$, and the neighbor-exposure term is non-significant. Under the same rule table, the grade engine returns \emph{core support}: no downgrade rule fires. This confirms the core/bounded distinction is discriminative --- the empirical cases are downgraded because of real diagnostics, not because the engine is incapable of issuing a core grade.
+
 \subsection{Baseline-to-SCCA comparison}
 
-The direct comparisons are stored in \comparecsv. In Chongqing, the raw difference was 0.238$^\circ$C and the full SCCA estimate was 0.244$^\circ$C; SCCA did not change the coefficient dramatically, but added balance, variable-role and residual-spatial diagnostics, which downgraded the claim under the default rule. In the county case, adding the spatial layer reduced the coefficient from 0.181 to 0.145 and downgraded the evidence because residual Moran's $I$ and neighbor exposure remained significant.
+The direct comparisons are stored in \comparecsv. In Chongqing, the raw difference was 0.238$^\circ$C and the preferred pre-treatment SCCA estimate was 0.303$^\circ$C, while the over-adjusted full set gave 0.244$^\circ$C; SCCA's contribution is not a single coefficient but the balance, variable-role, change-of-support and residual-spatial diagnostics that identify which coefficient is defensible and downgrade the claim under the default rule. In the county case, adding the spatial layer reduced the coefficient from 0.181 to 0.145 and downgraded the evidence because residual Moran's $I$ and neighbor exposure remained significant.
 
 \subsection{Threshold calibration for the residual-Moran rule}
 \label{sec:thresholdcalibration}
 
-A central concern for rule-based audit workflows is threshold origin. We therefore calibrated the material residual-Moran threshold $t_{\mathrm{Moran}}$ with \path{scripts/threshold_calibration.py}. The script runs a controlled SAR-confounded DGP across $\rho \in \{0.2, 0.5, 0.8\}$, $n \in \{500, 2000, 5000\}$ and $\sigma_u \in \{0, 0.5, 1, 2\}$ for 50 replicates per cell, producing 1{,}800 SCCA fits with known ATT = 0.5. For each fit, it records material bias (relative bias $> 25\%$) and whether candidate thresholds $t \in \{0.05, 0.10, 0.15, 0.20, 0.25, 0.30\}$ fire. Results are stored in \calibcsv\ and \calibroccsv.
+A central concern for rule-based audit workflows is threshold origin, and a second is whether a threshold calibrated on one spatial process transfers to others. We therefore calibrated the material residual-Moran threshold $t_{\mathrm{Moran}}$ with \path{scripts/threshold_calibration.py} across \emph{four} spatial-process families for the latent confounder: a simultaneous autoregressive (SAR) field, a conditional autoregressive (CAR) field, a distance-based exponential/Mat\'ern-$\tfrac12$ kernel field, and a non-stationary field with spatially varying autocorrelation. The script sweeps $\rho \in \{0.2, 0.5, 0.8\}$, $n \in \{400, 900, 1600\}$ and $\sigma_u \in \{0, 0.5, 1, 2\}$ for 20 replicates per cell and family, producing 2{,}880 SCCA fits with known ATT = 0.5. For each fit it records material bias (relative bias $> 25\%$) and whether candidate thresholds $t \in \{0.05, 0.10, 0.15, 0.20, 0.25, 0.30\}$ fire. Results are stored in \calibcsv, \calibroccsv, and \path{07_results/threshold_calibration_roc_by_family.csv}.
 
-Table~\ref{tab:moran_roc} and Figure~\ref{fig:rocs} report the resulting trade-off. The 0.20 threshold has near-perfect specificity (FPR $\approx 0$, precision = 1.0) but only 32.1\% sensitivity: it correctly downgrades a strongly biased estimate roughly one third of the time and almost never fires on a clean estimate. The Youden's $J$ optimum sits at $t = 0.05$ (TPR $= 0.69$, FPR $= 0.007$), while $t=0.10$ keeps zero false positives in the calibration grid and recovers 52.7\% of materially biased fits. The 2026-06-30 rule set therefore uses $t_{\mathrm{Moran}}=0.10$ as the default conservative threshold and treats 0.20 as a high-specificity sensitivity threshold.
+Table~\ref{tab:moran_roc} reports the pooled trade-off and Figure~\ref{fig:rocs} the ROC. Pooling across families, the Youden's $J$ optimum sits at $t = 0.05$ (TPR $= 0.79$, FPR $= 0.03$), while $t=0.10$ keeps a low false-positive rate (0.02) and recovers 68\% of materially biased fits. The 2026-06-30 rule set uses $t_{\mathrm{Moran}}=0.10$ as the default conservative threshold and treats 0.20 as a high-specificity sensitivity threshold.
+
+The more important result is that this trade-off is \emph{family-dependent} (Table~\ref{tab:moran_family}). When the latent process is a distance-based kernel or non-stationary field, residual Moran's $I$ is large under bias (mean 0.32 and 0.40) and the rule is highly sensitive even at $t=0.20$ (TPR $\geq 0.99$). When the latent process is a CAR field, residual Moran's $I$ stays small under the same relative bias (mean 0.04), so the rule is weak: at $t=0.10$ it recovers only 19\% of biased CAR fits, and at $t=0.20$ essentially none. SAR sits between these extremes (TPR 0.53 at $t=0.10$). This is a direct external-validity limitation: the residual-Moran downgrade is a useful but not universal detector, and it is least sensitive precisely when the omitted spatial structure has weak simple-contiguity autocorrelation. We therefore present the rule as a calibrated warning boundary whose power depends on the unknown spatial process, and recommend pairing it with the neighbor-exposure and spatial-lag diagnostics rather than relying on residual Moran alone.
 
 \begin{table}[htbp]
 \centering
 \small
-\caption{Calibration of the SCCA residual-Moran downgrade rule under a controlled SAR-confounded DGP (1{,}800 fits). Positive class: relative bias $>$ 25\%. Predictor: $|I_{\mathrm{residual}}| \geq t$ AND permutation $p \leq 0.05$.}
+\caption{Pooled calibration of the SCCA residual-Moran downgrade rule across four spatial-process families (2{,}880 fits). Positive class: relative bias $>$ 25\%. Predictor: $|I_{\mathrm{residual}}| \geq t$ AND permutation $p \leq 0.05$.}
 \label{tab:moran_roc}
 \setlength{\tabcolsep}{4pt}
 \begin{tabular}{cccccL{4.2cm}}
 \toprule
 Threshold $t$ & TPR & FPR & Precision & Youden's $J$ & Verdict \\
 \midrule
-0.05 & 0.69 & 0.007 & 1.00 & 0.686 & calibrated optimum \\
-0.10 & 0.53 & 0.000 & 1.00 & 0.527 & manuscript default; flags Chongqing \\
-0.15 & 0.34 & 0.000 & 1.00 & 0.340 & \\
-0.20 & 0.32 & 0.000 & 1.00 & 0.321 & high-specificity sensitivity; misses 68\% of biased cases \\
-0.25 & 0.22 & 0.000 & 1.00 & 0.222 & \\
-0.30 & 0.06 & 0.000 & 1.00 & 0.061 & too lenient \\
+0.05 & 0.79 & 0.030 & 0.99 & 0.762 & pooled Youden optimum \\
+0.10 & 0.68 & 0.023 & 0.99 & 0.657 & manuscript default; flags Chongqing \\
+0.15 & 0.59 & 0.019 & 0.99 & 0.573 & \\
+0.20 & 0.57 & 0.018 & 0.99 & 0.556 & high-specificity sensitivity \\
+0.25 & 0.55 & 0.014 & 0.99 & 0.534 & \\
+0.30 & 0.50 & 0.008 & 0.99 & 0.494 & too lenient \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Per-family behaviour of the residual-Moran rule. Mean residual Moran's $I$ is averaged over all cells of that family; TPR is at the manuscript default $t=0.10$. The rule is strong for kernel/non-stationary processes but weak for CAR, where the same relative bias leaves little simple-contiguity autocorrelation in the residual.}
+\label{tab:moran_family}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lcccc}
+\toprule
+Latent-process family & Mean residual $I$ & TPR @ 0.10 & TPR @ 0.20 & Family Youden-optimal $t$ \\
+\midrule
+CAR (conditional AR) & 0.04 & 0.19 & 0.00 & 0.05 \\
+SAR (simultaneous AR) & 0.10 & 0.53 & 0.30 & 0.05 \\
+Exponential kernel & 0.32 & 0.99 & 0.99 & 0.20 \\
+Non-stationary & 0.40 & 1.00 & 1.00 & 0.05 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -411,14 +463,14 @@ Threshold $t$ & TPR & FPR & Precision & Youden's $J$ & Verdict \\
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.92\textwidth]{fig_threshold_calibration_roc.pdf}
-\caption{Threshold calibration for the SCCA residual-Moran downgrade rule. (a) ROC across candidate material thresholds; the 0.20 threshold sits in the high-specificity / low-sensitivity corner. (b) Youden's $J$ peaks near $t = 0.05$, while the manuscript default $t=0.10$ keeps zero false positives in the calibration grid and improves sensitivity relative to 0.20.}
+\caption{Threshold calibration for the SCCA residual-Moran downgrade rule. (a) Pooled ROC across candidate material thresholds. (b) Per-family ROC: the kernel and non-stationary families sit in the high-sensitivity corner, SAR is intermediate, and CAR is close to the chance-limited corner, showing that the rule's power depends on the unknown latent spatial process.}
 \label{fig:rocs}
 \end{figure}
 
 \subsection{Grade-rule sensitivity for the two case studies}
 \label{sec:chongqing_threshold_check}
 
-The county grade is stable, but the Chongqing grade is boundary-dependent. The sensitivity table varies only the material residual-Moran threshold. In Chongqing, residual Moran's $I=0.102$ ($p=0.01$) triggers bounded support under the default 0.10 rule, but becomes a significant sub-threshold warning under 0.15 and 0.20. In the county case, residual Moran's $I=0.313$ and significant neighboring exposure keep the grade bounded under all tested thresholds.
+The county grade is stable, but the Chongqing grade is boundary-dependent. The sensitivity table varies only the material residual-Moran threshold. In Chongqing, the preferred pre-treatment specification's residual Moran's $I=0.112$ ($p=0.01$) triggers bounded support under the default 0.10 rule, but becomes a significant sub-threshold warning under 0.15 and 0.20. In the county case, residual Moran's $I=0.313$ and significant neighboring exposure keep the grade bounded under all tested thresholds.
 
 \begin{table}[htbp]
 \centering
@@ -430,9 +482,9 @@ The county grade is stable, but the Chongqing grade is boundary-dependent. The s
 \toprule
 Case & Residual Moran's $I$ & Threshold & Grade & Residual status & Grade rules or flags \\
 \midrule
-Chongqing full context & 0.102 & 0.10 & Bounded & material significant & \texttt{material\_residual\_moran} \\
-Chongqing full context & 0.102 & 0.15 & Core & significant below material threshold & non-downgrade residual warning \\
-Chongqing full context & 0.102 & 0.20 & Core & significant below material threshold & non-downgrade residual warning \\
+Chongqing pre-treatment & 0.112 & 0.10 & Bounded & material significant & \texttt{material\_residual\_moran} \\
+Chongqing pre-treatment & 0.112 & 0.15 & Core & significant below material threshold & non-downgrade residual warning \\
+Chongqing pre-treatment & 0.112 & 0.20 & Core & significant below material threshold & non-downgrade residual warning \\
 County spatial notebook & 0.313 & 0.10 & Bounded & material significant & \texttt{material\_residual\_moran}; \texttt{significant\_neighbor\_exposure} \\
 County spatial notebook & 0.313 & 0.15 & Bounded & material significant & \texttt{material\_residual\_moran}; \texttt{significant\_neighbor\_exposure} \\
 County spatial notebook & 0.313 & 0.20 & Bounded & material significant & \texttt{material\_residual\_moran}; \texttt{significant\_neighbor\_exposure} \\
@@ -456,7 +508,7 @@ The county notebook run also tested SCCA as an operational GIS workflow. The sha
 
 SCCA addresses a practical gap in geographic causal analysis: spatial variables are often added without showing whether they improved the adjustment design, and spatial residuals are treated as model diagnostics rather than boundaries on causal interpretation. SCCA makes the adjustment set inspectable: readers can see which context sources were tried, which variants passed balance, how many units remained in support, whether spatial checks were stable, and why the final claim was graded as core or bounded.
 
-The Chongqing case illustrates the value of this discipline in the setting where the paper's main empirical claim is made. The most credible current estimate is not the most dramatic estimate. It is the estimate attached to full remote-sensing and terrain context, acceptable post-match balance, an explicitly audited variable-role table, an honestly reported statistically significant residual Moran's $I$ ($p = 0.01$), and a bounded evidence grade under the default rule. The raw difference (0.238$^\circ$C) and the SCCA estimate (0.244$^\circ$C) are nearly identical, so the contribution of SCCA in this case is not a coefficient revision; it is a diagnosed adjustment record that disciplines how that coefficient is reported.
+The Chongqing case illustrates the value of this discipline in the setting where the paper's main empirical claim is made. The most credible current estimate is not the best-balanced estimate. It is the estimate attached to a \emph{pre-treatment} confounder set (coordinates, geometry, terrain), chosen for causal defensibility rather than for minimum SMD, with an explicitly audited variable-role table, an honestly reported statistically significant residual Moran's $I = 0.112$ ($p = 0.01$), an explicit change-of-support discount (cluster-robust and pixel-aggregated estimands), and a bounded evidence grade under the default rule. Adding the best-balanced Sentinel surfaces would attenuate the estimate from 0.303 to 0.244$^\circ$C; SCCA's contribution here is not a single coefficient but the diagnosed record that shows why the pre-treatment coefficient, not the better-balanced one, is the defensible number to report.
 
 The county notebook case shows the same logic for practical GIS use. A non-spatial summary would have looked stronger than warranted; adding spatial diagnostics kept the positive coefficient but downgraded support because residual autocorrelation and neighboring exposure remained.
 
@@ -474,18 +526,18 @@ The current workflow can be strengthened without changing its core claim. Future
 
 \subsection{What SCCA does not solve}
 
-SCCA does not make observational spatial data equivalent to randomised experiments. It cannot adjust for confounders absent from all context sources or automatically solve interference. The SLX-style direct, indirect, and total summaries are sensitivity outputs, not identified network-interference estimands \citep{forastiere2021interference,papadogeorgou2022causal}. SCCA also does not remove MAUP or treatment-outcome scale mismatch \citep{openshaw1984maup,fotheringham1991modifiable}. Context variables are audited by variants rather than selected automatically. Missing context values use within-variant median imputation with a missingness indicator (Section~\ref{sec:missing_scale_ci}); spatially structured missingness should trigger a complete-case sensitivity rerun. The evidence-grade thresholds are machine-readable and predeclared, but only the residual-Moran rule is calibrated here; the boundary-mass, balance-correlation, and coefficient-change thresholds remain conservative manuscript defaults.
+SCCA does not make observational spatial data equivalent to randomised experiments. It cannot adjust for confounders absent from all context sources or automatically solve interference. The SLX-style direct, indirect, and total summaries are sensitivity outputs, not identified network-interference estimands \citep{forastiere2021interference,papadogeorgou2022causal}. This limit is concrete in the Chongqing case: heat generated by one high-rise cluster plausibly raises the LST of adjacent pixels, so the no-interference (SUTVA) assumption is unlikely to hold exactly. The consequence is that the building-level ATT conflates a unit's own effect with spillover from neighbours; the significant neighbor-exposure and spatial-lag terms are read here as a warning that this contamination is present, and the pixel-aggregated estimand (Section~\ref{sec:experiments}) partially absorbs local spillover by moving to the outcome's own resolution but does not identify a formal spillover effect. SCCA also does not remove MAUP or treatment-outcome scale mismatch \citep{openshaw1984maup,fotheringham1991modifiable}. Context variables are audited by variants rather than selected automatically. Missing context values use within-variant median imputation with a missingness indicator (Section~\ref{sec:missing_scale_ci}); spatially structured missingness should trigger a complete-case sensitivity rerun. The evidence-grade thresholds are machine-readable and predeclared, but only the residual-Moran rule is calibrated here, and that calibration shows it is process-dependent (weak under CAR-type structure); the boundary-mass, balance-correlation, and coefficient-change thresholds remain conservative manuscript defaults.
 
-The Chongqing case illustrates these limits directly. Its residual Moran diagnostic ($I = 0.102$, $p = 0.01$) is statistically significant and crosses the default calibrated threshold of 0.10. The correct interpretation is therefore a modest measured-context association with three stated boundaries: residual spatial structure that the SCCA-observed context did not absorb, possible post-treatment ambiguity in some Sentinel-derived context variables, and sensitivity of the grade to the chosen material-Moran threshold. None of these is a defect of the workflow; they are properties of the data that SCCA exists to make visible.
+The Chongqing case illustrates these limits directly. Its residual Moran diagnostic ($I = 0.112$, $p = 0.01$ for the preferred pre-treatment set) is statistically significant and crosses the default calibrated threshold of 0.10. The correct interpretation is therefore a modest measured-context association with four stated boundaries: residual spatial structure that the SCCA-observed context did not absorb, change-of-support between the building-level treatment and the $\sim$1\,km LST outcome (so the identified-scale estimand differs from the building-level one), possible post-treatment ambiguity that led us to exclude Sentinel surfaces from the preferred set, and sensitivity of the grade to the chosen material-Moran threshold. None of these is a defect of the workflow; they are properties of the data that SCCA exists to make visible.
 
 % ============================================================================
 \section{Conclusions}
 \label{sec:conclusions}
 % ============================================================================
 
-We presented Spatial Context Causal Adjustment, an open diagnostic workflow for geographic observational causal studies. SCCA formalises spatial context as a candidate adjustment source and evaluates each adjustment variant through common support, balance, robustness, spatial diagnostics, variable-role audits, and reproducible evidence-grade rules. We motivated the residual-Moran downgrade rule as a diagnostic boundary and calibrated its default threshold against a 1{,}800-cell controlled DGP. Across synthetic benchmark stress tests, a Chongqing urban heat case, and a county social-capital notebook/GIS check, SCCA distinguished useful estimates from bounded and fragile designs.
+We presented Spatial Context Causal Adjustment, an open diagnostic workflow for geographic observational causal studies. SCCA formalises spatial context as a candidate adjustment source and evaluates each adjustment variant through common support, balance, robustness, spatial diagnostics, variable-role audits, and reproducible evidence-grade rules. We motivated the residual-Moran downgrade rule as a diagnostic boundary and calibrated its default threshold against a 2{,}880-fit controlled design across four spatial-process families, which also revealed that the rule's power is process-dependent. Across synthetic benchmark stress tests, a Chongqing urban heat case, and a county social-capital notebook/GIS check, SCCA distinguished useful estimates from bounded and fragile designs.
 
-The main empirical result is deliberately bounded. In Chongqing, the full-context model produced a modest positive high-rise association with summer LST that passes balance diagnostics but is bounded under the default 0.10 residual-Moran rule; the residual Moran's $I = 0.102$ ($p = 0.01$) is statistically significant, and the estimate's magnitude is small relative to the thermal-retrieval and scale uncertainties in building-level LST extraction. The synthetic benchmark exposed estimator fragility under stress, and the county notebook/GIS run showed practical ArcGIS-free reproducibility while also demonstrating why a non-spatial strong result should be downgraded when residual spatial structure remains visible. Taken together, these findings support SCCA as a reproducible audit method for spatial causal adjustment. Its value is not that it removes the need for causal assumptions, but that it makes those assumptions, diagnostics, and claim boundaries visible in GIS-facing workflows.
+The main empirical result is deliberately bounded. In Chongqing, the preferred pre-treatment specification produced a modest positive high-rise association with summer LST (ATT $= 0.303^\circ$C) that is bounded under the default 0.10 residual-Moran rule; the residual Moran's $I = 0.112$ ($p = 0.01$) is statistically significant, and the estimate's magnitude is small relative to the thermal-retrieval and change-of-support uncertainties in building-to-$\sim$1\,km LST extraction. The synthetic benchmark exposed estimator fragility under stress; a clean synthetic positive control was certified as core support, confirming the grade is discriminative; and the county notebook/GIS run showed practical ArcGIS-free reproducibility while demonstrating why a non-spatial strong result should be downgraded when residual spatial structure remains visible. The multi-family threshold calibration further shows that the residual-Moran rule is a useful but process-dependent detector -- strong under kernel and non-stationary latent fields, weak under CAR fields -- which is why SCCA pairs it with neighbor-exposure and spatial-lag diagnostics. Taken together, these findings support SCCA as a reproducible audit method for spatial causal adjustment. Its value is not that it removes the need for causal assumptions, but that it makes those assumptions, diagnostics, and claim boundaries visible in GIS-facing workflows.
 
 
 % ============================================================================
@@ -527,8 +579,8 @@ Angrist, J.D. and Pischke, J.S., 2009. Mostly Harmless Econometrics: An Empirici
 \bibitem[Anselin, 1988]{anselin1988spatial}
 Anselin, L., 1988. Spatial Econometrics: Methods and Models. Kluwer Academic Publishers.
 
-\bibitem[Anselin, 2019]{anselin2019spatialdatascience}
-Anselin, L., 2019. The Moran scatterplot as an ESDA tool to assess local instability in spatial association. Geographical Analysis 51(2), 133--150 (data-science extensions).
+\bibitem[Anselin and Rey, 2014]{anselin2019spatialdatascience}
+Anselin, L. and Rey, S.J., 2014. Modern Spatial Econometrics in Practice: A Guide to GeoDa, GeoDaSpace and PySAL. GeoDa Press.
 
 \bibitem[Aronow and Samii, 2017]{aronow2017interference}
 Aronow, P.M. and Samii, C., 2017. Estimating average causal effects under general interference, with application to a social network experiment. Annals of Applied Statistics 11(4), 1912--1947.
@@ -541,6 +593,9 @@ Austin, P.C., 2009. Balance diagnostics for comparing the distribution of baseli
 
 \bibitem[Brunsdon, 2016]{brunsdon2016quantitative}
 Brunsdon, C., 2016. Quantitative methods I: Reproducible research and quantitative geography. Progress in Human Geography 40(5), 687--696.
+
+\bibitem[Chernozhukov et~al., 2018]{chernozhukov2018dml}
+Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J., 2018. Double/debiased machine learning for treatment and structural parameters. Econometrics Journal 21(1), C1--C68.
 
 \bibitem[Dupont et~al., 2022]{dupont2022spatial+}
 Dupont, E., Wood, S.N. and Augustin, N.H., 2022. Spatial+: a novel approach to spatial confounding. Biometrics 78(4), 1279--1290.
@@ -619,9 +674,6 @@ Verbitsky-Savitz, N. and Raudenbush, S.W., 2012. Causal inference under interfer
 
 \bibitem[Zhao et~al., 2013]{zhao2013nonbinary}
 Zhao, S., van Dyk, D.A. and Imai, K., 2013. Causal inference in observational studies with non-binary treatments. arXiv:1309.6361.
-
-\bibitem[Chernozhukov et~al., 2018]{chernozhukov2018dml}
-Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J., 2018. Double/debiased machine learning for treatment and structural parameters. Econometrics Journal 21(1), C1--C68.
 
 \end{thebibliography}
 

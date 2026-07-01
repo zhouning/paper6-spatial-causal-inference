@@ -1,0 +1,2 @@
+case,att_true,att_hat,rel_bias,max_post_smd,residual_moran_i,residual_moran_p_value,neighbor_exposure_p_value,spatial_lag_relative_change,evidence_grade,control_passed
+synthetic_core_support_control,0.5,0.5045,0.0091,0.0917,-0.0108,0.185,0.4199,0.0004,core_support,True

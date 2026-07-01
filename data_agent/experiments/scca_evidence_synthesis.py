@@ -214,44 +214,74 @@ def _chongqing_row(results_dir: Path) -> dict[str, str] | None:
     ablation = _read_csv(results_dir / "chongqing_uhi_ablation.csv")
     if ablation.empty:
         return None
-    preferred = ablation[ablation["variant"] == "full_rs_context"]
+    # Primary causal specification is the pre-treatment confounder-only set
+    # (coordinates + geometry + terrain), chosen on causal-validity grounds
+    # rather than on post-match balance. full_rs_context is retained only as an
+    # over-adjustment comparison because Sentinel surfaces may be mediators.
+    primary_variant = "pre_treatment"
+    preferred = ablation[ablation["variant"] == primary_variant]
     if preferred.empty:
-        candidates = ablation[
-            (ablation.get("status") == "ok")
-            & (ablation.get("balance_pass_0_1").astype(str).str.lower() == "true")
-        ].copy()
-        if candidates.empty:
-            candidates = ablation[ablation.get("status") == "ok"].copy()
+        preferred = ablation[ablation["variant"] == "terrain"]
+        primary_variant = "terrain"
+    if preferred.empty:
+        candidates = ablation[ablation.get("status") == "ok"].copy()
         candidates["max_post_smd_num"] = pd.to_numeric(candidates["max_post_smd"], errors="coerce")
         preferred = candidates.sort_values("max_post_smd_num").head(1)
+        primary_variant = str(preferred.iloc[0].get("variant")) if not preferred.empty else primary_variant
     record = preferred.iloc[0]
     balance_pass = str(record.get("balance_pass_0_1")).lower() == "true"
     max_smd = _fmt_num(record.get("max_post_smd"))
     ci = f"[{_fmt_num(record.get('ci_lower'))}, {_fmt_num(record.get('ci_upper'))}]"
+
+    # Over-adjustment comparison row.
+    full = ablation[ablation["variant"] == "full_rs_context"]
+    full_att = _fmt_num(full.iloc[0].get("att")) if not full.empty else "NA"
+
+    # Change-of-support consequence (pixel-aggregated estimand vs building-level).
+    cos = _read_csv(results_dir / "chongqing_change_of_support.csv")
+    cos_text = ""
+    if not cos.empty:
+        prim = cos[(cos["variant"] == primary_variant) | (cos["variant"] == "pre_treatment")]
+        naive = prim[prim["estimand"] == "building_cluster_robust"]
+        pixel = prim[prim["estimand"] == "pixel_aggregated"]
+        if not naive.empty and not pixel.empty:
+            cos_text = (
+                f"; cluster-robust building ATT = {_fmt_num(naive.iloc[0].get('att'))} "
+                f"(CR SE {_fmt_num(naive.iloc[0].get('se'))}), "
+                f"pixel-aggregated ATT = {_fmt_num(pixel.iloc[0].get('att'))}"
+            )
+
+    # Credibility: pre-treatment set has weaker post-match balance
+    # (max SMD ~0.10) than the over-adjusted full set, so we do not overstate.
+    credibility = "strong_support" if balance_pass else "moderate_support"
     assessment = assess_scca_evidence_grade(
-        credibility_decision="strong_support" if balance_pass else "moderate_support",
+        credibility_decision=credibility,
         robustness_interpretation="robust_support",
-        spatial_summary=_spatial_summary_from_chongqing(results_dir, str(record.get("variant"))),
+        spatial_summary=_spatial_summary_from_chongqing(results_dir, primary_variant),
     )
     grade, rule_ids, grade_reasons = _assessment_text(assessment)
     return _row(
         case="chongqing_uhi",
         data_type="real remote-sensing and building-footprint case",
         exposure="high-rise building threshold >= 10 floors",
-        outcome="summer land surface temperature",
-        context_source="coordinates, geometry, Sentinel-2 bands/indices, DEM terrain",
-        best_adjustment=str(record.get("variant")),
-        effect_estimate=f"ATT = {_fmt_num(record.get('att'))} C; 95% CI {ci}",
+        outcome="summer land surface temperature (MODIS MOD11A2, ~1 km)",
+        context_source="coordinates, geometry, DEM terrain (pre-treatment); Sentinel-2 as over-adjustment comparison",
+        best_adjustment=f"{primary_variant} (pre-treatment confounder set)",
+        effect_estimate=(
+            f"ATT = {_fmt_num(record.get('att'))} C; 95% CI {ci}; "
+            f"over-adjusted full-RS ATT = {full_att} C{cos_text}"
+        ),
         balance_status=f"max post-match SMD = {max_smd}; balance pass = {balance_pass}",
-        robustness_status="threshold placebo, spatial bootstrap, and residual spatial diagnostics available",
+        robustness_status="threshold placebo, spatial bootstrap, residual spatial, and change-of-support diagnostics available",
         evidence_grade=grade,
         grade_rule_ids=rule_ids,
         grade_reasons=grade_reasons,
         limitation=(
-            "LST retrieval scale and uncertainty, building-level treatment assignment, "
-            "and spatial interference limit causal strength."
+            "Outcome retrieved at ~1 km while treatment is building-level (change-of-support), "
+            "residual spatial structure remains, and Sentinel surfaces may be post-treatment; "
+            "these bound the causal strength."
         ),
-        manuscript_use="Use as the main real-data SCCA ablation; report the modest positive balanced estimate.",
+        manuscript_use="Use as the main real-data SCCA case; report the pre-treatment estimate with change-of-support and residual-spatial caution.",
     )
 
 
@@ -385,11 +415,13 @@ def build_residual_moran_threshold_sensitivity(
     """Re-grade cases after varying only the material residual Moran threshold."""
     root = Path(results_dir)
     cases: list[dict[str, Any]] = []
-    chongqing_spatial = _spatial_summary_from_chongqing(root, "full_rs_context")
+    chongqing_spatial = _spatial_summary_from_chongqing(root, "pre_treatment")
+    if not chongqing_spatial:
+        chongqing_spatial = _spatial_summary_from_chongqing(root, "full_rs_context")
     if chongqing_spatial:
         cases.append(
             {
-                "case": "chongqing_full_rs_context",
+                "case": "chongqing_pre_treatment",
                 "credibility_decision": "strong_support",
                 "robustness_interpretation": "robust_support",
                 "spatial_summary": chongqing_spatial,
@@ -511,7 +543,7 @@ def build_chongqing_variable_role_audit(
             "context_group": "Terrain",
             "variables": "elevation and slope",
             "causal_role": "pre-treatment confounder",
-            "main_model_use": "retained as physical context",
+            "main_model_use": "part of the preferred pre-treatment set",
             "post_treatment_risk": "low",
             "sensitivity_variant": "terrain",
             "interpretation": (
@@ -520,22 +552,36 @@ def build_chongqing_variable_role_audit(
             ),
         },
         {
+            "context_group": "Pre-treatment set",
+            "variables": "coordinates, geometry, terrain (no Sentinel surfaces)",
+            "causal_role": "confounder-only adjustment set",
+            "main_model_use": "PREFERRED causal specification",
+            "post_treatment_risk": "low",
+            "sensitivity_variant": "pre_treatment",
+            "interpretation": (
+                "Uses only plausibly pre-treatment context and is the manuscript's "
+                "primary causal specification, chosen on causal-validity grounds "
+                "rather than on minimum post-match SMD."
+            ),
+        },
+        {
             "context_group": "Sentinel indices",
             "variables": "NDVI, NDBI, NDWI, MNDWI",
             "causal_role": "ambiguous proxy or mediator",
-            "main_model_use": "retained only with explicit role caution",
+            "main_model_use": "over-adjustment comparison only",
             "post_treatment_risk": "high",
             "sensitivity_variant": "sentinel_indices",
             "interpretation": (
                 "Spectral indices improve environmental context but may partly encode "
-                "post-construction land-cover responses."
+                "post-construction land-cover responses, so they are excluded from the "
+                "preferred set."
             ),
         },
         {
             "context_group": "Sentinel bands",
             "variables": "Sentinel-2 reflectance bands",
             "causal_role": "ambiguous proxy or mediator",
-            "main_model_use": "retained only with explicit role caution",
+            "main_model_use": "over-adjustment comparison only",
             "post_treatment_risk": "medium",
             "sensitivity_variant": "sentinel_bands",
             "interpretation": (
@@ -546,13 +592,14 @@ def build_chongqing_variable_role_audit(
         {
             "context_group": "Full RS context",
             "variables": "coordinates, geometry, terrain, Sentinel bands and indices",
-            "causal_role": "mixed context set",
-            "main_model_use": "preferred Chongqing adjustment",
+            "causal_role": "over-adjusted mixed set (possible mediators)",
+            "main_model_use": "over-adjustment sensitivity comparison",
             "post_treatment_risk": "medium",
             "sensitivity_variant": "full_rs_context",
             "interpretation": (
-                "The preferred specification gives the best balance among tested "
-                "remote-sensing context sets, with residual spatial caution retained."
+                "Adds Sentinel surfaces on top of the pre-treatment set. It has the "
+                "best post-match balance but conditions on possible mediators, so it "
+                "is reported as an over-adjustment comparison, not the preferred design."
             ),
         },
     ]
@@ -700,6 +747,43 @@ def build_chongqing_reviewer_audit_package(
     return pd.DataFrame(rows, columns=CHONGQING_REVIEWER_AUDIT_COLUMNS)
 
 
+def _core_support_control_row(results_dir: Path) -> dict[str, str] | None:
+    """Positive-control row: a clean synthetic case graded core_support.
+
+    Included so the evidence table exercises the core/bounded distinction on an
+    evidence row, demonstrating the grade engine is discriminative rather than
+    always returning bounded_support.
+    """
+    payload = _read_json(results_dir / "core_support_positive_control.json")
+    if not payload:
+        return None
+    diag = payload.get("diagnostics", {})
+    grade = str(payload.get("evidence_grade", "bounded_support"))
+    return _row(
+        case="synthetic_core_support_control",
+        data_type="controlled positive-control synthetic case",
+        exposure="near-randomised binary treatment",
+        outcome="continuous outcome with measured confounders only",
+        context_source="fully measured confounders; no unmeasured spatial process",
+        best_adjustment="adjusted OLS on the correct measured set",
+        effect_estimate=(
+            f"ATT_hat = {_fmt_num(diag.get('att_hat'))} (true 0.5); "
+            f"rel. bias = {_fmt_num(diag.get('rel_bias'))}"
+        ),
+        balance_status=f"max post-adjust SMD = {_fmt_num(diag.get('max_post_smd'))}",
+        robustness_status=(
+            f"residual Moran I = {_fmt_num(diag.get('residual_moran_i'))} "
+            f"(p = {_fmt_num(diag.get('residual_moran_p_value'))}); "
+            f"neighbor-exposure p = {_fmt_num(diag.get('neighbor_exposure_p_value'))}"
+        ),
+        evidence_grade=grade,
+        grade_rule_ids=_joined_text(payload.get("triggered_rules")),
+        grade_reasons="No downgrade rules fire on a clean, well-identified design.",
+        limitation="Synthetic positive control only; demonstrates grade discrimination, not real-world validity.",
+        manuscript_use="Use as the core_support positive control that exercises the grade engine.",
+    )
+
+
 def build_scca_evidence_table(
     results_dir: str | Path = DEFAULT_RESULTS_DIR,
 ) -> pd.DataFrame:
@@ -708,6 +792,7 @@ def build_scca_evidence_table(
     rows: list[dict[str, str]] = []
     for optional_row in (
         _synthetic_row(root),
+        _core_support_control_row(root),
         _chongqing_row(root),
         _county_spatial_notebook_row(root),
     ):
@@ -718,8 +803,9 @@ def build_scca_evidence_table(
         return table
     order = {
         "synthetic_benchmark_audit": 0,
-        "chongqing_uhi": 1,
-        "county_social_capital_spatial_notebook": 2,
+        "synthetic_core_support_control": 1,
+        "chongqing_uhi": 2,
+        "county_social_capital_spatial_notebook": 3,
     }
     table["_order"] = table["case"].map(order).fillna(99)
     return table.sort_values(["_order", "case"]).drop(columns=["_order"]).reset_index(drop=True)

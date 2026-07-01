@@ -26,13 +26,13 @@
     },
     {
       "item": "n_bootstrap",
-      "value": "500",
+      "value": "200",
       "source_file": "chongqing_uhi_analysis_manifest.json",
       "privacy_status": "non_sensitive_aggregate"
     },
     {
       "item": "n_spatial_bootstrap",
-      "value": "500",
+      "value": "200",
       "source_file": "chongqing_uhi_analysis_manifest.json",
       "privacy_status": "non_sensitive_aggregate"
     },
@@ -56,13 +56,13 @@
     },
     {
       "item": "full_rs_context_ci_lower",
-      "value": "0.147652242638778",
+      "value": "0.1260676735407284",
       "source_file": "chongqing_uhi_ablation.csv",
       "privacy_status": "non_sensitive_aggregate"
     },
     {
       "item": "full_rs_context_ci_upper",
-      "value": "0.3460744790595649",
+      "value": "0.3446681954603759",
       "source_file": "chongqing_uhi_ablation.csv",
       "privacy_status": "non_sensitive_aggregate"
     },

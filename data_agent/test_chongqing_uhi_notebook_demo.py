@@ -93,7 +93,7 @@ def test_chongqing_uhi_notebook_demo_contract(tmp_path):
     assert result["balance_rows"] > 0
     assert result["bootstrap_rows"] == 16
     assert result["placebo_rows"] == 6
-    assert result["residual_rows"] == 2
+    assert result["residual_rows"] == 3
     assert result["balance_interpretation"] in {"credible_balance", "bounded_balance", "failed_balance"}
     assert result["full_rs_context_att"] is not None
     assert result["full_rs_context_max_post_smd"] is not None

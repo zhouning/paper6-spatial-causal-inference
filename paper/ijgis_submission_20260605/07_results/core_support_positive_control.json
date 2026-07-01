@@ -1,0 +1,20 @@
+{
+  "case": "synthetic_core_support_control",
+  "purpose": "Positive control demonstrating that the SCCA grade engine returns core_support on a clean DGP, so the core/bounded distinction is discriminative rather than constant.",
+  "diagnostics": {
+    "att_true": 0.5,
+    "att_hat": 0.5045462019430649,
+    "rel_bias": 0.009092403886129752,
+    "max_post_smd": 0.09170661760823712,
+    "residual_moran_i": -0.010816458394927606,
+    "residual_moran_p_value": 0.185,
+    "neighbor_exposure_p_value": 0.419908457837886,
+    "spatial_lag_relative_change": 0.0003984776731746446,
+    "n": 3000
+  },
+  "evidence_grade": "core_support",
+  "triggered_rules": [],
+  "material_spatial_caution": false,
+  "expected_grade": "core_support",
+  "control_passed": true
+}
