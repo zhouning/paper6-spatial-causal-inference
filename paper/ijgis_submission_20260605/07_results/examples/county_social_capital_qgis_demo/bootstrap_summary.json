@@ -1,0 +1,13 @@
+{
+  "case": "county_social_capital_qgis_demo",
+  "bootstrap_type": "STATE_NAME",
+  "n_replicates_requested": 50,
+  "n_replicates_valid": 50,
+  "coef_mean": 0.18143174761293845,
+  "coef_median": 0.18122484765184266,
+  "coef_std": 0.014351534022198107,
+  "ci_lower_2_5": 0.15996399052310506,
+  "ci_upper_97_5": 0.21005085810035834,
+  "sign_stability": 1.0,
+  "failure_count": 0
+}

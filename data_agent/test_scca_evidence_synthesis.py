@@ -54,6 +54,9 @@ def test_scca_evidence_synthesis_prefers_tracked_county_spatial_summary(tmp_path
 
 def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
     from data_agent.experiments.scca_evidence_synthesis import (
+        build_residual_moran_threshold_sensitivity,
+        build_chongqing_reviewer_audit_package,
+        build_chongqing_variable_role_audit,
         run_scca_evidence_synthesis,
     )
 
@@ -65,6 +68,12 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
         "manifest_json": tmp_path / "scca_evidence_synthesis_manifest.json",
         "grade_rules_json": tmp_path / "scca_evidence_grade_rules.json",
         "grade_rules_md": tmp_path / "scca_evidence_grade_rules.md",
+        "threshold_sensitivity_csv": tmp_path / "scca_grade_threshold_sensitivity.csv",
+        "threshold_sensitivity_md": tmp_path / "scca_grade_threshold_sensitivity.md",
+        "chongqing_variable_role_audit_csv": tmp_path / "chongqing_variable_role_audit.csv",
+        "chongqing_variable_role_audit_md": tmp_path / "chongqing_variable_role_audit.md",
+        "chongqing_reviewer_audit_package_csv": tmp_path / "chongqing_reviewer_audit_package.csv",
+        "chongqing_reviewer_audit_package_json": tmp_path / "chongqing_reviewer_audit_package.json",
     }
     for key, path in expected.items():
         assert manifest[key] == str(path)
@@ -95,7 +104,11 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
     }
     assert set(synthesis["case"]) == expected_cases
     assert "county_social_capital" not in set(synthesis["case"])
-    assert set(synthesis["evidence_grade"]) == {"core_support", "bounded_support"}
+    assert set(synthesis["evidence_grade"]) == {"bounded_support"}
+    assert synthesis.loc[
+        synthesis["case"] == "chongqing_uhi",
+        "grade_rule_ids",
+    ].str.contains("material_residual_moran").any()
     assert synthesis.loc[
         synthesis["case"] == "county_social_capital_spatial_notebook",
         "evidence_grade",
@@ -117,3 +130,63 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
     payload = json.loads(expected["manifest_json"].read_text(encoding="utf-8"))
     assert payload["n_rows"] == len(synthesis)
     assert payload["rule_version"]
+    assert payload["threshold_sensitivity_csv"] == str(expected["threshold_sensitivity_csv"])
+    assert payload["chongqing_variable_role_audit_csv"] == str(expected["chongqing_variable_role_audit_csv"])
+    assert payload["chongqing_reviewer_audit_package_json"] == str(expected["chongqing_reviewer_audit_package_json"])
+
+    sensitivity = pd.read_csv(expected["threshold_sensitivity_csv"])
+    required_sensitivity_columns = {
+        "case",
+        "residual_moran_i",
+        "residual_moran_p_value",
+        "residual_moran_abs_threshold",
+        "evidence_grade",
+        "grade_rule_ids",
+        "residual_moran_status",
+        "diagnostic_flags",
+    }
+    assert required_sensitivity_columns.issubset(sensitivity.columns)
+    assert {
+        "chongqing_full_rs_context",
+        "county_social_capital_spatial_notebook",
+    }.issubset(set(sensitivity["case"]))
+    assert sensitivity.loc[
+        (sensitivity["case"] == "chongqing_full_rs_context")
+        & (sensitivity["residual_moran_abs_threshold"] == 0.10),
+        "evidence_grade",
+    ].iloc[0] == "bounded_support"
+    assert sensitivity.loc[
+        (sensitivity["case"] == "chongqing_full_rs_context")
+        & (sensitivity["residual_moran_abs_threshold"] == 0.20),
+        "residual_moran_status",
+    ].iloc[0] == "significant_below_material_threshold"
+
+    rebuilt = build_residual_moran_threshold_sensitivity(thresholds=(0.10, 0.20))
+    assert set(rebuilt["residual_moran_abs_threshold"]) == {0.10, 0.20}
+
+    role_audit = pd.read_csv(expected["chongqing_variable_role_audit_csv"])
+    assert {
+        "context_group",
+        "causal_role",
+        "main_model_use",
+        "post_treatment_risk",
+        "sensitivity_variant",
+        "sensitivity_att_c",
+        "sensitivity_max_post_smd",
+    }.issubset(role_audit.columns)
+    assert "ambiguous proxy or mediator" in set(role_audit["causal_role"])
+    assert role_audit["post_treatment_risk"].isin(["low", "medium", "high"]).all()
+
+    public_audit = pd.read_csv(expected["chongqing_reviewer_audit_package_csv"])
+    assert {
+        "item",
+        "value",
+        "source_file",
+        "privacy_status",
+    }.issubset(public_audit.columns)
+    assert set(public_audit["privacy_status"]) == {"non_sensitive_aggregate"}
+
+    rebuilt_roles = build_chongqing_variable_role_audit()
+    assert not rebuilt_roles.empty
+    rebuilt_package = build_chongqing_reviewer_audit_package()
+    assert not rebuilt_package.empty

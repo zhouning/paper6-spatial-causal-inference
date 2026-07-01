@@ -1,0 +1,156 @@
+{
+  "geocausal_version": "0.1.0",
+  "generated_at_utc": "2026-06-29T08:51:42.641949Z",
+  "case_name": "county_social_capital_qgis_demo",
+  "study": "county_social_capital_qgis_demo",
+  "config_path": "/workspace/paper/ijgis_submission_20260605/07_results/examples/county_social_capital_qgis_demo/analysis.yaml",
+  "input_path": "/workspace/examples/data/county_social_capital.csv",
+  "input_format": "csv",
+  "row_count": 3044,
+  "column_count": 17,
+  "preprocessing": {
+    "exposure_trim": {
+      "status": "applied",
+      "column": "SocialAssoc",
+      "lower_quantile": 0.01,
+      "upper_quantile": 0.99,
+      "lower_value": 1.77955779839,
+      "upper_value": 38.06309620159998,
+      "original_n": 3108,
+      "kept_n": 3044,
+      "removed_n": 64
+    }
+  },
+  "exposure": "SocialAssoc",
+  "outcome": "AveAgeDeath",
+  "unit_id": "FIPS",
+  "baseline_outcome": null,
+  "confounders": [
+    "UnemployRate",
+    "pHHinPoverty",
+    "pNoHealthInsur",
+    "MentalHealth",
+    "pAdultSmoking",
+    "pAdultObesity",
+    "FastFood",
+    "pInsufficientSleep",
+    "pAlcohol",
+    "pSuicideDeaths",
+    "AirPollution"
+  ],
+  "context_columns": [
+    "Shape_Length",
+    "Shape_Area"
+  ],
+  "targets": {
+    "outcome_values": [
+      {
+        "name": "target_70",
+        "value": 70.0
+      }
+    ]
+  },
+  "credibility_decision": "strong_support",
+  "robustness_interpretation": "robust_support",
+  "evidence_grade": "core_support",
+  "evidence_grade_rule_ids": [],
+  "evidence_grade_reasons": [],
+  "rule_version": "scca-evidence-grade-rules-2026-06-20",
+  "result_summary": {
+    "baseline_adjusted_ols": {
+      "status": "ok",
+      "coef": 0.1812446003915275,
+      "p_value": 2.339276003923733e-110,
+      "ci_lower": 0.1659744668470109,
+      "ci_upper": 0.1965147339360441,
+      "n": 3044.0
+    },
+    "spatial_slx_model": {
+      "status": "skipped",
+      "model": "SLX",
+      "direct_effect": null,
+      "direct_p_value": null,
+      "indirect_effect": null,
+      "indirect_p_value": null,
+      "total_effect": null,
+      "total_se": null,
+      "total_p_value": null,
+      "total_ci_lower": null,
+      "total_ci_upper": null,
+      "r_squared": null,
+      "lag_covariate_count": null,
+      "lag_covariates_significant": null,
+      "coefficient_count": null,
+      "n": null,
+      "interpretation": null
+    },
+    "spatial_diagnostics": {
+      "graph_method": "unavailable",
+      "edge_count": 0,
+      "exposure_moran_i": null,
+      "exposure_moran_p_value": null,
+      "residual_moran_i": null,
+      "residual_moran_p_value": null,
+      "interpretation": "not_estimable"
+    },
+    "spatial_block_bootstrap": {
+      "status": "skipped",
+      "n_replicates_requested": 50,
+      "n_replicates_valid": 0,
+      "failure_count": 50,
+      "warning": "Spatial blocks could not be constructed."
+    },
+    "spatial_graph_sensitivity": {
+      "status": "skipped",
+      "warning": "No coordinates were available for graph sensitivity analysis.",
+      "n_graphs_requested": 4,
+      "n_graphs_valid": 0
+    },
+    "spatial_spillover_decomposition": {
+      "status": "skipped"
+    },
+    "spatial_exposure_mapping": {
+      "status": "skipped",
+      "warning": "Spatial graph or unit ID is unavailable for exposure mapping."
+    }
+  },
+  "warnings": [
+    "CSV input has no coordinate columns; geometry-derived bootstrap groups are unavailable."
+  ],
+  "files": {
+    "data_profile": "data_profile.json",
+    "variable_candidates": "variable_candidates.csv",
+    "context_features": "context_features.csv",
+    "context_manifest": "context_feature_manifest.json",
+    "design_plan": "design_plan.json",
+    "effect_estimates": "effect_estimates.csv",
+    "erf_curve": "erf_curve.csv",
+    "model_diagnostics": "model_diagnostics.json",
+    "balance_summary": "balance_summary.csv",
+    "overlap_summary": "overlap_summary.json",
+    "spatial_robustness": "spatial_robustness.csv",
+    "credibility_report": "credibility_report.json",
+    "analysis_report": "analysis_report.md",
+    "manifest": "manifest.json",
+    "spatial_diagnostics": "spatial_diagnostics.json",
+    "spatial_bootstrap_robustness": "spatial_bootstrap_robustness.csv",
+    "spatial_bootstrap_summary": "spatial_bootstrap_summary.json",
+    "spatial_graph_sensitivity": "spatial_graph_sensitivity.csv",
+    "spatial_graph_sensitivity_summary": "spatial_graph_sensitivity_summary.json",
+    "spatial_slx_estimates": "spatial_slx_estimates.csv",
+    "spatial_slx_summary": "spatial_slx_summary.json",
+    "spatial_spillover_decomposition": "spatial_spillover_decomposition.csv",
+    "spatial_spillover_summary": "spatial_spillover_summary.json",
+    "spatial_exposure_mapping": "spatial_exposure_mapping.csv",
+    "spatial_exposure_mapping_summary": "spatial_exposure_mapping_summary.json",
+    "context_ablation": "context_ablation.csv",
+    "placebo_tests": "placebo_tests.csv",
+    "bootstrap_robustness": "bootstrap_robustness.csv",
+    "bootstrap_summary": "bootstrap_summary.json",
+    "erf_stability": "erf_stability.json",
+    "robustness_report": "robustness_report.md",
+    "robustness_manifest": "robustness_manifest.json",
+    "target_exposures": "target_exposures.csv",
+    "result_summary_markdown": "result_summary.md"
+  }
+}

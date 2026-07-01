@@ -1,0 +1,7 @@
+{
+  "status": "skipped",
+  "n_replicates_requested": 50,
+  "n_replicates_valid": 0,
+  "failure_count": 50,
+  "warning": "Spatial blocks could not be constructed."
+}

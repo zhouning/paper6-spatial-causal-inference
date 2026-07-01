@@ -22,6 +22,12 @@ OUTPUT_FILES = {
     "synthesis_csv": "scca_evidence_synthesis.csv",
     "report_md": "scca_evidence_synthesis_report.md",
     "manifest_json": "scca_evidence_synthesis_manifest.json",
+    "threshold_sensitivity_csv": "scca_grade_threshold_sensitivity.csv",
+    "threshold_sensitivity_md": "scca_grade_threshold_sensitivity.md",
+    "chongqing_variable_role_audit_csv": "chongqing_variable_role_audit.csv",
+    "chongqing_variable_role_audit_md": "chongqing_variable_role_audit.md",
+    "chongqing_reviewer_audit_package_csv": "chongqing_reviewer_audit_package.csv",
+    "chongqing_reviewer_audit_package_json": "chongqing_reviewer_audit_package.json",
 }
 SYNTHESIS_COLUMNS = [
     "case",
@@ -38,6 +44,35 @@ SYNTHESIS_COLUMNS = [
     "grade_reasons",
     "limitation",
     "manuscript_use",
+]
+THRESHOLD_SENSITIVITY_COLUMNS = [
+    "case",
+    "residual_moran_i",
+    "residual_moran_p_value",
+    "residual_moran_abs_threshold",
+    "evidence_grade",
+    "grade_rule_ids",
+    "residual_moran_status",
+    "diagnostic_flags",
+]
+DEFAULT_RESIDUAL_MORAN_THRESHOLDS = (0.10, 0.15, 0.20)
+CHONGQING_VARIABLE_ROLE_COLUMNS = [
+    "context_group",
+    "variables",
+    "causal_role",
+    "main_model_use",
+    "post_treatment_risk",
+    "sensitivity_variant",
+    "sensitivity_att_c",
+    "sensitivity_max_post_smd",
+    "sensitivity_balance_pass",
+    "interpretation",
+]
+CHONGQING_REVIEWER_AUDIT_COLUMNS = [
+    "item",
+    "value",
+    "source_file",
+    "privacy_status",
 ]
 
 
@@ -104,6 +139,14 @@ def _assessment_text(assessment: dict[str, Any]) -> tuple[str, str, str]:
     rule_text = "; ".join(map(str, rules)) if isinstance(rules, list) else str(rules)
     reason_text = "; ".join(map(str, reasons)) if isinstance(reasons, list) else str(reasons)
     return str(assessment.get("evidence_grade", "bounded_support")), rule_text, reason_text
+
+
+def _joined_text(value: Any) -> str:
+    if isinstance(value, list):
+        return "; ".join(map(str, value))
+    if value is None:
+        return ""
+    return str(value)
 
 
 def _spatial_summary_from_chongqing(results_dir: Path, variant: str) -> dict[str, Any]:
@@ -204,7 +247,10 @@ def _chongqing_row(results_dir: Path) -> dict[str, str] | None:
         evidence_grade=grade,
         grade_rule_ids=rule_ids,
         grade_reasons=grade_reasons,
-        limitation="MODIS LST scale, building-level treatment assignment, and spatial interference limit causal strength.",
+        limitation=(
+            "LST retrieval scale and uncertainty, building-level treatment assignment, "
+            "and spatial interference limit causal strength."
+        ),
         manuscript_use="Use as the main real-data SCCA ablation; report the modest positive balanced estimate.",
     )
 
@@ -289,12 +335,370 @@ def _county_spatial_notebook_row(results_dir: Path) -> dict[str, str] | None:
         grade_reasons=grade_reasons,
         limitation=(
             "Residual spatial autocorrelation and a significant neighboring-exposure term remain, "
-            "so this is spatially cautioned external evidence rather than definitive identification."
+            "so this is spatially cautioned external evidence rather than identification evidence."
         ),
         manuscript_use=(
             "Use as the GIS/notebook spatial-output demonstration and as spatially bounded external SCCA evidence."
         ),
     )
+
+
+def _county_threshold_sensitivity_input(results_dir: Path) -> dict[str, Any] | None:
+    summary_path = results_dir / "county_social_capital_spatial_notebook_summary.json"
+    if not summary_path.exists():
+        return None
+    summary = _read_json(summary_path)
+    result_summary = summary.get("result_summary", {})
+    if not isinstance(result_summary, dict):
+        return None
+    spatial_lag = result_summary.get("spatial_lag_adjusted_ols", {})
+    diagnostics = result_summary.get("spatial_diagnostics", {})
+    bootstrap = result_summary.get("spatial_block_bootstrap", {})
+    graph = result_summary.get("spatial_graph_sensitivity", {})
+    if not isinstance(diagnostics, dict):
+        return None
+    return {
+        "case": "county_social_capital_spatial_notebook",
+        "credibility_decision": "strong_support",
+        "robustness_interpretation": (
+            "robust_support"
+            if bootstrap.get("sign_stability") == 1.0 and graph.get("neighbor_adjusted_sign_stability") is True
+            else "bounded_support"
+        ),
+        "spatial_summary": {
+            "residual_moran_i": diagnostics.get("residual_moran_i"),
+            "residual_moran_p_value": diagnostics.get("residual_moran_p_value"),
+            "neighbor_exposure_p_value": spatial_lag.get("neighbor_exposure_p_value")
+            or result_summary.get("spatial_neighbor_adjusted_ols", {}).get("neighbor_exposure_p_value"),
+            "spatial_lag_relative_change": spatial_lag.get("relative_change"),
+            "neighbor_adjusted_relative_change_max": graph.get("neighbor_adjusted_relative_change_max"),
+            "neighbor_adjusted_sign_stability": graph.get("neighbor_adjusted_sign_stability"),
+            "spatial_lag_sign_stability": graph.get("spatial_lag_sign_stability"),
+        },
+    }
+
+
+def build_residual_moran_threshold_sensitivity(
+    results_dir: str | Path = DEFAULT_RESULTS_DIR,
+    thresholds: tuple[float, ...] = DEFAULT_RESIDUAL_MORAN_THRESHOLDS,
+) -> pd.DataFrame:
+    """Re-grade cases after varying only the material residual Moran threshold."""
+    root = Path(results_dir)
+    cases: list[dict[str, Any]] = []
+    chongqing_spatial = _spatial_summary_from_chongqing(root, "full_rs_context")
+    if chongqing_spatial:
+        cases.append(
+            {
+                "case": "chongqing_full_rs_context",
+                "credibility_decision": "strong_support",
+                "robustness_interpretation": "robust_support",
+                "spatial_summary": chongqing_spatial,
+            }
+        )
+    county_case = _county_threshold_sensitivity_input(root)
+    if county_case is not None:
+        cases.append(county_case)
+
+    rows: list[dict[str, Any]] = []
+    for case in cases:
+        spatial_summary = case["spatial_summary"]
+        for threshold in thresholds:
+            assessment = assess_scca_evidence_grade(
+                credibility_decision=case["credibility_decision"],
+                robustness_interpretation=case["robustness_interpretation"],
+                spatial_summary=spatial_summary,
+                thresholds={"material_residual_moran_abs": threshold},
+            )
+            rows.append(
+                {
+                    "case": case["case"],
+                    "residual_moran_i": _finite_or_none(spatial_summary.get("residual_moran_i")),
+                    "residual_moran_p_value": _finite_or_none(spatial_summary.get("residual_moran_p_value")),
+                    "residual_moran_abs_threshold": float(threshold),
+                    "evidence_grade": assessment["evidence_grade"],
+                    "grade_rule_ids": _joined_text(assessment.get("triggered_rules")),
+                    "residual_moran_status": assessment.get("residual_moran_status", ""),
+                    "diagnostic_flags": _joined_text(assessment.get("diagnostic_flags")),
+                }
+            )
+    return pd.DataFrame(rows, columns=THRESHOLD_SENSITIVITY_COLUMNS)
+
+
+def _finite_or_none(value: Any) -> float | None:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return number if pd.notna(number) else None
+
+
+def render_residual_moran_threshold_report(table: pd.DataFrame) -> str:
+    lines = [
+        "# SCCA Residual Moran Threshold Sensitivity",
+        "",
+        "This report varies only `material_residual_moran_abs`; all other grade rules remain unchanged.",
+        "",
+    ]
+    if table.empty:
+        lines.append("No residual Moran sensitivity rows were available.")
+        return "\n".join(lines) + "\n"
+    lines.extend(
+        [
+            "| Case | Residual Moran I | p-value | Threshold | Grade | Residual status | Grade rules | Flags |",
+            "|---|---:|---:|---:|---|---|---|---|",
+        ]
+    )
+    for _, record in table.iterrows():
+        lines.append(
+            "| "
+            f"{record['case']} | "
+            f"{_fmt_num(record['residual_moran_i'])} | "
+            f"{_fmt_num(record['residual_moran_p_value'])} | "
+            f"{_fmt_num(record['residual_moran_abs_threshold'], 2)} | "
+            f"{record['evidence_grade']} | "
+            f"{record['residual_moran_status']} | "
+            f"{record['grade_rule_ids'] or 'none'} | "
+            f"{record['diagnostic_flags'] or 'none'} |"
+        )
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _variant_row(table: pd.DataFrame, variant: str) -> pd.Series | None:
+    if table.empty or "variant" not in table:
+        return None
+    rows = table.loc[table["variant"].astype(str) == variant]
+    if rows.empty:
+        return None
+    return rows.iloc[0]
+
+
+def build_chongqing_variable_role_audit(
+    results_dir: str | Path = DEFAULT_RESULTS_DIR,
+) -> pd.DataFrame:
+    """Summarise the causal role and sensitivity evidence for Chongqing context variables."""
+    root = Path(results_dir)
+    ablation = _read_csv(root / "chongqing_uhi_ablation.csv")
+    if ablation.empty:
+        return pd.DataFrame(columns=CHONGQING_VARIABLE_ROLE_COLUMNS)
+
+    specs = [
+        {
+            "context_group": "Coordinates",
+            "variables": "building centroid x/y",
+            "causal_role": "spatial proxy confounder",
+            "main_model_use": "retained as core spatial context",
+            "post_treatment_risk": "low",
+            "sensitivity_variant": "coordinates_only",
+            "interpretation": (
+                "Coordinates absorb broad spatial gradients but do not by themselves "
+                "control surface material or vegetation context."
+            ),
+        },
+        {
+            "context_group": "Building geometry",
+            "variables": "footprint area and shape descriptors",
+            "causal_role": "proxy confounder or pre-treatment morphology",
+            "main_model_use": "retained as built-form context",
+            "post_treatment_risk": "medium",
+            "sensitivity_variant": "geometry",
+            "interpretation": (
+                "Geometry captures morphology correlated with both floor count and "
+                "microclimate exposure, but standalone balance was weaker."
+            ),
+        },
+        {
+            "context_group": "Terrain",
+            "variables": "elevation and slope",
+            "causal_role": "pre-treatment confounder",
+            "main_model_use": "retained as physical context",
+            "post_treatment_risk": "low",
+            "sensitivity_variant": "terrain",
+            "interpretation": (
+                "Terrain is plausibly fixed before building treatment assignment and "
+                "tests topographic confounding."
+            ),
+        },
+        {
+            "context_group": "Sentinel indices",
+            "variables": "NDVI, NDBI, NDWI, MNDWI",
+            "causal_role": "ambiguous proxy or mediator",
+            "main_model_use": "retained only with explicit role caution",
+            "post_treatment_risk": "high",
+            "sensitivity_variant": "sentinel_indices",
+            "interpretation": (
+                "Spectral indices improve environmental context but may partly encode "
+                "post-construction land-cover responses."
+            ),
+        },
+        {
+            "context_group": "Sentinel bands",
+            "variables": "Sentinel-2 reflectance bands",
+            "causal_role": "ambiguous proxy or mediator",
+            "main_model_use": "retained only with explicit role caution",
+            "post_treatment_risk": "medium",
+            "sensitivity_variant": "sentinel_bands",
+            "interpretation": (
+                "Raw bands provide surface context with less semantic processing than "
+                "indices, but they still may reflect treatment-adjacent surfaces."
+            ),
+        },
+        {
+            "context_group": "Full RS context",
+            "variables": "coordinates, geometry, terrain, Sentinel bands and indices",
+            "causal_role": "mixed context set",
+            "main_model_use": "preferred Chongqing adjustment",
+            "post_treatment_risk": "medium",
+            "sensitivity_variant": "full_rs_context",
+            "interpretation": (
+                "The preferred specification gives the best balance among tested "
+                "remote-sensing context sets, with residual spatial caution retained."
+            ),
+        },
+    ]
+
+    rows: list[dict[str, Any]] = []
+    for spec in specs:
+        record = _variant_row(ablation, spec["sensitivity_variant"])
+        rows.append(
+            {
+                **spec,
+                "sensitivity_att_c": _finite_or_none(record.get("att")) if record is not None else None,
+                "sensitivity_max_post_smd": (
+                    _finite_or_none(record.get("max_post_smd")) if record is not None else None
+                ),
+                "sensitivity_balance_pass": (
+                    str(record.get("balance_pass_0_1")).lower() == "true"
+                    if record is not None
+                    else None
+                ),
+            }
+        )
+    return pd.DataFrame(rows, columns=CHONGQING_VARIABLE_ROLE_COLUMNS)
+
+
+def render_chongqing_variable_role_report(table: pd.DataFrame) -> str:
+    lines = [
+        "# Chongqing Context Variable Role Audit",
+        "",
+        "This table separates context variables by their assumed causal role and by the",
+        "observed Chongqing ablation result. It is intended to keep post-treatment",
+        "proxy risk explicit in the manuscript.",
+        "",
+    ]
+    if table.empty:
+        lines.append("No Chongqing variable-role rows were available.")
+        return "\n".join(lines) + "\n"
+    lines.extend(
+        [
+            "| Context group | Causal role | Risk | Variant | ATT (C) | Max post SMD | Balance pass |",
+            "|---|---|---|---|---:|---:|---|",
+        ]
+    )
+    for _, record in table.iterrows():
+        lines.append(
+            "| "
+            f"{record['context_group']} | "
+            f"{record['causal_role']} | "
+            f"{record['post_treatment_risk']} | "
+            f"{record['sensitivity_variant']} | "
+            f"{_fmt_num(record['sensitivity_att_c'])} | "
+            f"{_fmt_num(record['sensitivity_max_post_smd'])} | "
+            f"{record['sensitivity_balance_pass']} |"
+        )
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _audit_row(item: str, value: Any, source_file: str) -> dict[str, str]:
+    return {
+        "item": item,
+        "value": "" if value is None else str(value),
+        "source_file": source_file,
+        "privacy_status": "non_sensitive_aggregate",
+    }
+
+
+def build_chongqing_reviewer_audit_package(
+    results_dir: str | Path = DEFAULT_RESULTS_DIR,
+) -> pd.DataFrame:
+    """Build a non-sensitive aggregate audit table for reviewer verification."""
+    root = Path(results_dir)
+    manifest = _read_json(root / "chongqing_uhi_analysis_manifest.json")
+    metadata = manifest.get("metadata", {}) if isinstance(manifest.get("metadata"), dict) else {}
+    ablation = _read_csv(root / "chongqing_uhi_ablation.csv")
+    matched = _read_csv(root / "chongqing_uhi_matched_counts.csv")
+    residuals = _read_csv(root / "chongqing_residual_spatial_diagnostics.csv")
+    placebo = _read_csv(root / "chongqing_placebo_thresholds.csv")
+
+    rows: list[dict[str, str]] = []
+    manifest_file = "chongqing_uhi_analysis_manifest.json"
+    for item in (
+        "sample_size",
+        "buildings_total",
+        "treatment_threshold",
+        "caliper",
+        "n_bootstrap",
+        "n_spatial_bootstrap",
+        "data_source",
+        "balance_interpretation",
+    ):
+        if item in metadata:
+            rows.append(_audit_row(item, metadata.get(item), manifest_file))
+
+    full = _variant_row(ablation, "full_rs_context")
+    if full is not None:
+        ablation_file = "chongqing_uhi_ablation.csv"
+        for item, column in (
+            ("full_rs_context_att_c", "att"),
+            ("full_rs_context_ci_lower", "ci_lower"),
+            ("full_rs_context_ci_upper", "ci_upper"),
+            ("full_rs_context_max_pre_smd", "max_pre_smd"),
+            ("full_rs_context_max_post_smd", "max_post_smd"),
+            ("full_rs_context_balance_pass_0_1", "balance_pass_0_1"),
+            ("full_rs_context_matched_treated_n", "matched_treated_n"),
+            ("full_rs_context_matched_control_n", "matched_control_n"),
+        ):
+            rows.append(_audit_row(item, full.get(column), ablation_file))
+
+    full_matched = _variant_row(matched, "full_rs_context")
+    if full_matched is not None:
+        matched_file = "chongqing_uhi_matched_counts.csv"
+        for item, column in (
+            ("full_rs_context_n_total", "n_total"),
+            ("full_rs_context_common_support_n", "common_support_n"),
+            ("full_rs_context_unmatched_treated_n", "unmatched_treated_n"),
+            ("full_rs_context_drop_rate", "drop_rate"),
+        ):
+            rows.append(_audit_row(item, full_matched.get(column), matched_file))
+
+    full_residual = _variant_row(residuals, "full_rs_context")
+    if full_residual is not None:
+        residual_file = "chongqing_residual_spatial_diagnostics.csv"
+        for item, column in (
+            ("full_rs_context_residual_moran_i", "moran_i"),
+            ("full_rs_context_residual_moran_p_value", "permutation_p_value"),
+            ("full_rs_context_residual_moran_n", "n"),
+            ("full_rs_context_residual_distance_band", "distance_band"),
+        ):
+            rows.append(_audit_row(item, full_residual.get(column), residual_file))
+
+    if not placebo.empty and "variant" in placebo and "threshold" in placebo:
+        placebo_rows = placebo.loc[placebo["variant"].astype(str) == "full_rs_context"]
+        for _, record in placebo_rows.sort_values("threshold").iterrows():
+            threshold = record.get("threshold")
+            item_prefix = f"full_rs_context_threshold_{threshold}"
+            rows.append(_audit_row(f"{item_prefix}_att_c", record.get("att"), "chongqing_placebo_thresholds.csv"))
+            rows.append(
+                _audit_row(
+                    f"{item_prefix}_max_post_smd",
+                    record.get("max_post_smd"),
+                    "chongqing_placebo_thresholds.csv",
+                )
+            )
+
+    return pd.DataFrame(rows, columns=CHONGQING_REVIEWER_AUDIT_COLUMNS)
+
 
 def build_scca_evidence_table(
     results_dir: str | Path = DEFAULT_RESULTS_DIR,
@@ -377,22 +781,59 @@ def run_scca_evidence_synthesis(
     target.mkdir(parents=True, exist_ok=True)
 
     table = build_scca_evidence_table(results_dir)
+    threshold_table = build_residual_moran_threshold_sensitivity(results_dir)
+    variable_role_table = build_chongqing_variable_role_audit(results_dir)
+    reviewer_audit_table = build_chongqing_reviewer_audit_package(results_dir)
     synthesis_path = target / OUTPUT_FILES["synthesis_csv"]
     report_path = target / OUTPUT_FILES["report_md"]
     manifest_path = target / OUTPUT_FILES["manifest_json"]
+    threshold_sensitivity_path = target / OUTPUT_FILES["threshold_sensitivity_csv"]
+    threshold_sensitivity_report_path = target / OUTPUT_FILES["threshold_sensitivity_md"]
+    variable_role_path = target / OUTPUT_FILES["chongqing_variable_role_audit_csv"]
+    variable_role_report_path = target / OUTPUT_FILES["chongqing_variable_role_audit_md"]
+    reviewer_audit_path = target / OUTPUT_FILES["chongqing_reviewer_audit_package_csv"]
+    reviewer_audit_json_path = target / OUTPUT_FILES["chongqing_reviewer_audit_package_json"]
     grade_rule_manifest = write_evidence_rule_outputs(target)
 
     table.to_csv(synthesis_path, index=False)
+    threshold_table.to_csv(threshold_sensitivity_path, index=False)
+    variable_role_table.to_csv(variable_role_path, index=False)
+    reviewer_audit_table.to_csv(reviewer_audit_path, index=False)
     report_path.write_text(render_scca_evidence_report(table), encoding="utf-8")
+    threshold_sensitivity_report_path.write_text(
+        render_residual_moran_threshold_report(threshold_table),
+        encoding="utf-8",
+    )
+    variable_role_report_path.write_text(
+        render_chongqing_variable_role_report(variable_role_table),
+        encoding="utf-8",
+    )
+    reviewer_audit_json_path.write_text(
+        json.dumps(
+            {"records": reviewer_audit_table.to_dict(orient="records")},
+            indent=2,
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
 
     manifest = {
         "synthesis_csv": str(synthesis_path),
         "report_md": str(report_path),
         "manifest_json": str(manifest_path),
+        "threshold_sensitivity_csv": str(threshold_sensitivity_path),
+        "threshold_sensitivity_md": str(threshold_sensitivity_report_path),
+        "chongqing_variable_role_audit_csv": str(variable_role_path),
+        "chongqing_variable_role_audit_md": str(variable_role_report_path),
+        "chongqing_reviewer_audit_package_csv": str(reviewer_audit_path),
+        "chongqing_reviewer_audit_package_json": str(reviewer_audit_json_path),
         "grade_rules_json": grade_rule_manifest["rules_json"],
         "grade_rules_md": grade_rule_manifest["rules_md"],
         "results_dir": str(Path(results_dir)),
         "n_rows": int(len(table)),
+        "n_threshold_sensitivity_rows": int(len(threshold_table)),
+        "n_chongqing_variable_role_rows": int(len(variable_role_table)),
+        "n_chongqing_reviewer_audit_rows": int(len(reviewer_audit_table)),
         "grade_counts": table["evidence_grade"].value_counts().to_dict() if not table.empty else {},
         "rule_version": grade_rule_manifest["rule_version"],
     }

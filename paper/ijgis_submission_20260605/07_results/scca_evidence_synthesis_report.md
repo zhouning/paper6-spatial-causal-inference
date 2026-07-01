@@ -1,7 +1,7 @@
 # SCCA Evidence Synthesis Report
 
 This report is the evidence boundary for the revised Paper 6 manuscript.
-The grade rule version is `scca-evidence-grade-rules-2026-06-20`.
+The grade rule version is `scca-evidence-grade-rules-2026-06-30`.
 The main paper should use the Chongqing row as the main empirical case,
 the synthetic row as estimator stress-test evidence,
 and the county row as a GIS/notebook reproducibility and spatial-diagnostic boundary check.
@@ -22,14 +22,14 @@ and the county row as a GIS/notebook reproducibility and spatial-diagnostic boun
 
 ### chongqing_uhi
 
-- Grade: `core_support`
+- Grade: `bounded_support`
 - Best adjustment: full_rs_context
 - Effect/diagnostic: ATT = 0.244 C; 95% CI [0.148, 0.346]
 - Balance: max post-match SMD = 0.061; balance pass = True
 - Robustness: threshold placebo, spatial bootstrap, and residual spatial diagnostics available
-- Grade rules: ``
-- Grade reasons: No downgrade rules triggered.
-- Limitation: MODIS LST scale, building-level treatment assignment, and spatial interference limit causal strength.
+- Grade rules: `material_residual_moran`
+- Grade reasons: Residual spatial autocorrelation is both statistically significant and materially large (Moran's I=0.102, p=0.010).
+- Limitation: LST retrieval scale and uncertainty, building-level treatment assignment, and spatial interference limit causal strength.
 - Manuscript use: Use as the main real-data SCCA ablation; report the modest positive balanced estimate.
 
 ### county_social_capital_spatial_notebook
@@ -41,10 +41,9 @@ and the county row as a GIS/notebook reproducibility and spatial-diagnostic boun
 - Robustness: residual Moran I = 0.313; spatial bootstrap sign stability = 1.000; graph sensitivity sign stable = True
 - Grade rules: `material_residual_moran; significant_neighbor_exposure`
 - Grade reasons: Residual spatial autocorrelation is both statistically significant and materially large (Moran's I=0.313, p=0.010).; Neighboring exposure remains associated with the outcome after adjustment (p=0.000).
-- Limitation: Residual spatial autocorrelation and a significant neighboring-exposure term remain, so this is spatially cautioned external evidence rather than definitive identification.
+- Limitation: Residual spatial autocorrelation and a significant neighboring-exposure term remain, so this is spatially cautioned external evidence rather than identification evidence.
 - Manuscript use: Use as the GIS/notebook spatial-output demonstration and as spatially bounded external SCCA evidence.
 
 ## Grade Counts
 
-- `bounded_support`: 2
-- `core_support`: 1
+- `bounded_support`: 3

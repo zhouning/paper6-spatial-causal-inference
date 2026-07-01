@@ -1,0 +1,46 @@
+case_name: county_social_capital_qgis_demo
+input:
+  path: /workspace/examples/data/county_social_capital.csv
+variables:
+  exposure: SocialAssoc
+  outcome: AveAgeDeath
+  unit_id: FIPS
+  confounders:
+  - UnemployRate
+  - pHHinPoverty
+  - pNoHealthInsur
+  - MentalHealth
+  - pAdultSmoking
+  - pAdultObesity
+  - FastFood
+  - pInsufficientSleep
+  - pAlcohol
+  - pSuicideDeaths
+  - AirPollution
+output:
+  directory: /workspace/paper/ijgis_submission_20260605/07_results/examples/county_social_capital_qgis_demo
+context:
+  columns:
+  - Shape_Length
+  - Shape_Area
+preprocessing:
+  exposure_trim:
+    lower_quantile: 0.01
+    upper_quantile: 0.99
+robustness:
+  bootstrap:
+    n_replicates: 50
+    group_column: STATE_NAME
+  placebo_exposures:
+  - name: Shape_Length
+    column: Shape_Length
+    role: placebo
+    expected_relation: weaker_than_main
+  - name: Shape_Area
+    column: Shape_Area
+    role: placebo
+    expected_relation: weaker_than_main
+targets:
+  outcome_values:
+  - name: target_70
+    value: 70.0

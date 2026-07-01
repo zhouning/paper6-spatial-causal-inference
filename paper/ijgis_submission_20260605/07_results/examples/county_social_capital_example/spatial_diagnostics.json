@@ -1,0 +1,56 @@
+{
+  "status": "skipped",
+  "graph": {
+    "method": "unavailable",
+    "n_units": 3044,
+    "edge_count": 0,
+    "average_degree": 0.0,
+    "max_degree": 0,
+    "isolate_count": 3044,
+    "isolate_share": 1.0,
+    "warnings": [
+      "Spatial graph could not be built from geometry or coordinates."
+    ]
+  },
+  "residual_model": {
+    "status": "ok",
+    "n": 3044
+  },
+  "exposure_moran": {
+    "moran_i": null,
+    "n": 3044,
+    "s0": 0,
+    "status": "skipped"
+  },
+  "residual_moran": {
+    "moran_i": null,
+    "n": 3044,
+    "s0": 0,
+    "status": "skipped"
+  },
+  "neighbor_exposure_model": {
+    "status": "skipped"
+  },
+  "spatial_lag_model": {
+    "status": "skipped"
+  },
+  "graph_sensitivity_summary": {
+    "status": "skipped",
+    "warning": "No coordinates were available for graph sensitivity analysis.",
+    "n_graphs_requested": 4,
+    "n_graphs_valid": 0
+  },
+  "spatial_slx_model": {
+    "status": "skipped",
+    "model": "SLX"
+  },
+  "spillover_summary": {
+    "status": "skipped"
+  },
+  "exposure_mapping_summary": {
+    "status": "skipped",
+    "warning": "Spatial graph or unit ID is unavailable for exposure mapping."
+  },
+  "flags": [],
+  "interpretation": "not_estimable"
+}

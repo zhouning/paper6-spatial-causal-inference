@@ -1,6 +1,6 @@
 # SCCA Evidence Grade Rules
 
-- Rule version: `scca-evidence-grade-rules-2026-06-20`
+- Rule version: `scca-evidence-grade-rules-2026-06-30`
 
 ## Grade Meanings
 
@@ -15,7 +15,7 @@
 - `overlap_boundary_mass_moderate`: `0.25`
 - `bootstrap_sign_stability_min`: `0.8`
 - `erf_monotonic_fraction_min`: `0.8`
-- `material_residual_moran_abs`: `0.2`
+- `material_residual_moran_abs`: `0.1`
 - `spatial_p_value_max`: `0.05`
 - `spatial_adjustment_relative_change_max`: `0.25`
 
@@ -66,7 +66,7 @@
 ### `material_residual_moran`
 
 - Scope: spatial diagnostics
-- Condition: |residual Moran's I| >= 0.20 and permutation p <= 0.05
+- Condition: |residual Moran's I| >= 0.10 and permutation p <= 0.05
 - Effect: Downgrade final manuscript evidence to bounded_support.
 
 ### `significant_neighbor_exposure`
@@ -86,3 +86,12 @@
 - Scope: spatial diagnostics
 - Condition: graph-sensitivity sign stability is false
 - Effect: Downgrade final manuscript evidence to bounded_support.
+
+
+## Non-downgrade Diagnostic Flags
+
+### `significant_residual_moran_below_material_threshold`
+
+- Scope: spatial diagnostics
+- Condition: residual Moran's I has permutation p <= spatial_p_value_max but |residual Moran's I| is below material_residual_moran_abs
+- Effect: Report as a non-downgrade residual-spatial warning and include it in threshold-sensitivity outputs.

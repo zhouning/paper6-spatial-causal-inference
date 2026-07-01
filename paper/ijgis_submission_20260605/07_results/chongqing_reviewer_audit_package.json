@@ -1,0 +1,184 @@
+{
+  "records": [
+    {
+      "item": "sample_size",
+      "value": "5000",
+      "source_file": "chongqing_uhi_analysis_manifest.json",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "buildings_total",
+      "value": "107035",
+      "source_file": "chongqing_uhi_analysis_manifest.json",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "treatment_threshold",
+      "value": "10",
+      "source_file": "chongqing_uhi_analysis_manifest.json",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "caliper",
+      "value": "0.2",
+      "source_file": "chongqing_uhi_analysis_manifest.json",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "n_bootstrap",
+      "value": "500",
+      "source_file": "chongqing_uhi_analysis_manifest.json",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "n_spatial_bootstrap",
+      "value": "500",
+      "source_file": "chongqing_uhi_analysis_manifest.json",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "data_source",
+      "value": "provided_analysis_sample",
+      "source_file": "chongqing_uhi_analysis_manifest.json",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "balance_interpretation",
+      "value": "credible_balance",
+      "source_file": "chongqing_uhi_analysis_manifest.json",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_att_c",
+      "value": "0.2441250110161267",
+      "source_file": "chongqing_uhi_ablation.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_ci_lower",
+      "value": "0.147652242638778",
+      "source_file": "chongqing_uhi_ablation.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_ci_upper",
+      "value": "0.3460744790595649",
+      "source_file": "chongqing_uhi_ablation.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_max_pre_smd",
+      "value": "0.7031278019710897",
+      "source_file": "chongqing_uhi_ablation.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_max_post_smd",
+      "value": "0.0613070923166645",
+      "source_file": "chongqing_uhi_ablation.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_balance_pass_0_1",
+      "value": "True",
+      "source_file": "chongqing_uhi_ablation.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_matched_treated_n",
+      "value": "1621",
+      "source_file": "chongqing_uhi_ablation.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_matched_control_n",
+      "value": "1621",
+      "source_file": "chongqing_uhi_ablation.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_n_total",
+      "value": "5000",
+      "source_file": "chongqing_uhi_matched_counts.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_common_support_n",
+      "value": "4974",
+      "source_file": "chongqing_uhi_matched_counts.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_unmatched_treated_n",
+      "value": "879",
+      "source_file": "chongqing_uhi_matched_counts.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_drop_rate",
+      "value": "0.3516",
+      "source_file": "chongqing_uhi_matched_counts.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_residual_moran_i",
+      "value": "0.1017969541407118",
+      "source_file": "chongqing_residual_spatial_diagnostics.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_residual_moran_p_value",
+      "value": "0.01",
+      "source_file": "chongqing_residual_spatial_diagnostics.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_residual_moran_n",
+      "value": "3242",
+      "source_file": "chongqing_residual_spatial_diagnostics.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_residual_distance_band",
+      "value": "8318.408380806874",
+      "source_file": "chongqing_residual_spatial_diagnostics.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_threshold_8_att_c",
+      "value": "0.2219310636856361",
+      "source_file": "chongqing_placebo_thresholds.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_threshold_8_max_post_smd",
+      "value": "0.0833194195823197",
+      "source_file": "chongqing_placebo_thresholds.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_threshold_10_att_c",
+      "value": "0.2441250110161267",
+      "source_file": "chongqing_placebo_thresholds.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_threshold_10_max_post_smd",
+      "value": "0.0613070923166645",
+      "source_file": "chongqing_placebo_thresholds.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_threshold_12_att_c",
+      "value": "0.3052881634424597",
+      "source_file": "chongqing_placebo_thresholds.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "full_rs_context_threshold_12_max_post_smd",
+      "value": "0.0524119837743136",
+      "source_file": "chongqing_placebo_thresholds.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    }
+  ]
+}

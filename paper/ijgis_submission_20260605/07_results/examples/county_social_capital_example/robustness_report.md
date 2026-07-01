@@ -11,7 +11,7 @@
 ## Main Result
 
 - Original decision: `strong_support`
-- Main coefficient: `0.1812445992135535`
+- Main coefficient: `0.1812446003915275`
 - Main limitation: No credibility downgrade warnings were triggered.
 
 ## Robustness Checks

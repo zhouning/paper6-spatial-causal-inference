@@ -1,0 +1,175 @@
+% ============================================================================
+% Supplementary Materials for the SCCA IJGIS manuscript
+% ============================================================================
+\documentclass{article}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{geometry}
+\geometry{margin=1in}
+\newtheorem{proposition}{Proposition}
+
+\title{Supplementary Materials:\\
+Spatial Context Causal Adjustment for Geographic Observational Studies}
+\author{Ning Zhou and Xiang Jing\\Peking University}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{S1. Proof of Proposition 1}
+
+Recall the data-generating process (DGP) in the main text:
+\begin{equation}
+Y_i = \tau T_i + X_i^\top \gamma + C_i^\top \phi + \sigma_u U_i + \nu_i,
+\quad
+U = (I - \rho W)^{-1}\epsilon,
+\quad \epsilon \sim \mathcal{N}(0, I_n),
+\quad \nu \sim \mathcal{N}(0, \sigma_\nu^2 I_n),
+\end{equation}
+with $|\rho| < 1$, $W$ row-standardised and symmetric in expectation
+(its eigenvalues lie in $[-1, 1]$), and $\nu \perp U$.
+
+Let $Z = [\mathbf{1}, T, X, C]$ and $M = I - Z(Z^\top Z)^{-1} Z^\top$ be
+the residual projector for the SCCA-adjusted model. The fitted SCCA
+residual is
+\begin{equation}
+r = M Y = M(\sigma_u U + \nu),
+\label{eq:resid}
+\end{equation}
+because $MZ\beta = 0$ for any coefficient vector $\beta$. The
+row-standardised Moran's $I$ computed on $r$ is
+\begin{equation}
+I(r) = \frac{n}{s_0} \cdot \frac{r^\top W r}{r^\top r},
+\qquad s_0 = \mathbf{1}^\top W \mathbf{1} = n \quad (\text{row standardisation}),
+\label{eq:moran}
+\end{equation}
+so $n/s_0 = 1$ and $I(r) = r^\top W r / r^\top r$.
+
+\paragraph{Numerator.}
+Substituting (\ref{eq:resid}) into the numerator of (\ref{eq:moran}),
+\begin{equation}
+r^\top W r = \sigma_u^2 U^\top M W M U + 2 \sigma_u U^\top M W M \nu + \nu^\top M W M \nu.
+\end{equation}
+Because $\nu \perp U$ and $E[\nu] = 0$, the cross term vanishes in
+expectation, and
+\begin{equation}
+E[\nu^\top M W M \nu] = \sigma_\nu^2 \cdot \mathrm{tr}(M W M).
+\end{equation}
+For $U$, write $\Sigma_U = (I - \rho W)^{-1} (I - \rho W^\top)^{-1}$.
+Then $E[U U^\top] = \Sigma_U$ and
+\begin{equation}
+E[U^\top M W M U] = \mathrm{tr}(M W M \, \Sigma_U).
+\end{equation}
+
+If $W$ is symmetric or close to symmetric (which holds for many
+row-standardised k-nearest-neighbor graphs after explicit
+symmetrisation), $\Sigma_U$ has the eigenvalue expansion
+\begin{equation}
+\Sigma_U = \sum_{k} \frac{1}{(1 - \rho \lambda_k)^2} v_k v_k^\top,
+\end{equation}
+where $\{\lambda_k, v_k\}$ are the eigenpairs of $W$. Defining
+$P = M W M$, by the Loewner ordering on the trace and using
+$\lambda_k \in [-1, 1]$, the diagonal terms with $\lambda_k > 0$
+dominate when $\rho > 0$, giving
+\begin{equation}
+\mathrm{tr}(M W M \, \Sigma_U)
+\;\geq\;
+\frac{\rho}{(1 - \rho)^2} \cdot \mathrm{tr}(M W M)
++ O(1).
+\label{eq:tr_bound}
+\end{equation}
+Substituting (\ref{eq:tr_bound}) back gives
+\begin{equation}
+E[r^\top W r]
+\;\geq\;
+\sigma_u^2 \cdot \frac{\rho}{(1-\rho)^2} \cdot \mathrm{tr}(M W M)
++ \sigma_\nu^2 \cdot \mathrm{tr}(M W M).
+\end{equation}
+
+\paragraph{Denominator.}
+By the same logic,
+\begin{equation}
+E[r^\top r] = \sigma_u^2 \cdot \mathrm{tr}(M \Sigma_U M) + \sigma_\nu^2 \cdot \mathrm{tr}(M)
+\;\leq\;
+(\sigma_u^2 + \sigma_\nu^2) \cdot \mathrm{tr}(M) \cdot \frac{1}{(1 - |\rho|)^2}.
+\end{equation}
+
+\paragraph{Lower bound on $I(r)$.}
+Combining numerator and denominator, with a Taylor expansion in the
+Moran ratio that contributes only $o(n^{-1})$ when both $\mathrm{tr}(MWM)$
+and $\mathrm{tr}(M)$ grow linearly with $n$ (the usual rate for projection
+matrices), we obtain
+\begin{equation}
+E[I(r)]
+\;\geq\;
+\frac{\sigma_u^2}{\sigma_u^2 + \sigma_\nu^2}
+\cdot \frac{\rho}{(1 - \rho)^2}
+\cdot \kappa(W, M)
+- o(n^{-1}),
+\end{equation}
+where
+\begin{equation}
+\kappa(W, M) := \frac{\mathrm{tr}(M W M)}{\mathrm{tr}(M)} \cdot (1 - |\rho|)^2 \in (0, 1].
+\end{equation}
+This is exactly equation (5) in the main text. \qed
+
+\paragraph{Remarks.}
+(1) The bound is monotone in $|\rho|$ for $\rho \in [0, 1)$ and
+    monotone in $\sigma_u^2 / (\sigma_u^2 + \sigma_\nu^2)$.
+(2) $\kappa(W, M) \to 1$ as the projection $M$ becomes orthogonal to
+    the eigenvectors corresponding to negative eigenvalues of $W$,
+    and falls toward 0 when $M$ aligns with those eigenvectors.
+(3) The bound does not identify $\rho$ or $\sigma_u$; it only
+    quantifies how large the residual Moran statistic must be if a
+    SAR confounder of given strength is responsible for it.
+
+\section{S2. Threshold-calibration DGP}
+
+The calibration script in \texttt{scripts/threshold\_calibration.py}
+realises this DGP with the following choices:
+\begin{itemize}
+\item Coordinates: $\sqrt{n} \times \sqrt{n}$ jittered grid in $[0,1]^2$.
+\item Neighborhood graph $W$: 8-nearest-neighbour, row-standardised.
+\item Latent confounder: $U = (I - \rho W)^{-1}\epsilon$ with
+      $\epsilon \sim \mathcal{N}(0, I)$.
+\item Observed covariate: $x \sim \mathcal{N}(0, 1)$; observed
+      terrain proxy: $\mathrm{elev} \sim \mathcal{N}(0, 1)$.
+\item Treatment: logistic with linear predictor
+      $0.5 x + 0.5 \cdot \mathrm{elev} + \sigma_u U$.
+\item Outcome: $y = \tau T + x + 0.7\,\mathrm{elev} + \sigma_u U + 0.5\,\eta$,
+      $\eta \sim \mathcal{N}(0,1)$ with $\tau = 0.5$.
+\item SCCA-adjusted estimator: linear regression of $y$ on
+      $(1, T, x, \mathrm{elev})$.
+\item Spatial sensitivity: SLX-style regression on
+      $(1, T, WT, x, Wx, \mathrm{elev})$.
+\item Sweep: $\rho \in \{0.2, 0.5, 0.8\}$,
+      $n \in \{500, 2000, 5000\}$,
+      $\sigma_u \in \{0, 0.5, 1, 2\}$, 50 replicates per cell.
+\end{itemize}
+
+\section{S3. Output contracts}
+
+Every SCCA run writes the following files when feasible:
+
+\begin{itemize}
+\item \texttt{manifest.json} -- inputs, exposure/outcome fields,
+      variant set, seed, threshold rule version.
+\item \texttt{effect\_estimates.csv} -- one row per estimator.
+\item \texttt{erf\_curve.csv} -- exposure grid and fitted response.
+\item \texttt{balance\_summary.csv} -- pre/post SMDs per covariate.
+\item \texttt{overlap\_summary.json} -- common-support attrition.
+\item \texttt{spatial\_robustness.csv} -- residual Moran, neighbour-exposure,
+      SLX summary, graph sensitivity.
+\item \texttt{bootstrap\_robustness.csv} -- block bootstrap replicates.
+\item \texttt{placebo\_tests.csv} -- placebo exposure thresholds.
+\item \texttt{credibility\_report.json} -- machine-readable evidence grade.
+\end{itemize}
+
+GIS-aware runs additionally write
+\texttt{*.gpkg}, \texttt{*.geojson},
+\texttt{*.shp} and \texttt{*.qml} style files keyed to the same
+\texttt{AnalysisRequest} call.
+
+\end{document}

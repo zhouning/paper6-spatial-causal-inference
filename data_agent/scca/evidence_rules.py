@@ -2,12 +2,12 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 import numpy as np
 
 
-RULE_VERSION = "scca-evidence-grade-rules-2026-06-20"
+RULE_VERSION = "scca-evidence-grade-rules-2026-06-30"
 
 GRADE_RULE_FILES = {
     "rules_json": "scca_evidence_grade_rules.json",
@@ -19,7 +19,7 @@ THRESHOLDS = {
     "overlap_boundary_mass_moderate": 0.25,
     "bootstrap_sign_stability_min": 0.80,
     "erf_monotonic_fraction_min": 0.80,
-    "material_residual_moran_abs": 0.20,
+    "material_residual_moran_abs": 0.10,
     "spatial_p_value_max": 0.05,
     "spatial_adjustment_relative_change_max": 0.25,
 }
@@ -74,7 +74,7 @@ GRADE_RULES = [
         "rule_id": "material_residual_moran",
         "scope": "spatial diagnostics",
         "condition": (
-            "|residual Moran's I| >= 0.20 and permutation p <= 0.05"
+            "|residual Moran's I| >= 0.10 and permutation p <= 0.05"
         ),
         "effect": "Downgrade final manuscript evidence to bounded_support.",
     },
@@ -95,6 +95,22 @@ GRADE_RULES = [
         "scope": "spatial diagnostics",
         "condition": "graph-sensitivity sign stability is false",
         "effect": "Downgrade final manuscript evidence to bounded_support.",
+    },
+]
+
+
+DIAGNOSTIC_FLAGS = [
+    {
+        "flag_id": "significant_residual_moran_below_material_threshold",
+        "scope": "spatial diagnostics",
+        "condition": (
+            "residual Moran's I has permutation p <= spatial_p_value_max but "
+            "|residual Moran's I| is below material_residual_moran_abs"
+        ),
+        "effect": (
+            "Report as a non-downgrade residual-spatial warning and include it "
+            "in threshold-sensitivity outputs."
+        ),
     },
 ]
 
@@ -128,6 +144,21 @@ def _json_ready(value: object) -> object:
     return value
 
 
+def _active_thresholds(overrides: Mapping[str, Any] | None = None) -> dict[str, float]:
+    active = dict(THRESHOLDS)
+    if not overrides:
+        return active
+    unknown = sorted(set(overrides) - set(active))
+    if unknown:
+        raise KeyError(f"Unknown SCCA evidence threshold(s): {', '.join(unknown)}")
+    for key, value in overrides.items():
+        numeric = _finite_float(value)
+        if numeric is None:
+            raise ValueError(f"SCCA evidence threshold must be finite: {key}={value!r}")
+        active[key] = numeric
+    return active
+
+
 def assess_scca_evidence_grade(
     *,
     credibility_decision: str | None,
@@ -136,21 +167,29 @@ def assess_scca_evidence_grade(
     max_balance_corr: float | None = None,
     overlap_boundary_mass: float | None = None,
     forced_grade: str | None = None,
+    thresholds: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Map SCCA diagnostics to a reproducible manuscript evidence grade."""
 
+    active_thresholds = _active_thresholds(thresholds)
     if forced_grade in {"negative_ablation", "auxiliary_only"}:
         return {
             "rule_version": RULE_VERSION,
             "evidence_grade": forced_grade,
             "material_spatial_caution": False,
             "triggered_rules": [forced_grade],
+            "diagnostic_flags": [],
+            "diagnostic_reasons": [],
+            "residual_moran_status": "not_evaluated",
             "reasons": [f"Grade is fixed by evidence role: {forced_grade}."],
-            "thresholds": THRESHOLDS,
+            "thresholds": active_thresholds,
         }
 
     triggered: list[str] = []
     reasons: list[str] = []
+    diagnostic_flags: list[str] = []
+    diagnostic_reasons: list[str] = []
+    residual_moran_status = "not_available"
     credibility = str(credibility_decision or "unknown")
     robustness = str(robustness_interpretation or "unknown")
     spatial = spatial_summary or {}
@@ -167,18 +206,18 @@ def assess_scca_evidence_grade(
         triggered.append("unknown_credibility")
         reasons.append(f"Credibility decision is not strong_support ({credibility}).")
 
-    if balance_corr is not None and balance_corr > THRESHOLDS["max_balance_corr_moderate"]:
+    if balance_corr is not None and balance_corr > active_thresholds["max_balance_corr_moderate"]:
         triggered.append("high_exposure_balance_correlation")
         reasons.append(
             "Maximum exposure-balance correlation exceeds the threshold "
-            f"({balance_corr:.3f} > {THRESHOLDS['max_balance_corr_moderate']:.2f})."
+            f"({balance_corr:.3f} > {active_thresholds['max_balance_corr_moderate']:.2f})."
         )
 
-    if boundary_mass is not None and boundary_mass > THRESHOLDS["overlap_boundary_mass_moderate"]:
+    if boundary_mass is not None and boundary_mass > active_thresholds["overlap_boundary_mass_moderate"]:
         triggered.append("high_overlap_boundary_mass")
         reasons.append(
             "Exposure boundary mass exceeds the threshold "
-            f"({boundary_mass:.3f} > {THRESHOLDS['overlap_boundary_mass_moderate']:.2f})."
+            f"({boundary_mass:.3f} > {active_thresholds['overlap_boundary_mass_moderate']:.2f})."
         )
 
     if robustness == "bounded_support":
@@ -193,20 +232,30 @@ def assess_scca_evidence_grade(
 
     residual_moran = _finite_float(spatial.get("residual_moran_i"))
     residual_p = _finite_float(spatial.get("residual_moran_p_value"))
-    if (
-        residual_moran is not None
-        and residual_p is not None
-        and abs(residual_moran) >= THRESHOLDS["material_residual_moran_abs"]
-        and residual_p <= THRESHOLDS["spatial_p_value_max"]
-    ):
-        triggered.append("material_residual_moran")
-        reasons.append(
-            "Residual spatial autocorrelation is both statistically significant "
-            f"and materially large (Moran's I={residual_moran:.3f}, p={residual_p:.3f})."
-        )
+    if residual_moran is not None and residual_p is not None:
+        residual_significant = residual_p <= active_thresholds["spatial_p_value_max"]
+        residual_material = abs(residual_moran) >= active_thresholds["material_residual_moran_abs"]
+        if residual_significant and residual_material:
+            residual_moran_status = "material_significant"
+            triggered.append("material_residual_moran")
+            reasons.append(
+                "Residual spatial autocorrelation is both statistically significant "
+                f"and materially large (Moran's I={residual_moran:.3f}, p={residual_p:.3f})."
+            )
+        elif residual_significant:
+            residual_moran_status = "significant_below_material_threshold"
+            diagnostic_flags.append("significant_residual_moran_below_material_threshold")
+            diagnostic_reasons.append(
+                "Residual spatial autocorrelation is statistically significant but below "
+                "the declared material threshold "
+                f"(Moran's I={residual_moran:.3f}, p={residual_p:.3f}, "
+                f"threshold={active_thresholds['material_residual_moran_abs']:.2f})."
+            )
+        else:
+            residual_moran_status = "not_significant"
 
     neighbor_p = _finite_float(spatial.get("neighbor_exposure_p_value"))
-    if neighbor_p is not None and neighbor_p <= THRESHOLDS["spatial_p_value_max"]:
+    if neighbor_p is not None and neighbor_p <= active_thresholds["spatial_p_value_max"]:
         triggered.append("significant_neighbor_exposure")
         reasons.append(
             "Neighboring exposure remains associated with the outcome after adjustment "
@@ -220,11 +269,11 @@ def assess_scca_evidence_grade(
         _finite_float(spatial.get("spatial_lag_relative_change_max")),
     ]
     finite_changes = [value for value in relative_changes if value is not None]
-    if finite_changes and max(finite_changes) >= THRESHOLDS["spatial_adjustment_relative_change_max"]:
+    if finite_changes and max(finite_changes) >= active_thresholds["spatial_adjustment_relative_change_max"]:
         triggered.append("material_spatial_adjustment_shift")
         reasons.append(
             "Spatial adjustment changes the main effect by at least "
-            f"{THRESHOLDS['spatial_adjustment_relative_change_max']:.2f} "
+            f"{active_thresholds['spatial_adjustment_relative_change_max']:.2f} "
             f"(max relative change={max(finite_changes):.3f})."
         )
 
@@ -249,8 +298,11 @@ def assess_scca_evidence_grade(
         "evidence_grade": evidence_grade,
         "material_spatial_caution": material_spatial,
         "triggered_rules": triggered,
+        "diagnostic_flags": diagnostic_flags,
+        "diagnostic_reasons": diagnostic_reasons,
+        "residual_moran_status": residual_moran_status,
         "reasons": reasons,
-        "thresholds": THRESHOLDS,
+        "thresholds": active_thresholds,
     }
 
 
@@ -277,6 +329,7 @@ def evidence_rule_payload() -> dict[str, Any]:
         },
         "thresholds": THRESHOLDS,
         "rules": GRADE_RULES,
+        "diagnostic_flags": DIAGNOSTIC_FLAGS,
     }
 
 
@@ -304,6 +357,18 @@ def render_evidence_rule_markdown(payload: dict[str, Any] | None = None) -> str:
                 f"- Scope: {rule['scope']}",
                 f"- Condition: {rule['condition']}",
                 f"- Effect: {rule['effect']}",
+                "",
+            ]
+        )
+    lines.extend(["", "## Non-downgrade Diagnostic Flags", ""])
+    for flag in payload.get("diagnostic_flags", []):
+        lines.extend(
+            [
+                f"### `{flag['flag_id']}`",
+                "",
+                f"- Scope: {flag['scope']}",
+                f"- Condition: {flag['condition']}",
+                f"- Effect: {flag['effect']}",
                 "",
             ]
         )

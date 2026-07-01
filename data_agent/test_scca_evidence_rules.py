@@ -41,6 +41,59 @@ def test_assess_scca_evidence_grade_downgrades_material_residual_moran():
     assert "material_residual_moran" in assessment["triggered_rules"]
 
 
+def test_assess_scca_evidence_grade_uses_calibrated_residual_moran_threshold_by_default():
+    from data_agent.scca.evidence_rules import assess_scca_evidence_grade
+
+    assessment = assess_scca_evidence_grade(
+        credibility_decision="strong_support",
+        robustness_interpretation="robust_support",
+        spatial_summary={
+            "residual_moran_i": 0.102,
+            "residual_moran_p_value": 0.01,
+            "neighbor_exposure_p_value": 0.20,
+            "neighbor_adjusted_relative_change_max": 0.12,
+            "neighbor_adjusted_sign_stability": True,
+        },
+    )
+
+    assert assessment["evidence_grade"] == "bounded_support"
+    assert assessment["material_spatial_caution"] is True
+    assert "material_residual_moran" in assessment["triggered_rules"]
+    assert assessment["diagnostic_flags"] == []
+    assert assessment["residual_moran_status"] == "material_significant"
+    assert assessment["thresholds"]["material_residual_moran_abs"] == 0.10
+
+
+def test_assess_scca_evidence_grade_accepts_threshold_overrides_for_sensitivity():
+    from data_agent.scca.evidence_rules import assess_scca_evidence_grade
+
+    strict = assess_scca_evidence_grade(
+        credibility_decision="strong_support",
+        robustness_interpretation="robust_support",
+        spatial_summary={
+            "residual_moran_i": 0.102,
+            "residual_moran_p_value": 0.01,
+        },
+        thresholds={"material_residual_moran_abs": 0.10},
+    )
+    declared = assess_scca_evidence_grade(
+        credibility_decision="strong_support",
+        robustness_interpretation="robust_support",
+        spatial_summary={
+            "residual_moran_i": 0.102,
+            "residual_moran_p_value": 0.01,
+        },
+        thresholds={"material_residual_moran_abs": 0.20},
+    )
+
+    assert strict["evidence_grade"] == "bounded_support"
+    assert "material_residual_moran" in strict["triggered_rules"]
+    assert strict["thresholds"]["material_residual_moran_abs"] == 0.10
+    assert declared["evidence_grade"] == "core_support"
+    assert declared["residual_moran_status"] == "significant_below_material_threshold"
+    assert declared["thresholds"]["material_residual_moran_abs"] == 0.20
+
+
 def test_assess_scca_evidence_grade_reports_balance_and_overlap_rules():
     from data_agent.scca.evidence_rules import assess_scca_evidence_grade
 

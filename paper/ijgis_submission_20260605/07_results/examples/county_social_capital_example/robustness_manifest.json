@@ -1,7 +1,7 @@
 {
   "case": "county_social_capital_example",
   "original_decision": "strong_support",
-  "main_coef": 0.1812445992135535,
+  "main_coef": 0.1812446003915275,
   "robustness_interpretation": "robust_support",
   "ablation_direction_stable": true,
   "placebo_weaker_than_main": true,
