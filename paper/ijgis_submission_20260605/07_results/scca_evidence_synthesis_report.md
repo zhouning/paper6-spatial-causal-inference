@@ -35,14 +35,14 @@ and the county row as a GIS/notebook reproducibility and spatial-diagnostic boun
 ### chongqing_uhi
 
 - Grade: `bounded_support`
-- Best adjustment: pre_treatment (pre-treatment confounder set)
-- Effect/diagnostic: ATT = 0.303 C; 95% CI [0.220, 0.383]; over-adjusted full-RS ATT = 0.244 C; cluster-robust building ATT = 0.268 (CR SE 0.054), pixel-aggregated ATT = 0.546
-- Balance: max post-match SMD = 0.104; balance pass = False
+- Best adjustment: outcome-scale pixel aggregation with pre-treatment context; building-level matching retained as diagnostic
+- Effect/diagnostic: Outcome-scale pixel ATT = 0.546 C; 95% CI [0.359, 0.734]; building-level matching ATT = 0.303 C (diagnostic approximation; matching CI [0.220, 0.383]); cluster-robust building OLS ATT = 0.268 C (CR SE 0.054); over-adjusted full-RS matching ATT = 0.244 C
+- Balance: max post-match SMD = 0.104; balance pass = False; matching sensitivity labels = near_threshold_not_passed
 - Robustness: threshold placebo, spatial bootstrap, residual spatial, and change-of-support diagnostics available
 - Grade rules: `moderate_credibility; material_residual_moran`
 - Grade reasons: Credibility diagnostics only support a moderate claim.; Residual spatial autocorrelation is both statistically significant and materially large (Moran's I=0.112, p=0.010).
 - Limitation: Outcome retrieved at ~1 km while treatment is building-level (change-of-support), residual spatial structure remains, and Sentinel surfaces may be post-treatment; these bound the causal strength.
-- Manuscript use: Use as the main real-data SCCA case; report the pre-treatment estimate with change-of-support and residual-spatial caution.
+- Manuscript use: Use as the main real-data SCCA case; report the outcome-scale pixel estimate as primary and building-level matching as a diagnostic approximation with residual-spatial caution.
 
 ### county_social_capital_spatial_notebook
 
@@ -53,8 +53,8 @@ and the county row as a GIS/notebook reproducibility and spatial-diagnostic boun
 - Robustness: residual Moran I = 0.313; spatial bootstrap sign stability = 1.000; graph sensitivity sign stable = True
 - Grade rules: `material_residual_moran; significant_neighbor_exposure`
 - Grade reasons: Residual spatial autocorrelation is both statistically significant and materially large (Moran's I=0.313, p=0.010).; Neighboring exposure remains associated with the outcome after adjustment (p=0.000).
-- Limitation: Residual spatial autocorrelation and a significant neighboring-exposure term remain, so this is spatially cautioned external evidence rather than identification evidence.
-- Manuscript use: Use as the GIS/notebook spatial-output demonstration and as spatially bounded external SCCA evidence.
+- Limitation: Residual spatial autocorrelation and a significant neighboring-exposure term remain, so this is spatially cautioned workflow evidence rather than identification evidence.
+- Manuscript use: Use as the GIS/notebook spatial-output demonstration and spatial-diagnostic boundary check, not as substantive validation.
 
 ## Grade Counts
 

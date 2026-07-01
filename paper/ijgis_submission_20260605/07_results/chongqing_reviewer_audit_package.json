@@ -1,6 +1,36 @@
 {
   "records": [
     {
+      "item": "raw_chongqing_inputs_redistributed",
+      "value": "False",
+      "source_file": "Data and Code Availability",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "public_reconstruction_claim",
+      "value": "structural_rerun_and_aggregate_audit_only",
+      "source_file": "Data and Code Availability",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "sentinel_pre_treatment_status_publicly_auditable",
+      "value": "False",
+      "source_file": "Data and Code Availability",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "primary_chongqing_estimand_family",
+      "value": "outcome_scale_pixel_aggregated",
+      "source_file": "Data and Code Availability",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "building_level_matching_role",
+      "value": "diagnostic_approximation",
+      "source_file": "Data and Code Availability",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
       "item": "sample_size",
       "value": "5000",
       "source_file": "chongqing_uhi_analysis_manifest.json",
@@ -46,6 +76,192 @@
       "item": "balance_interpretation",
       "value": "credible_balance",
       "source_file": "chongqing_uhi_analysis_manifest.json",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_matching_att_c",
+      "value": "0.3031107503607498",
+      "source_file": "chongqing_uhi_ablation.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_matching_ci_lower",
+      "value": "0.2204685667096646",
+      "source_file": "chongqing_uhi_ablation.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_matching_ci_upper",
+      "value": "0.3831565801412388",
+      "source_file": "chongqing_uhi_ablation.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_max_pre_smd",
+      "value": "0.1381386529664278",
+      "source_file": "chongqing_uhi_ablation.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_max_post_smd",
+      "value": "0.1044862238523239",
+      "source_file": "chongqing_uhi_ablation.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_balance_pass_0_1",
+      "value": "False",
+      "source_file": "chongqing_uhi_ablation.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_matched_treated_n",
+      "value": "2178",
+      "source_file": "chongqing_uhi_ablation.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_matched_control_n",
+      "value": "2178",
+      "source_file": "chongqing_uhi_ablation.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_building_naive_att_c",
+      "value": "0.2679628634299362",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_building_naive_se",
+      "value": "0.038315912677803",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_building_naive_ci_lower",
+      "value": "0.1928636745814422",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_building_naive_ci_upper",
+      "value": "0.3430620522784303",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_building_naive_n_units",
+      "value": "5000",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_building_naive_n_pixels",
+      "value": "1400",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_building_naive_buildings_per_pixel",
+      "value": "3.571",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_building_cluster_robust_att_c",
+      "value": "0.2679628634299362",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_building_cluster_robust_se",
+      "value": "0.0542099933627099",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_building_cluster_robust_ci_lower",
+      "value": "0.1617112764390246",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_building_cluster_robust_ci_upper",
+      "value": "0.3742144504208478",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_building_cluster_robust_n_units",
+      "value": "5000",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_building_cluster_robust_n_pixels",
+      "value": "1400",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_building_cluster_robust_buildings_per_pixel",
+      "value": "3.571",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_pixel_aggregated_att_c",
+      "value": "0.5464295710074012",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_pixel_aggregated_se",
+      "value": "0.0955374980888743",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_pixel_aggregated_ci_lower",
+      "value": "0.3591760747532075",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_pixel_aggregated_ci_upper",
+      "value": "0.7336830672615948",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_pixel_aggregated_n_units",
+      "value": "1400",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_pixel_aggregated_n_pixels",
+      "value": "1400",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_pixel_aggregated_buildings_per_pixel",
+      "value": "3.571",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_matching_sensitivity_caliper_0.20_max_post_smd",
+      "value": "0.1044862238523239",
+      "source_file": "chongqing_matching_sensitivity.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_matching_sensitivity_caliper_0.20_balance_status",
+      "value": "near_threshold_not_passed",
+      "source_file": "chongqing_matching_sensitivity.csv",
       "privacy_status": "non_sensitive_aggregate"
     },
     {

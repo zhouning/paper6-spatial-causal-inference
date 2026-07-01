@@ -116,6 +116,16 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
         synthesis["case"] == "chongqing_uhi",
         "grade_rule_ids",
     ].str.contains("material_residual_moran").any()
+    chongqing_effect = synthesis.loc[
+        synthesis["case"] == "chongqing_uhi",
+        "effect_estimate",
+    ].iloc[0]
+    assert chongqing_effect.startswith("Outcome-scale pixel ATT")
+    assert "building-level matching ATT" in chongqing_effect
+    assert "diagnostic approximation" in synthesis.loc[
+        synthesis["case"] == "chongqing_uhi",
+        "manuscript_use",
+    ].iloc[0]
     assert synthesis.loc[
         synthesis["case"] == "county_social_capital_spatial_notebook",
         "evidence_grade",
@@ -191,6 +201,13 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
         "privacy_status",
     }.issubset(public_audit.columns)
     assert set(public_audit["privacy_status"]) == {"non_sensitive_aggregate"}
+    assert {
+        "raw_chongqing_inputs_redistributed",
+        "public_reconstruction_claim",
+        "sentinel_pre_treatment_status_publicly_auditable",
+        "primary_chongqing_estimand_family",
+        "building_level_matching_role",
+    }.issubset(set(public_audit["item"]))
 
     rebuilt_roles = build_chongqing_variable_role_audit()
     assert not rebuilt_roles.empty

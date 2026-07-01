@@ -1,0 +1,2 @@
+variant,setting_label,caliper,att,ci_lower,ci_upper,max_post_smd,balance_status,matched_treated_n,matched_control_n,interpretation_label
+pre_treatment,caliper_0.20,0.2,0.3031107503607498,0.22046856670966467,0.3831565801412388,0.10448622385232399,near_threshold_not_passed,2178,2178,near_threshold_not_passed

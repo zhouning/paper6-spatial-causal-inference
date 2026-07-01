@@ -61,6 +61,7 @@ OUTPUT_FILES = {
     "placebo_csv": "chongqing_placebo_thresholds.csv",
     "residual_csv": "chongqing_residual_spatial_diagnostics.csv",
     "change_of_support_csv": "chongqing_change_of_support.csv",
+    "matching_sensitivity_csv": "chongqing_matching_sensitivity.csv",
     "manifest_json": "chongqing_uhi_analysis_manifest.json",
     "report_md": "chongqing_uhi_analysis_report.md",
 }
@@ -77,6 +78,14 @@ def _json_ready(value: Any) -> Any:
         numeric = float(value)
         return numeric if np.isfinite(numeric) else None
     return value
+
+
+def _finite_float(value: Any) -> float | None:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return None
+    return number if np.isfinite(number) else None
 
 
 def resolve_feature_columns(frame: pd.DataFrame, names: Iterable[str]) -> list[str]:
@@ -611,6 +620,58 @@ def run_threshold_placebos(
     return pd.concat(rows, ignore_index=True) if rows else pd.DataFrame()
 
 
+def _match_balance_status(max_post_smd: Any) -> str:
+    value = _finite_float(max_post_smd)
+    if value is None:
+        return "not_evaluated"
+    if value < 0.10:
+        return "passes_balance"
+    if value < 0.11:
+        return "near_threshold_not_passed"
+    return "fails_balance"
+
+
+def run_matching_sensitivity(
+    frame: pd.DataFrame,
+    *,
+    variant: str = "pre_treatment",
+    threshold: int = 10,
+    calipers: Iterable[float] = (0.15, 0.20, 0.25),
+    n_bootstrap: int = 100,
+    random_state: int = 0,
+    outcome_col: str = "LST",
+) -> pd.DataFrame:
+    """Run declared caliper sensitivity for one Chongqing matching variant."""
+    rows: list[dict[str, Any]] = []
+    for offset, caliper in enumerate(calipers):
+        row, _, _, _ = _match_variant(
+            frame,
+            variant=variant,
+            threshold=threshold,
+            caliper=float(caliper),
+            n_bootstrap=n_bootstrap,
+            random_state=random_state + offset,
+            outcome_col=outcome_col,
+        )
+        status = _match_balance_status(row.get("max_post_smd"))
+        rows.append(
+            {
+                "variant": variant,
+                "setting_label": f"caliper_{float(caliper):.2f}",
+                "caliper": float(caliper),
+                "att": row.get("att"),
+                "ci_lower": row.get("ci_lower"),
+                "ci_upper": row.get("ci_upper"),
+                "max_post_smd": row.get("max_post_smd"),
+                "balance_status": status,
+                "matched_treated_n": row.get("matched_treated_n"),
+                "matched_control_n": row.get("matched_control_n"),
+                "interpretation_label": status,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
 def _grid_blocks(frame: pd.DataFrame, *, block_size_m: float) -> pd.Series:
     x_col, y_col = resolve_feature_columns(frame, ("centroid_x", "centroid_y"))
     x = pd.to_numeric(frame[x_col], errors="coerce")
@@ -1102,6 +1163,15 @@ def run_chongqing_uhi_analysis(
         outcome_col=outcome_col,
         random_state=random_state,
     )
+    matching_sensitivity = run_matching_sensitivity(
+        frame,
+        variant="pre_treatment",
+        threshold=threshold,
+        calipers=(0.15, 0.20, 0.25),
+        n_bootstrap=max(20, min(n_bootstrap, 100)),
+        random_state=random_state,
+        outcome_col=outcome_col,
+    )
     manifest_metadata = {
         "sample_size": int(len(frame)),
         "treatment_threshold": int(threshold),
@@ -1119,6 +1189,7 @@ def run_chongqing_uhi_analysis(
         placebos=placebos,
         residual_diagnostics=residuals,
         change_of_support=change_of_support,
+        matching_sensitivity=matching_sensitivity,
         metadata=manifest_metadata,
     )
 
@@ -1166,6 +1237,7 @@ def write_chongqing_outputs(
     placebos: pd.DataFrame,
     residual_diagnostics: pd.DataFrame,
     change_of_support: pd.DataFrame | None = None,
+    matching_sensitivity: pd.DataFrame | None = None,
     metadata: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Write IJGIS-required Chongqing UHI experiment outputs."""
@@ -1183,6 +1255,8 @@ def write_chongqing_outputs(
     }
     if change_of_support is not None:
         frames["change_of_support_csv"] = change_of_support
+    if matching_sensitivity is not None:
+        frames["matching_sensitivity_csv"] = matching_sensitivity
     manifest: dict[str, Any] = {}
     for key, frame in frames.items():
         path = target / OUTPUT_FILES[key]

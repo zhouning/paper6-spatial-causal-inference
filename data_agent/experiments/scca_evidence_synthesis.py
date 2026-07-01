@@ -239,17 +239,32 @@ def _chongqing_row(results_dir: Path) -> dict[str, str] | None:
 
     # Change-of-support consequence (pixel-aggregated estimand vs building-level).
     cos = _read_csv(results_dir / "chongqing_change_of_support.csv")
-    cos_text = ""
+    effect_text = (
+        f"ATT = {_fmt_num(record.get('att'))} C; 95% CI {ci}; "
+        f"over-adjusted full-RS ATT = {full_att} C"
+    )
     if not cos.empty:
         prim = cos[(cos["variant"] == primary_variant) | (cos["variant"] == "pre_treatment")]
-        naive = prim[prim["estimand"] == "building_cluster_robust"]
+        cluster = prim[prim["estimand"] == "building_cluster_robust"]
         pixel = prim[prim["estimand"] == "pixel_aggregated"]
-        if not naive.empty and not pixel.empty:
-            cos_text = (
-                f"; cluster-robust building ATT = {_fmt_num(naive.iloc[0].get('att'))} "
-                f"(CR SE {_fmt_num(naive.iloc[0].get('se'))}), "
-                f"pixel-aggregated ATT = {_fmt_num(pixel.iloc[0].get('att'))}"
+        if not cluster.empty and not pixel.empty:
+            effect_text = (
+                f"Outcome-scale pixel ATT = {_fmt_num(pixel.iloc[0].get('att'))} C; "
+                f"95% CI [{_fmt_num(pixel.iloc[0].get('ci_lower'))}, "
+                f"{_fmt_num(pixel.iloc[0].get('ci_upper'))}]; "
+                f"building-level matching ATT = {_fmt_num(record.get('att'))} C "
+                f"(diagnostic approximation; matching CI {ci}); "
+                f"cluster-robust building OLS ATT = {_fmt_num(cluster.iloc[0].get('att'))} C "
+                f"(CR SE {_fmt_num(cluster.iloc[0].get('se'))}); "
+                f"over-adjusted full-RS matching ATT = {full_att} C"
             )
+
+    sensitivity = _read_csv(results_dir / "chongqing_matching_sensitivity.csv")
+    sensitivity_text = ""
+    if not sensitivity.empty and "interpretation_label" in sensitivity:
+        labels = sorted(map(str, sensitivity["interpretation_label"].dropna().unique()))
+        if labels:
+            sensitivity_text = f"; matching sensitivity labels = {', '.join(labels)}"
 
     # Credibility: pre-treatment set has weaker post-match balance
     # (max SMD ~0.10) than the over-adjusted full set, so we do not overstate.
@@ -266,12 +281,9 @@ def _chongqing_row(results_dir: Path) -> dict[str, str] | None:
         exposure="high-rise building threshold >= 10 floors",
         outcome="summer land surface temperature (MODIS MOD11A2, ~1 km)",
         context_source="coordinates, geometry, DEM terrain (pre-treatment); Sentinel-2 as over-adjustment comparison",
-        best_adjustment=f"{primary_variant} (pre-treatment confounder set)",
-        effect_estimate=(
-            f"ATT = {_fmt_num(record.get('att'))} C; 95% CI {ci}; "
-            f"over-adjusted full-RS ATT = {full_att} C{cos_text}"
-        ),
-        balance_status=f"max post-match SMD = {max_smd}; balance pass = {balance_pass}",
+        best_adjustment="outcome-scale pixel aggregation with pre-treatment context; building-level matching retained as diagnostic",
+        effect_estimate=effect_text,
+        balance_status=f"max post-match SMD = {max_smd}; balance pass = {balance_pass}{sensitivity_text}",
         robustness_status="threshold placebo, spatial bootstrap, residual spatial, and change-of-support diagnostics available",
         evidence_grade=grade,
         grade_rule_ids=rule_ids,
@@ -281,7 +293,11 @@ def _chongqing_row(results_dir: Path) -> dict[str, str] | None:
             "residual spatial structure remains, and Sentinel surfaces may be post-treatment; "
             "these bound the causal strength."
         ),
-        manuscript_use="Use as the main real-data SCCA case; report the pre-treatment estimate with change-of-support and residual-spatial caution.",
+        manuscript_use=(
+            "Use as the main real-data SCCA case; report the outcome-scale pixel "
+            "estimate as primary and building-level matching as a diagnostic "
+            "approximation with residual-spatial caution."
+        ),
     )
 
 
@@ -341,7 +357,7 @@ def _county_spatial_notebook_row(results_dir: Path) -> dict[str, str] | None:
 
     return _row(
         case="county_social_capital_spatial_notebook",
-        data_type="external county-level validation and GIS output case",
+        data_type="third-party county workflow reproducibility and GIS output case",
         exposure="county social-association measure",
         outcome="average age at death",
         context_source="county socioeconomic, geometry, centroid-coordinate, and spatial-neighborhood context",
@@ -365,10 +381,10 @@ def _county_spatial_notebook_row(results_dir: Path) -> dict[str, str] | None:
         grade_reasons=grade_reasons,
         limitation=(
             "Residual spatial autocorrelation and a significant neighboring-exposure term remain, "
-            "so this is spatially cautioned external evidence rather than identification evidence."
+            "so this is spatially cautioned workflow evidence rather than identification evidence."
         ),
         manuscript_use=(
-            "Use as the GIS/notebook spatial-output demonstration and as spatially bounded external SCCA evidence."
+            "Use as the GIS/notebook spatial-output demonstration and spatial-diagnostic boundary check, not as substantive validation."
         ),
     )
 
@@ -677,8 +693,19 @@ def build_chongqing_reviewer_audit_package(
     matched = _read_csv(root / "chongqing_uhi_matched_counts.csv")
     residuals = _read_csv(root / "chongqing_residual_spatial_diagnostics.csv")
     placebo = _read_csv(root / "chongqing_placebo_thresholds.csv")
+    change_of_support = _read_csv(root / "chongqing_change_of_support.csv")
+    matching_sensitivity = _read_csv(root / "chongqing_matching_sensitivity.csv")
 
     rows: list[dict[str, str]] = []
+    for item, value in (
+        ("raw_chongqing_inputs_redistributed", "False"),
+        ("public_reconstruction_claim", "structural_rerun_and_aggregate_audit_only"),
+        ("sentinel_pre_treatment_status_publicly_auditable", "False"),
+        ("primary_chongqing_estimand_family", "outcome_scale_pixel_aggregated"),
+        ("building_level_matching_role", "diagnostic_approximation"),
+    ):
+        rows.append(_audit_row(item, value, "Data and Code Availability"))
+
     manifest_file = "chongqing_uhi_analysis_manifest.json"
     for item in (
         "sample_size",
@@ -692,6 +719,56 @@ def build_chongqing_reviewer_audit_package(
     ):
         if item in metadata:
             rows.append(_audit_row(item, metadata.get(item), manifest_file))
+
+    pre = _variant_row(ablation, "pre_treatment")
+    if pre is not None:
+        ablation_file = "chongqing_uhi_ablation.csv"
+        for item, column in (
+            ("pre_treatment_matching_att_c", "att"),
+            ("pre_treatment_matching_ci_lower", "ci_lower"),
+            ("pre_treatment_matching_ci_upper", "ci_upper"),
+            ("pre_treatment_max_pre_smd", "max_pre_smd"),
+            ("pre_treatment_max_post_smd", "max_post_smd"),
+            ("pre_treatment_balance_pass_0_1", "balance_pass_0_1"),
+            ("pre_treatment_matched_treated_n", "matched_treated_n"),
+            ("pre_treatment_matched_control_n", "matched_control_n"),
+        ):
+            rows.append(_audit_row(item, pre.get(column), ablation_file))
+
+    if not change_of_support.empty and "variant" in change_of_support:
+        cos_rows = change_of_support.loc[
+            change_of_support["variant"].astype(str) == "pre_treatment"
+        ]
+        for _, record in cos_rows.iterrows():
+            estimand = str(record.get("estimand"))
+            for item, column in (
+                (f"pre_treatment_{estimand}_att_c", "att"),
+                (f"pre_treatment_{estimand}_se", "se"),
+                (f"pre_treatment_{estimand}_ci_lower", "ci_lower"),
+                (f"pre_treatment_{estimand}_ci_upper", "ci_upper"),
+                (f"pre_treatment_{estimand}_n_units", "n_units"),
+                (f"pre_treatment_{estimand}_n_pixels", "n_pixels"),
+                (f"pre_treatment_{estimand}_buildings_per_pixel", "buildings_per_pixel"),
+            ):
+                rows.append(_audit_row(item, record.get(column), "chongqing_change_of_support.csv"))
+
+    if not matching_sensitivity.empty:
+        for _, record in matching_sensitivity.iterrows():
+            label = str(record.get("setting_label"))
+            rows.append(
+                _audit_row(
+                    f"pre_treatment_matching_sensitivity_{label}_max_post_smd",
+                    record.get("max_post_smd"),
+                    "chongqing_matching_sensitivity.csv",
+                )
+            )
+            rows.append(
+                _audit_row(
+                    f"pre_treatment_matching_sensitivity_{label}_balance_status",
+                    record.get("balance_status"),
+                    "chongqing_matching_sensitivity.csv",
+                )
+            )
 
     full = _variant_row(ablation, "full_rs_context")
     if full is not None:

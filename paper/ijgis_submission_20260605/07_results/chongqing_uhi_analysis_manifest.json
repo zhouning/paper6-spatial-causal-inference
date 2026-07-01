@@ -6,6 +6,7 @@
   "placebo_csv": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\chongqing_placebo_thresholds.csv",
   "residual_csv": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\chongqing_residual_spatial_diagnostics.csv",
   "change_of_support_csv": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\chongqing_change_of_support.csv",
+  "matching_sensitivity_csv": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\chongqing_matching_sensitivity.csv",
   "manifest_json": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\chongqing_uhi_analysis_manifest.json",
   "report_md": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\chongqing_uhi_analysis_report.md",
   "metadata": {
@@ -18,6 +19,7 @@
     "buildings_total": 107035,
     "data_source": "provided_analysis_sample",
     "outcome_product": "MODIS MOD11A2 summer LST (~1 km)",
+    "matching_sensitivity_scope": "default_caliper_audit_anchor; multi-caliper rerun requires restricted Chongqing analysis sample",
     "balance_interpretation": "credible_balance"
   },
   "balance_interpretation": "credible_balance"

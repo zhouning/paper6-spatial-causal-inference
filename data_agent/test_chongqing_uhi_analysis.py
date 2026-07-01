@@ -130,6 +130,23 @@ def test_chongqing_feature_specs_and_writer_contract(tmp_path):
     bootstrap = pd.DataFrame([{"variant": "terrain", "replicate": 0, "att": 0.1, "status": "ok"}])
     placebos = pd.DataFrame([{"threshold": 8, "variant": "terrain", "att": 0.1}])
     residuals = pd.DataFrame([{"variant": "terrain", "moran_i": 0.02, "permutation_p_value": 0.4}])
+    matching_sensitivity = pd.DataFrame(
+        [
+            {
+                "variant": "pre_treatment",
+                "setting_label": "caliper_0.20",
+                "caliper": 0.2,
+                "att": 0.2,
+                "ci_lower": 0.1,
+                "ci_upper": 0.3,
+                "max_post_smd": 0.104,
+                "balance_status": "near_threshold_not_passed",
+                "matched_treated_n": 5,
+                "matched_control_n": 5,
+                "interpretation_label": "near_threshold_not_passed",
+            }
+        ]
+    )
 
     manifest = write_chongqing_outputs(
         output_dir=tmp_path,
@@ -139,6 +156,7 @@ def test_chongqing_feature_specs_and_writer_contract(tmp_path):
         bootstrap=bootstrap,
         placebos=placebos,
         residual_diagnostics=residuals,
+        matching_sensitivity=matching_sensitivity,
         metadata={"sample_size": 12, "treatment_threshold": 10},
     )
 
@@ -149,6 +167,7 @@ def test_chongqing_feature_specs_and_writer_contract(tmp_path):
         "bootstrap_csv": tmp_path / "chongqing_spatial_bootstrap.csv",
         "placebo_csv": tmp_path / "chongqing_placebo_thresholds.csv",
         "residual_csv": tmp_path / "chongqing_residual_spatial_diagnostics.csv",
+        "matching_sensitivity_csv": tmp_path / "chongqing_matching_sensitivity.csv",
         "manifest_json": tmp_path / "chongqing_uhi_analysis_manifest.json",
         "report_md": tmp_path / "chongqing_uhi_analysis_report.md",
     }
@@ -188,6 +207,37 @@ def test_run_psm_ablation_reports_balance_and_counts():
         matched_counts.columns
     )
     assert matched_counts["drop_rate"].between(0, 1).all()
+
+
+def test_run_matching_sensitivity_labels_near_threshold_balance():
+    from data_agent.experiments.chongqing_uhi_analysis import run_matching_sensitivity
+
+    sensitivity = run_matching_sensitivity(
+        _matched_uhi_fixture(),
+        variant="pre_treatment",
+        threshold=10,
+        calipers=(0.2,),
+        n_bootstrap=20,
+        random_state=0,
+    )
+
+    assert {
+        "variant",
+        "setting_label",
+        "caliper",
+        "att",
+        "ci_lower",
+        "ci_upper",
+        "max_post_smd",
+        "balance_status",
+        "matched_treated_n",
+        "matched_control_n",
+        "interpretation_label",
+    }.issubset(sensitivity.columns)
+    assert set(sensitivity["variant"]) == {"pre_treatment"}
+    assert sensitivity["interpretation_label"].isin(
+        {"passes_balance", "near_threshold_not_passed", "fails_balance"}
+    ).all()
 
 
 def test_spatial_robustness_helpers_return_expected_rows():
