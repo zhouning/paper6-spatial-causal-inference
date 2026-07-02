@@ -16,6 +16,7 @@
 \usetikzlibrary{positioning,arrows.meta,shapes.geometric,fit,calc}
 \graphicspath{{./figures/}{./}}
 \bibliographystyle{plainnat}
+\setlength{\emergencystretch}{2em}
 \newenvironment{keywords}{\par\noindent\textbf{Keywords:}\ }{\par}
 \newcommand{\ruleversion}{the 2026-06-30 evidence-grade rule set}
 \newcommand{\rulesjson}{\path{07_results/scca_evidence_grade_rules.json}}
@@ -480,13 +481,13 @@ Threshold $t$ & TPR & FPR & Precision & Youden's $J$ & Verdict \\
 
 \begin{table}[htbp]
 \centering
-\small
+\footnotesize
 \caption{Per-family behaviour of the residual-Moran rule. Mean residual Moran's $I$ is averaged over all cells of that family; TPR is at the manuscript default $t=0.10$. The rule is strong for kernel/non-stationary processes but weak for CAR, where the same relative bias leaves little simple-contiguity autocorrelation in the residual.}
 \label{tab:moran_family}
 \setlength{\tabcolsep}{4pt}
-\begin{tabular}{lcccc}
+\begin{tabular}{@{}L{3.35cm}rrrr@{}}
 \toprule
-Latent-process family & Mean residual $I$ & TPR @ 0.10 & TPR @ 0.20 & Family Youden-optimal $t$ \\
+Latent-process family & \shortstack{Mean\\residual $I$} & \shortstack{TPR\\@ 0.10} & \shortstack{TPR\\@ 0.20} & \shortstack{Family Youden-\\optimal $t$} \\
 \midrule
 CAR (conditional AR) & 0.04 & 0.19 & 0.00 & 0.05 \\
 SAR (simultaneous AR) & 0.10 & 0.53 & 0.30 & 0.05 \\
