@@ -18,6 +18,9 @@ class StudySpec:
     context_columns: tuple[str, ...] = field(default_factory=tuple)
     coordinate_columns: tuple[str, str] | None = None
     subgroup_column: str | None = None
+    treatment_support: str | None = None
+    outcome_support: str | None = None
+    aggregation_group: str | None = None
 
     @classmethod
     def snow8_default(cls) -> "StudySpec":
@@ -84,6 +87,22 @@ class SCCAPaths:
 
     def ensure(self) -> None:
         self.output_dir.mkdir(parents=True, exist_ok=True)
+
+    @property
+    def scale_summary(self) -> Path:
+        return self.output_dir / "scale_summary.json"
+
+    @property
+    def sg_scca_diagnostics(self) -> Path:
+        return self.output_dir / "sg_scca_diagnostics.json"
+
+    @property
+    def sg_scca_effect_estimates(self) -> Path:
+        return self.output_dir / "sg_scca_effect_estimates.csv"
+
+    @property
+    def sg_scca_bias_bound(self) -> Path:
+        return self.output_dir / "sg_scca_bias_bound.json"
 
     @property
     def data_profile(self) -> Path:
