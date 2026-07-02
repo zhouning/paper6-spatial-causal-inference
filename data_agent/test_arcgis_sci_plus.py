@@ -82,6 +82,27 @@ def test_solve_target_exposure_uses_nearest_erf_point():
     assert result["target_prediction"] == 70.2
 
 
+def test_solve_target_exposure_warns_when_target_outside_erf_response_range():
+    erf = pd.DataFrame(
+        {
+            "exposure": [1.8, 15.0, 38.0],
+            "response": [74.3, 77.0, 81.1],
+        }
+    )
+
+    result = solve_target_exposure(erf, target_response=70.0)
+
+    assert result["status"] == "ok"
+    assert result["target_within_response_range"] is False
+    assert result["response_min"] == 74.3
+    assert result["response_max"] == 81.1
+    assert result["target_exposure"] == 1.8
+    assert any(
+        "outside the ERF response range" in warning
+        for warning in result["warnings"]
+    )
+
+
 def test_solve_target_exposure_skips_nonfinite_target_response():
     erf = pd.DataFrame({"exposure": [1.0, 2.0], "response": [3.0, 4.0]})
 

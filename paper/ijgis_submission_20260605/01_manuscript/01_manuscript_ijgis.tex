@@ -34,6 +34,7 @@
 \newcommand{\famroccsv}{\path{07_results/threshold_calibration_roc_by_family.csv}}
 \newcommand{\calibcsv}{\path{07_results/threshold_calibration_summary.csv}}
 \newcommand{\calibroccsv}{\path{07_results/threshold_calibration_roc.csv}}
+\newcommand{\sciplusjson}{\path{07_results/arcgis_sci_plus_county/arcgis_sci_plus_report.json}}
 \newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
 
 \begin{document}
@@ -52,7 +53,7 @@ Geographic observational studies often combine spatially structured treatments, 
 
 We introduce Spatial Context Causal Adjustment (SCCA), an open audit workflow for constructing and diagnosing spatial-context adjustment sets. SCCA is not a new identification theorem. It standardises candidate context construction, adjustment-set comparison, common-support checks, post-adjustment balance, spatial block bootstrap, threshold placebo tests, residual spatial autocorrelation, spatial-lag and graph sensitivity, variable-role audits, and rule-based evidence grades. Residual Moran's $I$ is treated as a diagnostic boundary that triggers evidence downgrading, not as an identifying statistic. Its default material threshold is calibrated in a 2{,}880-fit controlled design spanning SAR, CAR, distance-kernel, and non-stationary latent spatial processes.
 
-We evaluate SCCA with synthetic stress tests, a Chongqing urban heat case, a county GIS reproducibility check, and a synthetic positive control. In Chongqing, the treatment is building-level high-rise status but the outcome is MODIS summer LST on a $\sim$1\,km grid. The primary empirical quantity is therefore an outcome-scale pixel model: the slope relating pixel-mean high-rise share to pixel-mean LST was 0.546$^\circ$C per unit share (95\% CI [0.359, 0.734]), not a building-level ATT. The building-level matching ATT was 0.303$^\circ$C (95\% CI [0.220, 0.383]) and is retained only as a diagnostic approximation. Clustering on the shared outcome pixel widened the building-level OLS standard error by 41.5\%. The preferred pre-treatment matching design slightly missed the strict balance rule (maximum post-match SMD = 0.104), and the matched residual Moran's $I = 0.112$ ($p=0.01$) crossed the default 0.10 material threshold by 0.012. The grade is therefore bounded support under the default rule and remains a residual-spatial warning under higher thresholds. The calibration also shows that this warning is process-dependent: at $t=0.10$, true-positive rates are 0.194 for CAR, 0.529 for SAR, 0.994 for distance-kernel, and 1.000 for non-stationary latent fields. The county dataset is retained as an ArcGIS-free workflow and spatial-diagnostic check rather than a substantive validation case, and a synthetic positive control is graded core support.
+We evaluate SCCA with synthetic stress tests, a Chongqing urban heat case, a county GIS reproducibility check, and a synthetic positive control. In Chongqing, the treatment is building-level high-rise status but the outcome is MODIS summer LST on a $\sim$1\,km grid. The primary empirical quantity is therefore an outcome-scale pixel model: the slope relating pixel-mean high-rise share to pixel-mean LST was 0.546$^\circ$C per unit share (95\% CI [0.359, 0.734]), not a building-level ATT. The building-level matching ATT was 0.303$^\circ$C (95\% CI [0.220, 0.383]) and is retained only as a diagnostic approximation. Clustering on the shared outcome pixel widened the building-level OLS standard error by 41.5\%. The preferred pre-treatment matching design slightly missed the strict balance rule (maximum post-match SMD = 0.104), and the matched residual Moran's $I = 0.112$ ($p=0.01$) crossed the default 0.10 material threshold by 0.012. The grade is therefore bounded support under the default rule and remains a residual-spatial warning under higher thresholds. The calibration also shows that this warning is process-dependent: at $t=0.10$, true-positive rates are 0.194 for CAR, 0.529 for SAR, 0.994 for distance-kernel, and 1.000 for non-stationary latent fields. The county dataset is retained as an ArcGIS SCI-style tool comparison and spatial-diagnostic check rather than a substantive validation case, and a synthetic positive control is graded core support.
 
 SCCA contributes a reproducible protocol for auditing evidence in geographic causal analysis. It does not remove unmeasured spatial confounding, solve interference, or make restricted data fully reproducible; it makes adjustment choices, spatial diagnostics, and claim boundaries inspectable across GIS-facing workflows.
 \end{abstract}
@@ -84,7 +85,7 @@ Our contributions are:
 \item Focused evidence from synthetic stress tests, a Chongqing urban heat case, a county notebook/GIS run, and a synthetic positive control certified as core support.
 \end{enumerate}
 
-Chongqing is the main case because author-controlled spatial processing links candidate context variables directly to the adjustment design. The county case is more open but uses third-party training/demo data, so it is used for ArcGIS-free packaging, spatial downgrading, and interface reproducibility rather than for the main causal claim.
+Chongqing is the main case because author-controlled spatial processing links candidate context variables directly to the adjustment design. The county case is more open but uses third-party training/demo data, so it is used for ArcGIS SCI-style packaging, spatial downgrading, and interface reproducibility rather than for the main causal claim.
 
 The paper makes a bounded claim. SCCA does not eliminate unobserved spatial confounding, solve spatial interference, or prove that richer adjustment is always better. It makes such claims harder to make without diagnostic evidence.
 
@@ -237,7 +238,7 @@ A downgrade does not prove bias, and its absence does not prove identification. 
 
 \subsection{Implementation surfaces}
 
-SCCA is implemented as a shared Python core with thin CLI, notebook, ArcGIS Pro, and QGIS Processing adapters. The reusable \texttt{AnalysisRequest} records inputs, fields, covariates, context columns, coordinates, bootstrap groups, placebo settings, trimming thresholds, target outcomes, and \emph{variable-role} declarations. Runs write CSV, JSON, Markdown diagnostics and, for spatial inputs, common GIS outputs and QGIS \texttt{.qml} styles.
+SCCA is implemented as a shared Python core with thin CLI, notebook, ArcGIS Pro, and QGIS Processing adapters. The reusable \texttt{AnalysisRequest} records inputs, fields, covariates, context columns, coordinates, bootstrap groups, placebo settings, trimming thresholds, target outcomes, and \emph{variable-role} declarations. Runs write CSV, JSON, Markdown diagnostics and, for spatial inputs, common GIS outputs and QGIS \texttt{.qml} styles. For ArcGIS SCI-style comparison, the SCI Plus runner writes \sciplusjson, preserving trim, ERF, and target-analysis fields while adding explicit causal-risk diagnostics and target-support warnings.
 
 The binary Chongqing module separately writes ablation, balance, matched-count, change-of-support, and matching-sensitivity tables. These outputs distinguish the outcome-scale pixel estimand from building-level matching diagnostics.
 
@@ -256,7 +257,7 @@ Three conservative choices are recorded explicitly. Missing context values use w
 
 The experiments assign different evidentiary roles to the datasets. Chongqing is the main real-data SCCA case because its high-rise treatment, geometry, terrain, remote-sensing context, and summer LST outcome are tightly coupled. It tests whether richer spatial context can support adjustment without overstating the association.
 
-The county social-capital data instead test ArcGIS-free rerun counts, output contracts, residual spatial diagnostics, and downgrading behavior for a familiar GIS example. The reproducibility scope differs by dataset (Table~\ref{tab:reproducibility_scope}); raw building-level Chongqing inputs are not redistributed.
+The county social-capital data instead test ArcGIS Spatial Causal Inference (SCI)-style rerun counts, output contracts, ERF/target parity, residual spatial diagnostics, and downgrading behavior for a familiar GIS example. The reproducibility scope differs by dataset (Table~\ref{tab:reproducibility_scope}); raw building-level Chongqing inputs are not redistributed.
 
 \begin{table}[htbp]
 \centering
@@ -270,7 +271,7 @@ Case & Public rerun level & Restricted or source-governed inputs & Manuscript us
 \midrule
 Synthetic benchmark audit & Exact public rerun from committed generators and scripts & None beyond software dependencies & Stress-test estimator behavior under known targets \\
 Chongqing urban heat & Structural rerun from public scripts, manifests, and generated summaries & Building footprints, precise coordinates, floor attributes, and derived local environmental variables require approved local access & Main real-data SCCA ablation and claim-boundary example \\
-County social capital GIS run & Exact rerun where users have the licensed third-party example dataset; public outputs and scripts document the contract & Esri training/demo data and source terms govern redistribution and use & ArcGIS-free GIS workflow, cross-interface output, and spatial-diagnostic downgrade check \\
+County social capital GIS run & Exact rerun where users have the licensed third-party example dataset; public outputs and scripts document the contract & Esri training/demo data and source terms govern redistribution and use & ArcGIS SCI-style trim/ERF/target parity, cross-interface output, and spatial-diagnostic downgrade check \\
 \bottomrule
 \end{tabular}
 }
@@ -278,7 +279,7 @@ County social capital GIS run & Exact rerun where users have the licensed third-
 
 \subsection{Evidence synthesis design}
 
-The experiments consist of four components: (i) a synthetic benchmark for estimator stress testing across six estimator families; (ii) the Chongqing urban heat case, the main real-data application with change-of-support and residual-spatial diagnostics; (iii) a county social-capital notebook/GIS run for reproducibility and interface-portability checks (third-party demo data, not a substantive validation case); and (iv) a synthetic positive control (\controljson) that a clean design should certify as core support, testing whether the grade engine can discriminate rather than always downgrading. Together they let the grade engine be exercised on evidence rows that span controlled generators, real remote-sensing data, external GIS demo data, and a certified-clean design.
+The experiments consist of four components: (i) a synthetic benchmark for estimator stress testing across six estimator families; (ii) the Chongqing urban heat case, the main real-data application with change-of-support and residual-spatial diagnostics; (iii) a county social-capital notebook/GIS run for ArcGIS SCI-style parity, reproducibility, and interface-portability checks (third-party demo data, not a substantive validation case); and (iv) a synthetic positive control (\controljson) that a clean design should certify as core support, testing whether the grade engine can discriminate rather than always downgrading. Together they let the grade engine be exercised on evidence rows that span controlled generators, real remote-sensing data, external GIS demo data, and a certified-clean design.
 
 Table~\ref{tab:evidence_synthesis} summarizes the evidence matrix. The source table is generated in \synthcsv; residual-spatial threshold sensitivity is written to \thresholdcsv.
 
@@ -295,7 +296,7 @@ Case & Data type & Key diagnostic & Grade & Manuscript use \\
 \midrule
 Synthetic benchmark audit & Controlled generators & 48 benchmark rows; 13 robust and 29 fragile rows & Bounded support & Estimator stress test, not real-world validation \\
 Chongqing urban heat & Real building and remote-sensing data & Pixel-level high-rise-share slope = 0.546$^\circ$C (primary); building-level diagnostic ATT = 0.303$^\circ$C; residual Moran's $I$ = 0.112 & Bounded support & Main real-data SCCA case with change-of-support and residual-spatial caution \\
-County social capital spatial notebook & GIS/notebook reproducibility case & residual Moran's $I$ = 0.313; spatial-lag coef. = 0.145; ArcGIS-trimmed ERF range = 6.85 years & Bounded support & Spatial diagnostics and cross-interface output check \\
+County social capital SCI Plus run & GIS/notebook reproducibility case & 3{,}044 trimmed rows; ERF range = 6.85 years; target 70 below ERF response range 74.28--81.12; residual Moran's $I$ = 0.313 & Bounded support & ArcGIS SCI-style parity plus causal-risk boundary check \\
 Synthetic core-support control & Clean controlled DGP (all confounders measured) & $\widehat{\mathrm{ATT}}$ = 0.505 (true 0.5); residual Moran's $I \approx 0$ (n.s.); no downgrade rule fires & Core support & Positive control showing the core/bounded distinction is discriminative \\
 \bottomrule
 \end{tabular}
@@ -434,13 +435,13 @@ Full RS context & Over-adjusted (possible mediators) & Medium & full RS context 
 \label{fig:residual}
 \end{figure}
 
-\subsection{County ArcGIS-free GIS and spatial-diagnostic validation}
+\subsection{County ArcGIS SCI Plus and spatial-diagnostic validation}
 
-The county run tests whether the shared SCCA core can reproduce a familiar GIS-facing county analysis in an open notebook workflow, write portable GIS outputs, and show whether spatial diagnostics change the interpretation. The exposure is county social association, the outcome is average age at death, and the unit is the contiguous U.S.\ county.
+The county run tests whether the shared SCCA core can reproduce ArcGIS SCI-style outputs for a familiar GIS-facing county analysis, write portable GIS outputs, and show whether causal-risk diagnostics change the interpretation. The comparison target is the ArcGIS Spatial Causal Inference / Causal Inference tool class, not the full ArcGIS platform. The exposure is county social association, the outcome is average age at death, and the unit is the contiguous U.S.\ county.
 
-After 1\%--99\% exposure trimming, 3{,}044 of 3{,}108 counties remained, matching the ArcGIS example count. Baseline adjusted OLS estimated 0.181, while spatial-lag sensitivity estimated 0.145. Residual Moran's $I$ remained 0.313 ($p = 0.010$), and neighbor exposure was significant ($p < 0.001$). The rule table therefore assigns bounded support: the positive association is useful operationally, but not a strong causal claim.
+After 1\%--99\% exposure trimming, 3{,}044 of 3{,}108 counties remained, matching the ArcGIS example count. The SCI Plus report (\sciplusjson) records the same trim contract, a positive adjusted association (0.181 years per one-unit increase; 95\% CI [0.166, 0.197]), and an increasing GPS-weighted ERF with a 6.85-year range. Its target-response audit also records a boundary that the ArcGIS-style narrative can hide: the target value of 70 years lies below the trimmed ERF response range (74.28--81.12), so the solver returns the nearest ERF point rather than a supported exposure that attains 70. Baseline adjusted OLS estimated 0.181, while spatial-lag sensitivity estimated 0.145. Residual Moran's $I$ remained 0.313 ($p = 0.010$), and neighbor exposure was significant ($p < 0.001$). The rule table therefore assigns bounded support: the positive association is useful operationally, but not a strong causal claim.
 
-The county run is therefore a reproducibility check, not independent identification evidence or a claim to reproduce proprietary ArcGIS internals.
+The county run is therefore a reproducibility and SCI-tool comparison check, not independent identification evidence or a claim to reproduce proprietary ArcGIS internals.
 
 \subsection{Synthetic positive control (discrimination test)}
 \label{sec:core_control}
@@ -548,13 +549,13 @@ SCCA addresses a practical gap in geographic causal analysis: spatial variables 
 
 The Chongqing case shows why this record matters. Because the outcome is measured on MODIS pixels, the most defensible quantity is the outcome-scale high-rise-share slope, not the finest-scale building match. The paper reports that slope together with diagnostic matching, variable-role and estimand audits, significant residual Moran's $I = 0.112$ ($p = 0.01$), and a bounded grade. The best-balanced Sentinel set attenuates the building-level estimate from 0.303 to 0.244$^\circ$C, but may be post-treatment. SCCA's contribution is the diagnosed record showing which number has the correct support and where the claim stops.
 
-The county notebook shows the same logic for GIS use. It is not a second substantive validation case; it shows that spatial diagnostics can keep a positive coefficient visible while downgrading support when residual autocorrelation and neighboring exposure remain.
+The county notebook shows the same logic for GIS use. It is not a second substantive validation case; it shows that ArcGIS SCI-style trim, ERF, and target outputs can remain visible while target-support, residual-autocorrelation, and neighboring-exposure diagnostics bound the claim.
 
 \subsection{Practical value for GIS workflows}
 
 SCCA converts a causal analysis into an inspectable spatial evidence package. The ArcGIS toolbox, QGIS provider, notebook workflow, and command-line interface share the same request object and manifest, reducing silent divergence across notebooks, desktop joins, and publication tables.
 
-The county comparison gives a concrete example: SCCA reproduced the positive exposure-response direction and sample-trimming count of a commercial GIS analysis, then added robustness, knot-sensitivity, and spatial-diagnostic outputs. This is workflow reproducibility, not causal validation.
+The county comparison gives a concrete example: SCCA reproduced the positive exposure-response direction and sample-trimming count of an ArcGIS SCI-style analysis, then added target-support warnings, robustness, knot-sensitivity, role/scale risk fields, and spatial-diagnostic outputs when geometry was supplied. This is workflow reproducibility and tool-level auditability, not causal validation.
 
 GIS outputs are audit objects, not causal evidence by themselves. They keep the evidence boundary attached to the spatial objects used in analysis.
 
@@ -577,7 +578,7 @@ The Chongqing interpretation is therefore bounded by five visible limits: residu
 
 We presented Spatial Context Causal Adjustment, an open diagnostic workflow for geographic observational causal studies. SCCA treats spatial context as a candidate adjustment source and evaluates variants through support, balance, robustness, spatial diagnostics, variable-role audits, and reproducible evidence-grade rules. A 2{,}880-fit calibration showed that the residual-Moran downgrade is useful but process-dependent. Across synthetic stress tests, Chongqing, and a county notebook/GIS check, SCCA distinguished useful estimates from bounded and fragile designs.
 
-The main empirical result is deliberately bounded. In Chongqing, the outcome-scale pixel model estimated a positive high-rise-share slope for summer LST (0.546$^\circ$C per unit share, 95\% CI [0.359, 0.734]); building-level matching (0.303$^\circ$C) is diagnostic because treatment is finer than MODIS outcome support. The preferred set slightly missed balance (maximum SMD = 0.104), residual Moran's $I = 0.112$ crossed the default rule by 0.012, and Sentinel surfaces were treated as possible post-treatment variables. The synthetic benchmark exposed estimator fragility, the positive control was certified as core support, and the county run showed ArcGIS-free reproducibility with spatial downgrading. SCCA's value is not that it removes causal assumptions, but that it makes assumptions, diagnostics, and claim boundaries visible in GIS-facing workflows.
+The main empirical result is deliberately bounded. In Chongqing, the outcome-scale pixel model estimated a positive high-rise-share slope for summer LST (0.546$^\circ$C per unit share, 95\% CI [0.359, 0.734]); building-level matching (0.303$^\circ$C) is diagnostic because treatment is finer than MODIS outcome support. The preferred set slightly missed balance (maximum SMD = 0.104), residual Moran's $I = 0.112$ crossed the default rule by 0.012, and Sentinel surfaces were treated as possible post-treatment variables. The synthetic benchmark exposed estimator fragility, the positive control was certified as core support, and the county run showed ArcGIS SCI-style reproducibility with target-support and spatial downgrading. SCCA's value is not that it removes causal assumptions, but that it makes assumptions, diagnostics, and claim boundaries visible in GIS-facing workflows.
 
 
 % ============================================================================

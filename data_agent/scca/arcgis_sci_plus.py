@@ -117,6 +117,9 @@ def solve_target_exposure(
             "warnings": ["ERF curve has no finite exposure/response rows."],
         }
 
+    response_min = float(frame["response"].min())
+    response_max = float(frame["response"].max())
+    target_within_response_range = response_min <= target <= response_max
     frame = frame.assign(response_gap=(frame["response"] - target).abs())
     nearest_gap = float(frame["response_gap"].min())
     tied = frame[frame["response_gap"].eq(nearest_gap)]
@@ -124,6 +127,10 @@ def solve_target_exposure(
     prediction = float(row["response"])
     tie_count = int(len(tied))
     warnings = []
+    if not target_within_response_range:
+        warnings.append(
+            "Target response is outside the ERF response range; selected nearest ERF point."
+        )
     if tie_count > 1:
         warnings.append(
             "Multiple ERF rows tie for nearest target response; selected smallest exposure."
@@ -135,6 +142,9 @@ def solve_target_exposure(
         "target_exposure": float(row["exposure"]),
         "target_prediction": prediction,
         "absolute_response_gap": nearest_gap,
+        "response_min": response_min,
+        "response_max": response_max,
+        "target_within_response_range": target_within_response_range,
         "tie_count": tie_count,
         "warnings": warnings,
     }

@@ -1,0 +1,54 @@
+{
+  "study": "county_social_capital_longevity_validation",
+  "claim": "ArcGIS SCI Plus organizes ArcGIS SCI-style ERF/trim/target outputs and adds open spatial causal-risk auditing.",
+  "arcgis_sci_parity": {
+    "status": "ok",
+    "input_rows": 3108,
+    "trimmed_rows": 3044,
+    "removed_rows": 64,
+    "lower_q": 0.01,
+    "upper_q": 0.99,
+    "lower_quantile": 1.77955779839,
+    "upper_quantile": 38.06309620159998,
+    "erf": {
+      "status": "ok",
+      "range_effect": 6.84732145701021,
+      "monotonic_direction": "increasing"
+    },
+    "target_analysis": {
+      "status": "ok",
+      "target_response": 70.0,
+      "target_exposure": 1.831166453,
+      "target_prediction": 74.27512373046218,
+      "absolute_response_gap": 4.275123730462184,
+      "response_min": 74.27512373046218,
+      "response_max": 81.1224451874724,
+      "target_within_response_range": false,
+      "tie_count": 1,
+      "warnings": [
+        "Target response is outside the ERF response range; selected nearest ERF point."
+      ]
+    }
+  },
+  "geo_causal_extensions": {
+    "spatial_risk": {
+      "status": "unavailable",
+      "reason": "missing_coordinates_or_geometry",
+      "residual_moran": null,
+      "neighbor_exposure_p": null,
+      "note": "Spatial diagnostics are attached when geometry or coordinates are available."
+    },
+    "role_risk": {
+      "post_treatment_warnings": []
+    },
+    "scale_risk": {
+      "scale_status": "same_support",
+      "treatment_support": null,
+      "outcome_support": null,
+      "aggregation_group": null,
+      "fine_units": 3044,
+      "outcome_units": 3044,
+      "warnings": []
+    }
+  }
+}
