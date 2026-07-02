@@ -28,7 +28,7 @@ def _skipped_trim_summary(
         "upper_q": float(upper_q),
         "lower_quantile": None,
         "upper_quantile": None,
-        "warning": warning,
+        "warnings": [warning],
     }
 
 
@@ -78,7 +78,19 @@ def arcgis_quantile_trim(
 def solve_target_exposure(
     erf_curve: pd.DataFrame, target_response: float
 ) -> dict[str, object]:
-    target = float(target_response)
+    try:
+        target = float(target_response)
+    except (TypeError, ValueError):
+        target = None
+    if target is None or not np.isfinite(target):
+        return {
+            "status": "skipped",
+            "target_response": None,
+            "target_exposure": None,
+            "target_prediction": None,
+            "warnings": ["Target analysis requires a finite target_response."],
+        }
+
     required = {"exposure", "response"}
     missing = sorted(required - set(erf_curve.columns))
     if missing:

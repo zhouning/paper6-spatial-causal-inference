@@ -38,7 +38,7 @@ def test_arcgis_quantile_trim_missing_exposure_returns_skipped():
     assert summary["upper_q"] == 0.99
     assert summary["lower_quantile"] is None
     assert summary["upper_quantile"] is None
-    assert "missing exposure" in summary["warning"]
+    assert any("missing exposure" in warning for warning in summary["warnings"])
 
 
 def test_arcgis_quantile_trim_rejects_invalid_quantile_order():
@@ -63,7 +63,7 @@ def test_arcgis_quantile_trim_all_nan_returns_skipped():
     assert summary["removed_rows"] == 3
     assert summary["lower_quantile"] is None
     assert summary["upper_quantile"] is None
-    assert "no finite" in summary["warning"]
+    assert any("no finite" in warning for warning in summary["warnings"])
 
 
 def test_solve_target_exposure_uses_nearest_erf_point():
@@ -80,6 +80,44 @@ def test_solve_target_exposure_uses_nearest_erf_point():
     assert result["target_response"] == 70.0
     assert result["target_exposure"] == 34.6
     assert result["target_prediction"] == 70.2
+
+
+def test_solve_target_exposure_skips_nonfinite_target_response():
+    erf = pd.DataFrame({"exposure": [1.0, 2.0], "response": [3.0, 4.0]})
+
+    result = solve_target_exposure(erf, target_response=float("nan"))
+
+    assert result["status"] == "skipped"
+    assert result["target_response"] is None
+    assert result["target_exposure"] is None
+    assert result["target_prediction"] is None
+    assert any("finite target_response" in warning for warning in result["warnings"])
+
+
+def test_solve_target_exposure_skips_missing_erf_columns():
+    erf = pd.DataFrame({"exposure": [1.0, 2.0]})
+
+    result = solve_target_exposure(erf, target_response=3.0)
+
+    assert result["status"] == "skipped"
+    assert result["target_response"] == 3.0
+    assert result["target_exposure"] is None
+    assert result["target_prediction"] is None
+    assert any("missing column" in warning for warning in result["warnings"])
+
+
+def test_solve_target_exposure_skips_all_nonfinite_erf_rows():
+    erf = pd.DataFrame(
+        {"exposure": [float("nan"), "bad"], "response": [float("inf"), None]}
+    )
+
+    result = solve_target_exposure(erf, target_response=3.0)
+
+    assert result["status"] == "skipped"
+    assert result["target_response"] == 3.0
+    assert result["target_exposure"] is None
+    assert result["target_prediction"] is None
+    assert any("no finite" in warning for warning in result["warnings"])
 
 
 def test_solve_target_exposure_breaks_ties_by_smallest_exposure_with_warning():
