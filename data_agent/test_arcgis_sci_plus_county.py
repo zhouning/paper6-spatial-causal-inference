@@ -43,9 +43,52 @@ def test_run_arcgis_sci_plus_county_writes_manifest(tmp_path):
 
     assert manifest["study"] == "county_social_capital_longevity_validation"
     assert manifest["arcgis_sci_plus_report"] == "arcgis_sci_plus_report.json"
+    assert manifest["sheet_name"] == "CountyData"
+    assert manifest["input_rows"] == 100
+    assert manifest["input_columns"] == 17
+    assert manifest["generated_at_utc"]
+    assert manifest["source_sha256"]
     assert (output_dir / "arcgis_sci_plus_report.json").exists()
     report = json.loads(
         (output_dir / "arcgis_sci_plus_report.json").read_text(encoding="utf-8")
     )
     assert report["arcgis_sci_parity"]["removed_rows"] == 2
     assert "geo_causal_extensions" in report
+    spatial_risk = report["geo_causal_extensions"]["spatial_risk"]
+    assert spatial_risk["status"] == "unavailable"
+    assert spatial_risk["reason"] == "missing_coordinates_or_geometry"
+
+
+def test_run_arcgis_sci_plus_county_skips_missing_exposure(tmp_path):
+    workbook = tmp_path / "county_missing_exposure.xlsx"
+    _county_fixture().drop(columns=["SocialAssoc"]).to_excel(
+        workbook, sheet_name="CountyData", index=False
+    )
+    output_dir = tmp_path / "out"
+
+    manifest = run_arcgis_sci_plus_county(workbook, output_dir=output_dir)
+
+    assert manifest["status"] == "skipped"
+    assert (output_dir / "arcgis_sci_plus_report.json").exists()
+    report = json.loads(
+        (output_dir / "arcgis_sci_plus_report.json").read_text(encoding="utf-8")
+    )
+    assert report["arcgis_sci_parity"]["status"] == "skipped"
+    assert not (output_dir / "effect_estimates.csv").exists()
+
+
+def test_run_arcgis_sci_plus_county_skips_nonfinite_exposure(tmp_path):
+    workbook = tmp_path / "county_nonfinite_exposure.xlsx"
+    fixture = _county_fixture()
+    fixture["SocialAssoc"] = None
+    fixture.to_excel(workbook, sheet_name="CountyData", index=False)
+    output_dir = tmp_path / "out"
+
+    manifest = run_arcgis_sci_plus_county(workbook, output_dir=output_dir)
+
+    assert manifest["status"] == "skipped"
+    report = json.loads(
+        (output_dir / "arcgis_sci_plus_report.json").read_text(encoding="utf-8")
+    )
+    assert report["arcgis_sci_parity"]["status"] == "skipped"
+    assert not (output_dir / "effect_estimates.csv").exists()
