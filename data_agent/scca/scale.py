@@ -53,13 +53,19 @@ def aggregate_to_outcome_support(
 
     numeric_columns = _available((spec.exposure, spec.outcome, *spec.confounders, *spec.context_columns), frame)
     working = frame[[spec.aggregation_group, *numeric_columns]].copy()
+    warnings = []
     for column in numeric_columns:
+        originally_missing = working[column].isna()
         working[column] = pd.to_numeric(working[column], errors="coerce")
+        introduced_missing = int((working[column].isna() & ~originally_missing).sum())
+        if introduced_missing:
+            warnings.append(f"Column {column} has {introduced_missing} missing value(s) after numeric coercion.")
 
     grouped = working.groupby(spec.aggregation_group, dropna=False)
     aggregated = grouped[numeric_columns].mean().reset_index()
     counts = grouped.size().rename("n_fine_units").reset_index()
     aggregated = aggregated.merge(counts, on=spec.aggregation_group, how="left")
+    mean_fine_units = None if aggregated.empty else float(aggregated["n_fine_units"].mean())
     summary = {
         "scale_status": "change_of_support",
         "treatment_support": spec.treatment_support,
@@ -67,8 +73,8 @@ def aggregate_to_outcome_support(
         "aggregation_group": spec.aggregation_group,
         "fine_units": int(len(frame)),
         "outcome_units": int(len(aggregated)),
-        "mean_fine_units_per_outcome": float(aggregated["n_fine_units"].mean()),
-        "warnings": [],
+        "mean_fine_units_per_outcome": mean_fine_units,
+        "warnings": warnings,
     }
     return aggregated, summary
 
@@ -81,9 +87,10 @@ def build_scale_summary(
     """Write and return a compact scale-support summary for one run."""
 
     _, summary = aggregate_to_outcome_support(frame, spec)
+    json_ready_summary = _json_ready(summary)
     paths.ensure()
     paths.scale_summary.write_text(
-        json.dumps(_json_ready(summary), indent=2, ensure_ascii=False),
+        json.dumps(json_ready_summary, indent=2, ensure_ascii=False),
         encoding="utf-8",
     )
-    return summary
+    return json_ready_summary

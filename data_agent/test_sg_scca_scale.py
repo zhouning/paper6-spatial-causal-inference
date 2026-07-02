@@ -49,3 +49,53 @@ def test_aggregate_to_outcome_support_uses_group_means():
     assert summary["scale_status"] == "change_of_support"
     assert summary["fine_units"] == 4
     assert summary["outcome_units"] == 2
+
+
+def test_aggregate_to_outcome_support_reports_numeric_coercion_warnings():
+    frame = pd.DataFrame(
+        {
+            "building_id": ["a", "b"],
+            "pixel_id": ["p1", "p1"],
+            "high_rise": ["yes", 1.0],
+            "lst": [30.0, 31.0],
+        }
+    )
+    spec = StudySpec(
+        name="coercion_warning",
+        unit_id="building_id",
+        exposure="high_rise",
+        outcome="lst",
+        treatment_support="building",
+        outcome_support="modis_pixel",
+        aggregation_group="pixel_id",
+    )
+
+    _, summary = aggregate_to_outcome_support(frame, spec)
+
+    assert "Column high_rise has 1 missing value(s) after numeric coercion." in summary["warnings"]
+
+
+def test_build_scale_summary_empty_change_support_matches_persisted_json(tmp_path):
+    frame = pd.DataFrame(
+        {
+            "pixel_id": pd.Series(dtype="object"),
+            "high_rise": pd.Series(dtype="float64"),
+            "lst": pd.Series(dtype="float64"),
+        }
+    )
+    spec = StudySpec(
+        name="empty_change_support",
+        unit_id="building_id",
+        exposure="high_rise",
+        outcome="lst",
+        treatment_support="building",
+        outcome_support="modis_pixel",
+        aggregation_group="pixel_id",
+    )
+    paths = SCCAPaths(output_dir=tmp_path)
+
+    summary = build_scale_summary(frame, spec, paths)
+
+    assert summary == json.loads(paths.scale_summary.read_text(encoding="utf-8"))
+    assert summary["outcome_units"] == 0
+    assert summary["mean_fine_units_per_outcome"] is None
