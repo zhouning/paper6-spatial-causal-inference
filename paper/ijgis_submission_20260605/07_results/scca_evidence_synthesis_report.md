@@ -36,13 +36,13 @@ and the county row as a GIS/notebook reproducibility and spatial-diagnostic boun
 
 - Grade: `bounded_support`
 - Best adjustment: outcome-scale pixel aggregation with pre-treatment context; building-level matching retained as diagnostic
-- Effect/diagnostic: Outcome-scale pixel ATT = 0.546 C; 95% CI [0.359, 0.734]; building-level matching ATT = 0.303 C (diagnostic approximation; matching CI [0.220, 0.383]); cluster-robust building OLS ATT = 0.268 C (CR SE 0.054); over-adjusted full-RS matching ATT = 0.244 C
+- Effect/diagnostic: Outcome-scale high-rise-share slope = 0.546 C per unit share (not a building-level ATT); 95% CI [0.359, 0.734]; building-level matching ATT = 0.303 C (diagnostic approximation; matching CI [0.220, 0.383]); cluster-robust building OLS ATT = 0.268 C (CR SE 0.054); over-adjusted full-RS matching ATT = 0.244 C
 - Balance: max post-match SMD = 0.104; balance pass = False; matching sensitivity labels = near_threshold_not_passed
 - Robustness: threshold placebo, spatial bootstrap, residual spatial, and change-of-support diagnostics available
 - Grade rules: `moderate_credibility; material_residual_moran`
 - Grade reasons: Credibility diagnostics only support a moderate claim.; Residual spatial autocorrelation is both statistically significant and materially large (Moran's I=0.112, p=0.010).
 - Limitation: Outcome retrieved at ~1 km while treatment is building-level (change-of-support), residual spatial structure remains, and Sentinel surfaces may be post-treatment; these bound the causal strength.
-- Manuscript use: Use as the main real-data SCCA case; report the outcome-scale pixel estimate as primary and building-level matching as a diagnostic approximation with residual-spatial caution.
+- Manuscript use: Use as the main real-data SCCA case; report the outcome-scale high-rise-share slope as primary and building-level matching as a diagnostic approximation with residual-spatial caution.
 
 ### county_social_capital_spatial_notebook
 

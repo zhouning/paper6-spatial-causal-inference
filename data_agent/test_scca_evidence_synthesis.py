@@ -55,6 +55,7 @@ def test_scca_evidence_synthesis_prefers_tracked_county_spatial_summary(tmp_path
 def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
     from data_agent.experiments.scca_evidence_synthesis import (
         build_residual_moran_threshold_sensitivity,
+        build_chongqing_estimand_sensitivity_audit,
         build_chongqing_reviewer_audit_package,
         build_chongqing_variable_role_audit,
         run_scca_evidence_synthesis,
@@ -74,6 +75,8 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
         "chongqing_variable_role_audit_md": tmp_path / "chongqing_variable_role_audit.md",
         "chongqing_reviewer_audit_package_csv": tmp_path / "chongqing_reviewer_audit_package.csv",
         "chongqing_reviewer_audit_package_json": tmp_path / "chongqing_reviewer_audit_package.json",
+        "chongqing_estimand_sensitivity_audit_csv": tmp_path / "chongqing_estimand_sensitivity_audit.csv",
+        "chongqing_estimand_sensitivity_audit_md": tmp_path / "chongqing_estimand_sensitivity_audit.md",
     }
     for key, path in expected.items():
         assert manifest[key] == str(path)
@@ -120,7 +123,8 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
         synthesis["case"] == "chongqing_uhi",
         "effect_estimate",
     ].iloc[0]
-    assert chongqing_effect.startswith("Outcome-scale pixel ATT")
+    assert chongqing_effect.startswith("Outcome-scale high-rise-share slope")
+    assert "not a building-level ATT" in chongqing_effect
     assert "building-level matching ATT" in chongqing_effect
     assert "diagnostic approximation" in synthesis.loc[
         synthesis["case"] == "chongqing_uhi",
@@ -149,6 +153,9 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
     assert payload["threshold_sensitivity_csv"] == str(expected["threshold_sensitivity_csv"])
     assert payload["chongqing_variable_role_audit_csv"] == str(expected["chongqing_variable_role_audit_csv"])
     assert payload["chongqing_reviewer_audit_package_json"] == str(expected["chongqing_reviewer_audit_package_json"])
+    assert payload["chongqing_estimand_sensitivity_audit_csv"] == str(
+        expected["chongqing_estimand_sensitivity_audit_csv"]
+    )
 
     sensitivity = pd.read_csv(expected["threshold_sensitivity_csv"])
     required_sensitivity_columns = {
@@ -213,3 +220,37 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
     assert not rebuilt_roles.empty
     rebuilt_package = build_chongqing_reviewer_audit_package()
     assert not rebuilt_package.empty
+
+    estimand_audit = pd.read_csv(expected["chongqing_estimand_sensitivity_audit_csv"])
+    required_estimand_columns = {
+        "audit_dimension",
+        "reviewer_concern",
+        "primary_observation",
+        "quantitative_evidence",
+        "claim_boundary",
+        "manuscript_action",
+    }
+    assert required_estimand_columns.issubset(estimand_audit.columns)
+    expected_dimensions = {
+        "outcome_scale_estimand",
+        "pixel_cluster_precision",
+        "balance_near_miss",
+        "residual_threshold_margin",
+        "residual_process_transfer",
+        "sentinel_role_boundary",
+        "restricted_data_reproducibility",
+    }
+    assert expected_dimensions.issubset(set(estimand_audit["audit_dimension"]))
+    assert estimand_audit.loc[
+        estimand_audit["audit_dimension"] == "outcome_scale_estimand",
+        "claim_boundary",
+    ].str.contains("not a building-level ATT").any()
+    assert estimand_audit.loc[
+        estimand_audit["audit_dimension"] == "residual_threshold_margin",
+        "quantitative_evidence",
+    ].str.contains("0.112").any()
+    assert "Chongqing Estimand and Sensitivity Audit" in expected[
+        "chongqing_estimand_sensitivity_audit_md"
+    ].read_text(encoding="utf-8")
+    rebuilt_estimand_audit = build_chongqing_estimand_sensitivity_audit()
+    assert expected_dimensions.issubset(set(rebuilt_estimand_audit["audit_dimension"]))

@@ -28,6 +28,8 @@ OUTPUT_FILES = {
     "chongqing_variable_role_audit_md": "chongqing_variable_role_audit.md",
     "chongqing_reviewer_audit_package_csv": "chongqing_reviewer_audit_package.csv",
     "chongqing_reviewer_audit_package_json": "chongqing_reviewer_audit_package.json",
+    "chongqing_estimand_sensitivity_audit_csv": "chongqing_estimand_sensitivity_audit.csv",
+    "chongqing_estimand_sensitivity_audit_md": "chongqing_estimand_sensitivity_audit.md",
 }
 SYNTHESIS_COLUMNS = [
     "case",
@@ -73,6 +75,14 @@ CHONGQING_REVIEWER_AUDIT_COLUMNS = [
     "value",
     "source_file",
     "privacy_status",
+]
+CHONGQING_ESTIMAND_SENSITIVITY_COLUMNS = [
+    "audit_dimension",
+    "reviewer_concern",
+    "primary_observation",
+    "quantitative_evidence",
+    "claim_boundary",
+    "manuscript_action",
 ]
 
 
@@ -249,7 +259,8 @@ def _chongqing_row(results_dir: Path) -> dict[str, str] | None:
         pixel = prim[prim["estimand"] == "pixel_aggregated"]
         if not cluster.empty and not pixel.empty:
             effect_text = (
-                f"Outcome-scale pixel ATT = {_fmt_num(pixel.iloc[0].get('att'))} C; "
+                f"Outcome-scale high-rise-share slope = {_fmt_num(pixel.iloc[0].get('att'))} C "
+                f"per unit share (not a building-level ATT); "
                 f"95% CI [{_fmt_num(pixel.iloc[0].get('ci_lower'))}, "
                 f"{_fmt_num(pixel.iloc[0].get('ci_upper'))}]; "
                 f"building-level matching ATT = {_fmt_num(record.get('att'))} C "
@@ -294,8 +305,8 @@ def _chongqing_row(results_dir: Path) -> dict[str, str] | None:
             "these bound the causal strength."
         ),
         manuscript_use=(
-            "Use as the main real-data SCCA case; report the outcome-scale pixel "
-            "estimate as primary and building-level matching as a diagnostic "
+            "Use as the main real-data SCCA case; report the outcome-scale "
+            "high-rise-share slope as primary and building-level matching as a diagnostic "
             "approximation with residual-spatial caution."
         ),
     )
@@ -516,6 +527,15 @@ def _variant_row(table: pd.DataFrame, variant: str) -> pd.Series | None:
     if table.empty or "variant" not in table:
         return None
     rows = table.loc[table["variant"].astype(str) == variant]
+    if rows.empty:
+        return None
+    return rows.iloc[0]
+
+
+def _estimand_row(table: pd.DataFrame, estimand: str) -> pd.Series | None:
+    if table.empty or "estimand" not in table:
+        return None
+    rows = table.loc[table["estimand"].astype(str) == estimand]
     if rows.empty:
         return None
     return rows.iloc[0]
@@ -824,6 +844,224 @@ def build_chongqing_reviewer_audit_package(
     return pd.DataFrame(rows, columns=CHONGQING_REVIEWER_AUDIT_COLUMNS)
 
 
+def _labelled_value(table: pd.DataFrame, item: str) -> str:
+    if table.empty or "item" not in table:
+        return ""
+    rows = table.loc[table["item"].astype(str) == item]
+    if rows.empty:
+        return ""
+    return str(rows.iloc[0].get("value", ""))
+
+
+def build_chongqing_estimand_sensitivity_audit(
+    results_dir: str | Path = DEFAULT_RESULTS_DIR,
+) -> pd.DataFrame:
+    """Summarise reviewer-critical estimand and sensitivity boundaries.
+
+    This audit is intentionally generated from public aggregate artifacts, not
+    from restricted Chongqing building records. It answers the second-round
+    review concerns that can be audited without the private sample: the primary
+    outcome-scale estimand, pixel clustering, near-threshold balance, threshold
+    dependence, process-transfer limits, Sentinel role boundaries, and restricted
+    data reproducibility.
+    """
+    root = Path(results_dir)
+    ablation = _read_csv(root / "chongqing_uhi_ablation.csv")
+    cos = _read_csv(root / "chongqing_change_of_support.csv")
+    residuals = _read_csv(root / "chongqing_residual_spatial_diagnostics.csv")
+    matching = _read_csv(root / "chongqing_matching_sensitivity.csv")
+    family_roc = _read_csv(root / "threshold_calibration_roc_by_family.csv")
+    reviewer_audit = build_chongqing_reviewer_audit_package(root)
+
+    pre = _variant_row(ablation, "pre_treatment")
+    full = _variant_row(ablation, "full_rs_context")
+    pre_residual = _variant_row(residuals, "pre_treatment")
+
+    cos_pre = (
+        cos.loc[cos["variant"].astype(str) == "pre_treatment"]
+        if not cos.empty and "variant" in cos
+        else pd.DataFrame()
+    )
+    pixel = _estimand_row(cos_pre, "pixel_aggregated")
+    naive = _estimand_row(cos_pre, "building_naive")
+    cluster = _estimand_row(cos_pre, "building_cluster_robust")
+
+    rows: list[dict[str, str]] = []
+
+    if pixel is not None and pre is not None:
+        rows.append(
+            {
+                "audit_dimension": "outcome_scale_estimand",
+                "reviewer_concern": "MODIS LST is measured on a coarser pixel support than the building-level high-rise treatment.",
+                "primary_observation": "The primary empirical quantity is the pixel model using mean high-rise share and mean LST at the outcome support.",
+                "quantitative_evidence": (
+                    f"Pixel high-rise-share slope = {_fmt_num(pixel.get('att'))} C per unit share; "
+                    f"building-level matching ATT = {_fmt_num(pre.get('att'))} C."
+                ),
+                "claim_boundary": "Interpret the primary Chongqing result as an outcome-scale association/slope, not a building-level ATT.",
+                "manuscript_action": "Rename the primary effect and keep building-level matching as a diagnostic approximation.",
+            }
+        )
+
+    if naive is not None and cluster is not None:
+        naive_se = _finite_or_none(naive.get("se"))
+        cluster_se = _finite_or_none(cluster.get("se"))
+        inflation = (
+            100.0 * (cluster_se / naive_se - 1.0)
+            if naive_se and cluster_se
+            else None
+        )
+        rows.append(
+            {
+                "audit_dimension": "pixel_cluster_precision",
+                "reviewer_concern": "Several buildings share the same MODIS LST value, so iid building-level precision is overstated.",
+                "primary_observation": "Clustering on the shared outcome pixel leaves the point estimate unchanged but widens uncertainty.",
+                "quantitative_evidence": (
+                    f"Naive SE = {_fmt_num(naive_se)}; pixel-cluster SE = {_fmt_num(cluster_se)}; "
+                    f"SE inflation = {_fmt_num(inflation, 1)}%."
+                ),
+                "claim_boundary": "Building-level standard errors are diagnostic only unless the shared outcome pixel is acknowledged.",
+                "manuscript_action": "Report the cluster-robust building panel next to the pixel-aggregated model.",
+            }
+        )
+
+    if pre is not None:
+        sensitivity_label = ""
+        if not matching.empty and "interpretation_label" in matching:
+            labels = sorted(map(str, matching["interpretation_label"].dropna().unique()))
+            sensitivity_label = ", ".join(labels)
+        rows.append(
+            {
+                "audit_dimension": "balance_near_miss",
+                "reviewer_concern": "The preferred pre-treatment match slightly misses the strict SMD balance rule.",
+                "primary_observation": "The pre-treatment set is preferred for causal-role reasons, not because it is the best-balanced variant.",
+                "quantitative_evidence": (
+                    f"Max post-match SMD = {_fmt_num(pre.get('max_post_smd'))}; "
+                    f"balance pass = {pre.get('balance_pass_0_1')}; "
+                    f"matching sensitivity = {sensitivity_label or 'not recorded'}."
+                ),
+                "claim_boundary": "The result supports a bounded claim, not a strict balanced-design claim.",
+                "manuscript_action": "Keep the near-threshold miss visible in the abstract, results, and evidence table.",
+            }
+        )
+
+    if pre_residual is not None:
+        moran = _finite_or_none(pre_residual.get("moran_i"))
+        p_value = _finite_or_none(pre_residual.get("permutation_p_value"))
+        margin = moran - 0.10 if moran is not None else None
+        threshold_table = build_residual_moran_threshold_sensitivity(root)
+        flips = (
+            threshold_table.loc[
+                threshold_table["case"].astype(str) == "chongqing_pre_treatment",
+                ["residual_moran_abs_threshold", "evidence_grade"],
+            ]
+            if not threshold_table.empty
+            else pd.DataFrame()
+        )
+        flip_text = "; ".join(
+            f"t={_fmt_num(row.residual_moran_abs_threshold, 2)}->{row.evidence_grade}"
+            for row in flips.itertuples()
+        )
+        rows.append(
+            {
+                "audit_dimension": "residual_threshold_margin",
+                "reviewer_concern": "The Chongqing evidence grade depends on the declared material residual-Moran threshold.",
+                "primary_observation": "The residual statistic is statistically significant and only slightly above the default material threshold.",
+                "quantitative_evidence": (
+                    f"Moran I = {_fmt_num(moran)}; p = {_fmt_num(p_value)}; "
+                    f"margin above 0.10 = {_fmt_num(margin)}; {flip_text}."
+                ),
+                "claim_boundary": "The bounded/core label is threshold-sensitive; the residual warning remains even when it is sub-threshold.",
+                "manuscript_action": "Add a threshold-margin audit and avoid treating the grade as a stable causal-validity class.",
+            }
+        )
+
+    if not family_roc.empty and {"family", "threshold", "tpr"}.issubset(family_roc.columns):
+        at_default = family_roc.loc[family_roc["threshold"].round(2) == 0.10]
+        tpr_by_family = {
+            str(row.family): float(row.tpr)
+            for row in at_default.itertuples()
+        }
+        rows.append(
+            {
+                "audit_dimension": "residual_process_transfer",
+                "reviewer_concern": "The residual-Moran downgrade may not transfer equally across unknown latent spatial processes.",
+                "primary_observation": "The calibrated rule has high sensitivity for kernel/non-stationary fields but weak sensitivity for CAR fields.",
+                "quantitative_evidence": (
+                    "TPR at t=0.10: "
+                    f"CAR={_fmt_num(tpr_by_family.get('car'))}, "
+                    f"SAR={_fmt_num(tpr_by_family.get('sar'))}, "
+                    f"kernel={_fmt_num(tpr_by_family.get('kernel'))}, "
+                    f"non-stationary={_fmt_num(tpr_by_family.get('nonstationary'))}."
+                ),
+                "claim_boundary": "Residual Moran's I is a process-dependent warning boundary, not a universal bias detector.",
+                "manuscript_action": "State the process-transfer limitation in Methods, Results, Discussion, and Conclusion.",
+            }
+        )
+
+    if pre is not None and full is not None:
+        rows.append(
+            {
+                "audit_dimension": "sentinel_role_boundary",
+                "reviewer_concern": "The best-balanced Sentinel-rich adjustment may condition on post-treatment surfaces.",
+                "primary_observation": "The full remote-sensing set improves balance and attenuates the building-level estimate but has a higher causal-role risk.",
+                "quantitative_evidence": (
+                    f"Pre-treatment max SMD = {_fmt_num(pre.get('max_post_smd'))}, ATT = {_fmt_num(pre.get('att'))} C; "
+                    f"full-RS max SMD = {_fmt_num(full.get('max_post_smd'))}, ATT = {_fmt_num(full.get('att'))} C."
+                ),
+                "claim_boundary": "Better balance does not make the Sentinel-rich set the primary causal specification.",
+                "manuscript_action": "Keep Sentinel as an over-adjustment comparison and explicitly separate balance from causal admissibility.",
+            }
+        )
+
+    rows.append(
+        {
+            "audit_dimension": "restricted_data_reproducibility",
+            "reviewer_concern": "The main Chongqing raw data are not publicly redistributed, limiting exact external reproduction.",
+            "primary_observation": "The public repository supports exact reruns for synthetic/county cases and aggregate audit of Chongqing.",
+            "quantitative_evidence": (
+                f"Raw inputs redistributed = {_labelled_value(reviewer_audit, 'raw_chongqing_inputs_redistributed') or 'False'}; "
+                f"public reconstruction = {_labelled_value(reviewer_audit, 'public_reconstruction_claim') or 'structural_rerun_and_aggregate_audit_only'}."
+            ),
+            "claim_boundary": "The Chongqing numerical result is externally auditable only through aggregate, non-sensitive artifacts unless approved raw inputs are available.",
+            "manuscript_action": "State structural rerun and aggregate-audit limits in Data and Code Availability.",
+        }
+    )
+
+    return pd.DataFrame(rows, columns=CHONGQING_ESTIMAND_SENSITIVITY_COLUMNS)
+
+
+def render_chongqing_estimand_sensitivity_report(table: pd.DataFrame) -> str:
+    lines = [
+        "# Chongqing Estimand and Sensitivity Audit",
+        "",
+        "This report condenses the second-round reviewer-critical boundaries for the",
+        "Chongqing case. It is generated from public aggregate result artifacts and",
+        "does not require the restricted building-level input sample.",
+        "",
+    ]
+    if table.empty:
+        lines.append("No Chongqing estimand/sensitivity rows were available.")
+        return "\n".join(lines) + "\n"
+    lines.extend(
+        [
+            "| Dimension | Reviewer concern | Quantitative evidence | Claim boundary | Manuscript action |",
+            "|---|---|---|---|---|",
+        ]
+    )
+    for _, record in table.iterrows():
+        lines.append(
+            "| "
+            f"{record['audit_dimension']} | "
+            f"{record['reviewer_concern']} | "
+            f"{record['quantitative_evidence']} | "
+            f"{record['claim_boundary']} | "
+            f"{record['manuscript_action']} |"
+        )
+    lines.append("")
+    return "\n".join(lines)
+
+
 def _core_support_control_row(results_dir: Path) -> dict[str, str] | None:
     """Positive-control row: a clean synthetic case graded core_support.
 
@@ -947,6 +1185,7 @@ def run_scca_evidence_synthesis(
     threshold_table = build_residual_moran_threshold_sensitivity(results_dir)
     variable_role_table = build_chongqing_variable_role_audit(results_dir)
     reviewer_audit_table = build_chongqing_reviewer_audit_package(results_dir)
+    estimand_sensitivity_table = build_chongqing_estimand_sensitivity_audit(results_dir)
     synthesis_path = target / OUTPUT_FILES["synthesis_csv"]
     report_path = target / OUTPUT_FILES["report_md"]
     manifest_path = target / OUTPUT_FILES["manifest_json"]
@@ -956,12 +1195,15 @@ def run_scca_evidence_synthesis(
     variable_role_report_path = target / OUTPUT_FILES["chongqing_variable_role_audit_md"]
     reviewer_audit_path = target / OUTPUT_FILES["chongqing_reviewer_audit_package_csv"]
     reviewer_audit_json_path = target / OUTPUT_FILES["chongqing_reviewer_audit_package_json"]
+    estimand_sensitivity_path = target / OUTPUT_FILES["chongqing_estimand_sensitivity_audit_csv"]
+    estimand_sensitivity_report_path = target / OUTPUT_FILES["chongqing_estimand_sensitivity_audit_md"]
     grade_rule_manifest = write_evidence_rule_outputs(target)
 
     table.to_csv(synthesis_path, index=False)
     threshold_table.to_csv(threshold_sensitivity_path, index=False)
     variable_role_table.to_csv(variable_role_path, index=False)
     reviewer_audit_table.to_csv(reviewer_audit_path, index=False)
+    estimand_sensitivity_table.to_csv(estimand_sensitivity_path, index=False)
     report_path.write_text(render_scca_evidence_report(table), encoding="utf-8")
     threshold_sensitivity_report_path.write_text(
         render_residual_moran_threshold_report(threshold_table),
@@ -969,6 +1211,10 @@ def run_scca_evidence_synthesis(
     )
     variable_role_report_path.write_text(
         render_chongqing_variable_role_report(variable_role_table),
+        encoding="utf-8",
+    )
+    estimand_sensitivity_report_path.write_text(
+        render_chongqing_estimand_sensitivity_report(estimand_sensitivity_table),
         encoding="utf-8",
     )
     reviewer_audit_json_path.write_text(
@@ -990,6 +1236,8 @@ def run_scca_evidence_synthesis(
         "chongqing_variable_role_audit_md": str(variable_role_report_path),
         "chongqing_reviewer_audit_package_csv": str(reviewer_audit_path),
         "chongqing_reviewer_audit_package_json": str(reviewer_audit_json_path),
+        "chongqing_estimand_sensitivity_audit_csv": str(estimand_sensitivity_path),
+        "chongqing_estimand_sensitivity_audit_md": str(estimand_sensitivity_report_path),
         "grade_rules_json": grade_rule_manifest["rules_json"],
         "grade_rules_md": grade_rule_manifest["rules_md"],
         "results_dir": str(Path(results_dir)),
@@ -997,6 +1245,7 @@ def run_scca_evidence_synthesis(
         "n_threshold_sensitivity_rows": int(len(threshold_table)),
         "n_chongqing_variable_role_rows": int(len(variable_role_table)),
         "n_chongqing_reviewer_audit_rows": int(len(reviewer_audit_table)),
+        "n_chongqing_estimand_sensitivity_rows": int(len(estimand_sensitivity_table)),
         "grade_counts": table["evidence_grade"].value_counts().to_dict() if not table.empty else {},
         "rule_version": grade_rule_manifest["rule_version"],
     }
