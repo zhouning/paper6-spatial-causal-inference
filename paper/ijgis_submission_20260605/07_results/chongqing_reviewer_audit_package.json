@@ -211,44 +211,86 @@
       "privacy_status": "non_sensitive_aggregate"
     },
     {
-      "item": "pre_treatment_pixel_aggregated_att_c",
+      "item": "pre_treatment_pixel_full_sample_att_c",
       "value": "0.5464295710074012",
       "source_file": "chongqing_change_of_support.csv",
       "privacy_status": "non_sensitive_aggregate"
     },
     {
-      "item": "pre_treatment_pixel_aggregated_se",
+      "item": "pre_treatment_pixel_full_sample_se",
       "value": "0.0955374980888743",
       "source_file": "chongqing_change_of_support.csv",
       "privacy_status": "non_sensitive_aggregate"
     },
     {
-      "item": "pre_treatment_pixel_aggregated_ci_lower",
+      "item": "pre_treatment_pixel_full_sample_ci_lower",
       "value": "0.3591760747532075",
       "source_file": "chongqing_change_of_support.csv",
       "privacy_status": "non_sensitive_aggregate"
     },
     {
-      "item": "pre_treatment_pixel_aggregated_ci_upper",
+      "item": "pre_treatment_pixel_full_sample_ci_upper",
       "value": "0.7336830672615948",
       "source_file": "chongqing_change_of_support.csv",
       "privacy_status": "non_sensitive_aggregate"
     },
     {
-      "item": "pre_treatment_pixel_aggregated_n_units",
+      "item": "pre_treatment_pixel_full_sample_n_units",
       "value": "1400",
       "source_file": "chongqing_change_of_support.csv",
       "privacy_status": "non_sensitive_aggregate"
     },
     {
-      "item": "pre_treatment_pixel_aggregated_n_pixels",
+      "item": "pre_treatment_pixel_full_sample_n_pixels",
       "value": "1400",
       "source_file": "chongqing_change_of_support.csv",
       "privacy_status": "non_sensitive_aggregate"
     },
     {
-      "item": "pre_treatment_pixel_aggregated_buildings_per_pixel",
+      "item": "pre_treatment_pixel_full_sample_buildings_per_pixel",
       "value": "3.571",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_pixel_from_matched_att_c",
+      "value": "0.5522386885952759",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_pixel_from_matched_se",
+      "value": "0.0938929281318221",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_pixel_from_matched_ci_lower",
+      "value": "0.3682085494569044",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_pixel_from_matched_ci_upper",
+      "value": "0.7362688277336473",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_pixel_from_matched_n_units",
+      "value": "1284",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_pixel_from_matched_n_pixels",
+      "value": "1284",
+      "source_file": "chongqing_change_of_support.csv",
+      "privacy_status": "non_sensitive_aggregate"
+    },
+    {
+      "item": "pre_treatment_pixel_from_matched_buildings_per_pixel",
+      "value": "3.393",
       "source_file": "chongqing_change_of_support.csv",
       "privacy_status": "non_sensitive_aggregate"
     },

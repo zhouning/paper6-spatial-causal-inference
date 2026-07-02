@@ -975,25 +975,41 @@ def run_change_of_support_analysis(
     *,
     variants: Iterable[str] = ("pre_treatment", "full_rs_context"),
     threshold: int = 10,
+    caliper: float = 0.2,
     cell_size_m: float = 1000.0,
     outcome_col: str = "LST",
     random_state: int = 0,
 ) -> pd.DataFrame:
     """Quantify how the building-level ATT changes under change of support.
 
-    For each adjustment variant we report three estimands that make the
-    treatment/outcome scale mismatch explicit:
+    For each adjustment variant we report four estimands that make the
+    treatment/outcome scale mismatch explicit, together with an explicit
+    ``sample_scope`` column so reviewers can trace which buildings and how many
+    were used in each row:
 
-    1. ``building_naive`` -- adjusted OLS at the building level, ignoring the
-       fact that ~7 buildings share one outcome pixel (over-states precision).
+    1. ``building_naive`` -- adjusted OLS at the building level on the full
+       complete-case sample (all buildings with non-null covariates), ignoring
+       the fact that ~7 buildings share one outcome pixel (over-states
+       precision). Sample scope: ``full_complete_case``.
     2. ``building_cluster_robust`` -- the same point estimate with standard
-       errors clustered on the shared outcome pixel.
-    3. ``pixel_aggregated`` -- one row per outcome pixel (pixel-mean treatment
-       share vs pixel outcome), the estimand that is actually identified at the
-       outcome resolution.
+       errors clustered on the shared outcome pixel. Sample scope:
+       ``full_complete_case``.
+    3. ``pixel_full_sample`` -- one row per outcome pixel, aggregating the full
+       complete-case sample (pixel-mean high-rise share vs pixel-mean outcome),
+       the estimand identified at the outcome resolution. Sample scope:
+       ``full_complete_case_aggregated``.
+    4. ``pixel_from_matched`` -- one row per outcome pixel, aggregating only
+       the PSM-matched building subset (the same sample as
+       ``building_cluster_robust``). Provides a strictly comparable
+       matched-and-aggregated view. Sample scope:
+       ``psm_matched_subset_aggregated``.
 
-    The gap between (1) and (2)/(3) is the reviewer-flagged change-of-support
-    problem, now measured rather than only acknowledged.
+    The gap between (1) and (2)/(3)/(4) is the reviewer-flagged
+    change-of-support problem, now measured rather than only acknowledged.
+    Estimands (3) and (4) differ only in whether pixels come from all
+    complete-case buildings or from matched buildings; a large gap between
+    them would indicate that matching materially changes the pixel-level
+    high-rise share distribution.
     """
     rows: list[dict[str, Any]] = []
     working = frame.copy()
@@ -1037,11 +1053,13 @@ def run_change_of_support_analysis(
                 {
                     "variant": variant,
                     "estimand": "building_naive",
+                    "sample_scope": "full_complete_case",
                     "att": cr["coef"],
                     "se": naive_se,
                     "ci_lower": cr["coef"] - 1.96 * naive_se,
                     "ci_upper": cr["coef"] + 1.96 * naive_se,
                     "n_units": n_buildings,
+                    "buildings_used": n_buildings,
                     "n_pixels": n_pixels,
                     "buildings_per_pixel": round(n_buildings / max(n_pixels, 1), 3),
                 }
@@ -1050,17 +1068,19 @@ def run_change_of_support_analysis(
                 {
                     "variant": variant,
                     "estimand": "building_cluster_robust",
+                    "sample_scope": "full_complete_case",
                     "att": cr["coef"],
                     "se": cr["cluster_robust_se"],
                     "ci_lower": cr["ci_lower"],
                     "ci_upper": cr["ci_upper"],
                     "n_units": n_buildings,
+                    "buildings_used": n_buildings,
                     "n_pixels": n_pixels,
                     "buildings_per_pixel": round(n_buildings / max(n_pixels, 1), 3),
                 }
             )
 
-            # (3) pixel-aggregated estimand: collapse to one row per pixel.
+            # (3) pixel-aggregated estimand on the FULL complete-case sample.
             agg_cols = {c: "mean" for c in covariates}
             agg_cols["_outcome"] = "mean"
             agg_cols["_treatment"] = "mean"
@@ -1082,26 +1102,86 @@ def run_change_of_support_analysis(
                 rows.append(
                     {
                         "variant": variant,
-                        "estimand": "pixel_aggregated",
+                        "estimand": "pixel_full_sample",
+                        "sample_scope": "full_complete_case_aggregated",
                         "att": float(betap[1]),
                         "se": sep,
                         "ci_lower": float(betap[1]) - 1.96 * sep,
                         "ci_upper": float(betap[1]) + 1.96 * sep,
                         "n_units": int(len(pix)),
+                        "buildings_used": n_buildings,
                         "n_pixels": int(len(pix)),
                         "buildings_per_pixel": round(n_buildings / max(n_pixels, 1), 3),
                     }
                 )
+
+            # (4) pixel-aggregated estimand on the PSM-MATCHED subset only.
+            # This is strictly comparable to (2) building_cluster_robust: same
+            # matched sample, aggregated to outcome-scale pixels.
+            if variant != "raw":
+                try:
+                    _, _, _, match_details = _match_variant(
+                        working, variant=variant, threshold=threshold,
+                        caliper=caliper, n_bootstrap=0,
+                        random_state=random_state, outcome_col=outcome_col,
+                    )
+                    matched_idx = match_details.get(
+                        "matched_indices", np.asarray([], dtype=int)
+                    )
+                    if len(matched_idx) > 0:
+                        prep_match = match_details["prepared"].loc[
+                            pd.Index(matched_idx).unique()
+                        ].copy()
+                        prep_match["_pixel"] = working.loc[
+                            prep_match.index, "_pixel"
+                        ].to_numpy()
+                        n_matched = int(len(prep_match))
+                        match_covs = list(match_details.get("covariates", covariates))
+                        agg_m = {c: "mean" for c in match_covs}
+                        agg_m["_outcome"] = "mean"
+                        agg_m["_treatment"] = "mean"
+                        pix_m = prep_match.groupby("_pixel").agg(agg_m)
+                        if len(pix_m) >= 5 and pix_m["_treatment"].nunique() > 1:
+                            ym = pix_m["_outcome"].to_numpy(dtype=float)
+                            Xm = np.column_stack([
+                                np.ones(len(pix_m)),
+                                pix_m["_treatment"].to_numpy(dtype=float),
+                                pix_m[match_covs].to_numpy(dtype=float),
+                            ])
+                            betam = np.linalg.pinv(Xm.T @ Xm) @ (Xm.T @ ym)
+                            rm = ym - Xm @ betam
+                            s2m = float(rm @ rm) / max(len(ym) - Xm.shape[1], 1)
+                            covm = s2m * np.linalg.pinv(Xm.T @ Xm)
+                            sem = float(np.sqrt(max(covm[1, 1], 0.0)))
+                            rows.append({
+                                "variant": variant,
+                                "estimand": "pixel_from_matched",
+                                "sample_scope": "psm_matched_subset_aggregated",
+                                "att": float(betam[1]),
+                                "se": sem,
+                                "ci_lower": float(betam[1]) - 1.96 * sem,
+                                "ci_upper": float(betam[1]) + 1.96 * sem,
+                                "n_units": int(len(pix_m)),
+                                "buildings_used": n_matched,
+                                "n_pixels": int(len(pix_m)),
+                                "buildings_per_pixel": round(
+                                    n_matched / max(len(pix_m), 1), 3
+                                ),
+                            })
+                except Exception:  # pragma: no cover - defensive
+                    pass
         except Exception as exc:  # pragma: no cover - defensive
             rows.append(
                 {
                     "variant": variant,
                     "estimand": "error",
+                    "sample_scope": "unknown",
                     "att": np.nan,
                     "se": np.nan,
                     "ci_lower": np.nan,
                     "ci_upper": np.nan,
                     "n_units": 0,
+                    "buildings_used": 0,
                     "n_pixels": 0,
                     "buildings_per_pixel": np.nan,
                     "status": f"error: {exc}",

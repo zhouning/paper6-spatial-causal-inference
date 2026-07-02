@@ -256,11 +256,12 @@ def _chongqing_row(results_dir: Path) -> dict[str, str] | None:
     if not cos.empty:
         prim = cos[(cos["variant"] == primary_variant) | (cos["variant"] == "pre_treatment")]
         cluster = prim[prim["estimand"] == "building_cluster_robust"]
-        pixel = prim[prim["estimand"] == "pixel_aggregated"]
+        # pixel_full_sample is the primary outcome-scale estimand (full complete-case aggregated).
+        pixel = prim[prim["estimand"] == "pixel_full_sample"]
         if not cluster.empty and not pixel.empty:
             effect_text = (
                 f"Outcome-scale high-rise-share slope = {_fmt_num(pixel.iloc[0].get('att'))} C "
-                f"per unit share (not a building-level ATT); "
+                f"per unit share (primary estimand at pixel resolution); "
                 f"95% CI [{_fmt_num(pixel.iloc[0].get('ci_lower'))}, "
                 f"{_fmt_num(pixel.iloc[0].get('ci_upper'))}]; "
                 f"building-level matching ATT = {_fmt_num(record.get('att'))} C "
@@ -882,7 +883,7 @@ def build_chongqing_estimand_sensitivity_audit(
         if not cos.empty and "variant" in cos
         else pd.DataFrame()
     )
-    pixel = _estimand_row(cos_pre, "pixel_aggregated")
+    pixel = _estimand_row(cos_pre, "pixel_full_sample")
     naive = _estimand_row(cos_pre, "building_naive")
     cluster = _estimand_row(cos_pre, "building_cluster_robust")
 

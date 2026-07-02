@@ -36,7 +36,7 @@ and the county row as a GIS/notebook reproducibility and spatial-diagnostic boun
 
 - Grade: `bounded_support`
 - Best adjustment: outcome-scale pixel aggregation with pre-treatment context; building-level matching retained as diagnostic
-- Effect/diagnostic: Outcome-scale high-rise-share slope = 0.546 C per unit share (not a building-level ATT); 95% CI [0.359, 0.734]; building-level matching ATT = 0.303 C (diagnostic approximation; matching CI [0.220, 0.383]); cluster-robust building OLS ATT = 0.268 C (CR SE 0.054); over-adjusted full-RS matching ATT = 0.244 C
+- Effect/diagnostic: Outcome-scale high-rise-share slope = 0.546 C per unit share (primary estimand at pixel resolution); 95% CI [0.359, 0.734]; building-level matching ATT = 0.303 C (diagnostic approximation; matching CI [0.220, 0.383]); cluster-robust building OLS ATT = 0.268 C (CR SE 0.054); over-adjusted full-RS matching ATT = 0.244 C
 - Balance: max post-match SMD = 0.104; balance pass = False; matching sensitivity labels = near_threshold_not_passed
 - Robustness: threshold placebo, spatial bootstrap, residual spatial, and change-of-support diagnostics available
 - Grade rules: `moderate_credibility; material_residual_moran`

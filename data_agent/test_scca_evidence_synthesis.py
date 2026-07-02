@@ -124,7 +124,7 @@ def test_scca_evidence_synthesis_writes_contract_files(tmp_path):
         "effect_estimate",
     ].iloc[0]
     assert chongqing_effect.startswith("Outcome-scale high-rise-share slope")
-    assert "not a building-level ATT" in chongqing_effect
+    assert "primary estimand at pixel resolution" in chongqing_effect
     assert "building-level matching ATT" in chongqing_effect
     assert "diagnostic approximation" in synthesis.loc[
         synthesis["case"] == "chongqing_uhi",
