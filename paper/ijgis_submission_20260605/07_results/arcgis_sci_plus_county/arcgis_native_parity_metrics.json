@@ -1,0 +1,42 @@
+{
+  "native_arcgis_source": "D:\\tmp\\paper6_arcgis_builtin_causal_20260627\\csv_final\\county_arcgis_builtin_erf.csv",
+  "open_documented_source": "arcgis_documented_erf_curve.csv",
+  "arcgis_version": "3.7",
+  "tested_mode": "REGRESSION propensity scores + MATCHING balance + PLUG_IN bandwidth + NO_CI",
+  "sample_parity": {
+    "arcgis_original_n": 3108,
+    "open_original_n": 3108,
+    "arcgis_final_n": 3044,
+    "open_final_n": 3044,
+    "removed_by_exposure_trim": 64
+  },
+  "parameter_parity": {
+    "arcgis_selected_num_bins": 25,
+    "open_selected_num_bins": 25,
+    "arcgis_selected_scale": 0.8,
+    "open_selected_scale": 0.8,
+    "arcgis_bandwidth": 2.4415,
+    "open_bandwidth": 2.438985718451863,
+    "arcgis_n_grid": 200,
+    "open_n_grid": 200
+  },
+  "balance_parity": {
+    "arcgis_mean_weighted_correlation": 0.0559,
+    "open_mean_weighted_correlation": 0.07203570746133495,
+    "balance_threshold": 0.1,
+    "open_passes_threshold": true
+  },
+  "erf_response_parity": {
+    "rows_arcgis": 200,
+    "rows_open": 200,
+    "mae": 0.015153286175193017,
+    "rmse": 0.04353579435447279,
+    "mean_signed_difference": -0.014135757066945729,
+    "max_absolute_difference": 0.22600767573166536,
+    "arcgis_response_min": 73.91613621368504,
+    "arcgis_response_max": 81.86823853208412,
+    "open_response_min": 73.9085504998439,
+    "open_response_max": 81.8704596623947
+  },
+  "replacement_scope": "Algorithmic replacement is supported for this documented continuous-exposure ArcGIS Causal Inference Analysis mode; untested modes and private internals are not claimed bit-for-bit."
+}

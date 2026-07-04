@@ -3,53 +3,151 @@
 \providecommand\HyField@AuxAddToFields[1]{}
 \providecommand\HyField@AuxAddToCoFields[2]{}
 \bibstyle{plainnat}
-\citation{stuart2010matching,angrist2009mostly,athey2019estimating}
+\citation{stuart2010matching,angrist2009mostly,athey2019estimating,hernan2020whatif}
+\citation{reich2021review,gilbert2021spatialconfounding,hodges2010adding,paciorek2010importance,dupont2022spatial+,khan2022restricted}
+\citation{anselin2014modern,brunsdon2016quantitative}
+\citation{hodges2010adding,dupont2022spatial+,tec2023spatialdml}
 \@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{2}{section.1}\protected@file@percent }
 \newlabel{sec:intro}{{1}{2}{Introduction}{section.1}{}}
-\citation{imbens2015causal}
+\citation{imbens2015causal,hernan2020whatif}
 \citation{rosenbaum1983central,stuart2010matching}
-\citation{anselin1988spatial}
+\citation{pearl2009causality,vanderweele2015explanation}
+\citation{anselin1988spatial,lesage2009introduction,anselin2014modern}
+\citation{reich2021review,gilbert2021spatialconfounding,giffin2023gpsinterference,papadogeorgou2022causal,schnell2020mitigating}
+\citation{hodges2010adding,paciorek2010importance,dupont2022spatial+,khan2022restricted}
+\citation{tec2023spatialdml}
 \@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{3}{section.2}\protected@file@percent }
 \newlabel{sec:related}{{2}{3}{Related Work}{section.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Causal inference with spatial data}{3}{subsection.2.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Spatial context as an adjustment source}{3}{subsection.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Diagnostics and evidence grades}{3}{subsection.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3}Spatial Context Causal Adjustment}{4}{section.3}\protected@file@percent }
-\newlabel{sec:method}{{3}{4}{Spatial Context Causal Adjustment}{section.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Problem formulation}{4}{subsection.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Workflow}{4}{subsection.3.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Adjustment variants}{4}{subsection.3.3}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces SCCA workflow. Spatial context is treated as a candidate adjustment source and must pass support, balance, and robustness diagnostics before it is used to support a causal claim.}}{5}{figure.caption.1}\protected@file@percent }
+\citation{gilbert2021spatialconfounding,vanderweele2015explanation}
+\citation{openshaw1984maup,fotheringham1991modifiable,manley2006maup}
+\citation{hirano2004gps,zhao2020nonbinary}
+\citation{verbitskysavitz2012,aronow2017interference,forastiere2021interference,giffin2023gpsinterference,papadogeorgou2022causal}
+\citation{hodges2010adding,paciorek2010importance,dupont2022spatial+,khan2022restricted,gilbert2021spatialconfounding,tec2023spatialdml}
+\citation{nuest2021reproducible,konkol2019computational,brunsdon2016quantitative}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Spatial context as an adjustment source}{4}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Continuous exposure, spatial interference, and diagnostics}{4}{subsection.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Diagnostics and evidence grades}{4}{subsection.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Position relative to adjacent workflows}{4}{subsection.2.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Spatial Context Causal Adjustment}{5}{section.3}\protected@file@percent }
+\newlabel{sec:method}{{3}{5}{Spatial Context Causal Adjustment}{section.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Problem formulation}{5}{subsection.3.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Candidate adjustment DAG for the Chongqing UHI case. Terrain and historical land-use are observed common causes of treatment $T$ (high-rise) and outcome $Y$ (summer LST). A latent spatial process $U$ remains unobserved; SCCA reports residual Moran's $I$ and spatial-lag sensitivity as diagnostics for the resulting bias rather than identifying $U$. NDVI is shown explicitly as a possible post-treatment mediator: SCCA's variable-role layer requires the analyst to declare whether it is added as confounder or omitted as descendant of $T$.}}{5}{figure.caption.1}\protected@file@percent }
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{fig:scca_workflow}{{1}{5}{SCCA workflow. Spatial context is treated as a candidate adjustment source and must pass support, balance, and robustness diagnostics before it is used to support a causal claim}{figure.caption.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Robustness diagnostics}{6}{subsection.3.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Evidence grades}{6}{subsection.3.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Implementation surfaces}{6}{subsection.3.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {4}Experiments}{7}{section.4}\protected@file@percent }
-\newlabel{sec:experiments}{{4}{7}{Experiments}{section.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Evidence synthesis design}{7}{subsection.4.1}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces SCCA evidence synthesis. Grades describe claim strength, not statistical significance alone.}}{7}{table.caption.2}\protected@file@percent }
-\newlabel{tab:evidence_synthesis}{{1}{7}{SCCA evidence synthesis. Grades describe claim strength, not statistical significance alone}{table.caption.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Synthetic benchmark audit}{8}{subsection.4.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Selected baseline rows from the synthetic benchmark audit.}}{8}{table.caption.3}\protected@file@percent }
-\newlabel{tab:synthetic}{{2}{8}{Selected baseline rows from the synthetic benchmark audit}{table.caption.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Chongqing urban heat case}{8}{subsection.4.3}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Chongqing UHI adjustment variants. Balance pass means maximum post-match SMD $<0.1$.}}{9}{table.caption.4}\protected@file@percent }
-\newlabel{tab:chongqing}{{3}{9}{Chongqing UHI adjustment variants. Balance pass means maximum post-match SMD $<0.1$}{table.caption.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}County GIS and spatial-diagnostic validation}{9}{subsection.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Direct baseline comparison}{10}{subsection.4.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}GIS and notebook outputs}{10}{subsection.4.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{11}{section.5}\protected@file@percent }
-\newlabel{sec:discussion}{{5}{11}{Discussion}{section.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}What SCCA solves}{11}{subsection.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Practical value for GIS workflows}{11}{subsection.5.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}What SCCA does not solve}{12}{subsection.5.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusions}{12}{section.6}\protected@file@percent }
-\newlabel{sec:conclusions}{{6}{12}{Conclusions}{section.6}{}}
-\bibcite{angrist2009mostly}{{1}{2009}{{Angrist and Pischke}}{{}}}
-\bibcite{anselin1988spatial}{{2}{1988}{{Anselin}}{{}}}
-\bibcite{athey2019estimating}{{3}{2019}{{Athey and Imbens}}{{}}}
-\bibcite{imbens2015causal}{{4}{2015}{{Imbens and Rubin}}{{}}}
-\bibcite{rosenbaum1983central}{{5}{1983}{{Rosenbaum and Rubin}}{{}}}
-\bibcite{stuart2010matching}{{6}{2010}{{Stuart}}{{}}}
-\gdef \@abspage@last{13}
+\newlabel{fig:scca_dag}{{1}{5}{Candidate adjustment DAG for the Chongqing UHI case. Terrain and historical land-use are observed common causes of treatment $T$ (high-rise) and outcome $Y$ (summer LST). A latent spatial process $U$ remains unobserved; SCCA reports residual Moran's $I$ and spatial-lag sensitivity as diagnostics for the resulting bias rather than identifying $U$. NDVI is shown explicitly as a possible post-treatment mediator: SCCA's variable-role layer requires the analyst to declare whether it is added as confounder or omitted as descendant of $T$}{figure.caption.1}{}}
+\citation{imbens2015causal,pearl2009causality}
+\citation{gilbert2021spatialconfounding}
+\citation{hirano2004gps,zhao2020nonbinary}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Identification assumptions and scope}{6}{subsection.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Workflow}{6}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Adjustment variants}{6}{subsection.3.4}\protected@file@percent }
+\citation{lesage2009introduction}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces SCCA workflow. Spatial context is treated as a candidate adjustment source and must pass support, balance, and robustness diagnostics before it is used to support a causal claim.}}{7}{figure.caption.2}\protected@file@percent }
+\newlabel{fig:scca_workflow}{{2}{7}{SCCA workflow. Spatial context is treated as a candidate adjustment source and must pass support, balance, and robustness diagnostics before it is used to support a causal claim}{figure.caption.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Robustness diagnostics}{7}{subsection.3.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Diagnostic interpretation of residual Moran's I}{8}{subsection.3.6}\protected@file@percent }
+\newlabel{sec:residual_diagnostic}{{3.6}{8}{Diagnostic interpretation of residual Moran's I}{subsection.3.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Residual spatial bias-bound diagnostic}{8}{subsection.3.7}\protected@file@percent }
+\citation{stuart2010matching,austin2009smd}
+\citation{esri2026causalworks,wu2022matching,fan1996local}
+\citation{openshaw1984maup,fotheringham1991modifiable,manley2006maup}
+\citation{abadie2006matchingse}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.8}Evidence grades and threshold calibration}{9}{subsection.3.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.9}Implementation surfaces}{9}{subsection.3.9}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.10}Missing data, scale, and uncertainty}{10}{subsection.3.10}\protected@file@percent }
+\newlabel{sec:missing_scale_ci}{{3.10}{10}{Missing data, scale, and uncertainty}{subsection.3.10}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {4}Experiments}{10}{section.4}\protected@file@percent }
+\newlabel{sec:experiments}{{4}{10}{Experiments}{section.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Dataset roles and case selection}{10}{subsection.4.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Reproducibility scope of the experimental cases.}}{10}{table.caption.3}\protected@file@percent }
+\newlabel{tab:reproducibility_scope}{{1}{10}{Reproducibility scope of the experimental cases}{table.caption.3}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Evidence synthesis design}{11}{subsection.4.2}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces SCCA evidence synthesis. Grades describe claim strength, not statistical significance alone.}}{11}{table.caption.4}\protected@file@percent }
+\newlabel{tab:evidence_synthesis}{{2}{11}{SCCA evidence synthesis. Grades describe claim strength, not statistical significance alone}{table.caption.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Synthetic benchmark audit}{11}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Chongqing urban heat case}{11}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Outcome-scale estimate and diagnostic matching.}{12}{section*.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {paragraph}{Change of support.}{12}{section*.6}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Chongqing change-of-support diagnostics for the pre-treatment set (source: \texttt  {07\_results/chongqing\_change\_of\_support.csv}). Pixel rows are the primary outcome-scale slopes; building rows are diagnostic.}}{12}{table.caption.7}\protected@file@percent }
+\newlabel{tab:cos}{{3}{12}{Chongqing change-of-support diagnostics for the pre-treatment set (source: \texttt {07\_results/chongqing\_change\_of\_support.csv}). Pixel rows are the primary outcome-scale slopes; building rows are diagnostic}{table.caption.7}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Chongqing UHI adjustment variants. \emph  {pre\_treatment} is preferred because it avoids possible post-treatment Sentinel surfaces but slightly misses strict balance. Balance pass means maximum post-match SMD $<0.10$.}}{12}{table.caption.10}\protected@file@percent }
+\newlabel{tab:chongqing}{{4}{12}{Chongqing UHI adjustment variants. \emph {pre\_treatment} is preferred because it avoids possible post-treatment Sentinel surfaces but slightly misses strict balance. Balance pass means maximum post-match SMD $<0.10$}{table.caption.10}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Chongqing UHI covariate balance before and after caliper matching (Love plot) for the pre-treatment set. The 0.10 SMD threshold is shown for reference; the maximum post-match SMD is 0.104, a near-threshold miss rather than a strict balance pass.}}{13}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:loveplot}{{3}{13}{Chongqing UHI covariate balance before and after caliper matching (Love plot) for the pre-treatment set. The 0.10 SMD threshold is shown for reference; the maximum post-match SMD is 0.104, a near-threshold miss rather than a strict balance pass}{figure.caption.8}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Chongqing threshold-placebo dose-response. Vertical bars are matching-based 95\% CIs. The monotone increase from 8 to 12 floors is consistent with a dose-response interpretation; all estimates remain small relative to the thermal-retrieval and change-of-support uncertainties that accompany $\sim $1\,km LST extraction.}}{13}{figure.caption.9}\protected@file@percent }
+\newlabel{fig:threshold}{{4}{13}{Chongqing threshold-placebo dose-response. Vertical bars are matching-based 95\% CIs. The monotone increase from 8 to 12 floors is consistent with a dose-response interpretation; all estimates remain small relative to the thermal-retrieval and change-of-support uncertainties that accompany $\sim $1\,km LST extraction}{figure.caption.9}{}}
+\citation{esri2026causalworks,wu2022matching,fan1996local}
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Chongqing estimand and sensitivity audit generated from public aggregate outputs. The table records the claim boundary associated with each reviewer-critical diagnostic.}}{14}{table.caption.11}\protected@file@percent }
+\newlabel{tab:chongqing_estimand_audit}{{5}{14}{Chongqing estimand and sensitivity audit generated from public aggregate outputs. The table records the claim boundary associated with each reviewer-critical diagnostic}{table.caption.11}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}County ArcGIS SCI Plus workflow comparison}{14}{subsection.4.5}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Chongqing variable-role audit for candidate spatial-context sources. Risk describes possible post-treatment or mediator contamination, not statistical balance.}}{15}{table.caption.12}\protected@file@percent }
+\newlabel{tab:chongqing_roles}{{6}{15}{Chongqing variable-role audit for candidate spatial-context sources. Risk describes possible post-treatment or mediator contamination, not statistical balance}{table.caption.12}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Empirical Moran scatter for the Chongqing matched pre-treatment residual (standardised residual on the $x$-axis, its spatial lag on the $y$-axis). The slope is the empirical Moran's $I = 0.112$, statistically significant under 99 permutations ($p=0.01$); under the default 0.10 rule it triggers a material residual-spatial caution, while under a high-specificity 0.20 sensitivity threshold it would be recorded as significant-below-material.}}{15}{figure.caption.13}\protected@file@percent }
+\newlabel{fig:residual}{{5}{15}{Empirical Moran scatter for the Chongqing matched pre-treatment residual (standardised residual on the $x$-axis, its spatial lag on the $y$-axis). The slope is the empirical Moran's $I = 0.112$, statistically significant under 99 permutations ($p=0.01$); under the default 0.10 rule it triggers a material residual-spatial caution, while under a high-specificity 0.20 sensitivity threshold it would be recorded as significant-below-material}{figure.caption.13}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Synthetic positive control (discrimination test)}{16}{subsection.4.6}\protected@file@percent }
+\newlabel{sec:core_control}{{4.6}{16}{Synthetic positive control (discrimination test)}{subsection.4.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Baseline-to-SCCA comparison}{16}{subsection.4.7}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.8}Threshold calibration for the residual-Moran rule}{16}{subsection.4.8}\protected@file@percent }
+\newlabel{sec:thresholdcalibration}{{4.8}{16}{Threshold calibration for the residual-Moran rule}{subsection.4.8}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Pooled calibration of the SCCA residual-Moran downgrade rule across four spatial-process families (2{,}880 fits). Positive class: relative bias $>$ 25\%. Predictor: $|I_{\mathrm  {residual}}| \geq t$ AND permutation $p \leq 0.05$.}}{17}{table.caption.14}\protected@file@percent }
+\newlabel{tab:moran_roc}{{7}{17}{Pooled calibration of the SCCA residual-Moran downgrade rule across four spatial-process families (2{,}880 fits). Positive class: relative bias $>$ 25\%. Predictor: $|I_{\mathrm {residual}}| \geq t$ AND permutation $p \leq 0.05$}{table.caption.14}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Per-family behaviour of the residual-Moran rule. Mean residual Moran's $I$ is averaged over all cells of that family; TPR is at the manuscript default $t=0.10$. The rule is strong for kernel/non-stationary processes but weak for CAR, where the same relative bias leaves little simple-contiguity autocorrelation in the residual.}}{17}{table.caption.15}\protected@file@percent }
+\newlabel{tab:moran_family}{{8}{17}{Per-family behaviour of the residual-Moran rule. Mean residual Moran's $I$ is averaged over all cells of that family; TPR is at the manuscript default $t=0.10$. The rule is strong for kernel/non-stationary processes but weak for CAR, where the same relative bias leaves little simple-contiguity autocorrelation in the residual}{table.caption.15}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Threshold calibration for the SCCA residual-Moran downgrade rule. (a) Pooled ROC across candidate material thresholds. (b) Per-family ROC (process-dependent power): the 0.10 threshold, calibrated on a pooled design, exhibits strong external validity for kernel and non-stationary families (TPR $\approx $ 1.0) but limited power for CAR structures (TPR = 0.19), showing that the rule's discriminative ability depends on the unknown latent spatial process.}}{18}{figure.caption.16}\protected@file@percent }
+\newlabel{fig:rocs}{{6}{18}{Threshold calibration for the SCCA residual-Moran downgrade rule. (a) Pooled ROC across candidate material thresholds. (b) Per-family ROC (process-dependent power): the 0.10 threshold, calibrated on a pooled design, exhibits strong external validity for kernel and non-stationary families (TPR $\approx $ 1.0) but limited power for CAR structures (TPR = 0.19), showing that the rule's discriminative ability depends on the unknown latent spatial process}{figure.caption.16}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.9}Grade-rule sensitivity for the two case studies}{18}{subsection.4.9}\protected@file@percent }
+\newlabel{sec:chongqing_threshold_check}{{4.9}{18}{Grade-rule sensitivity for the two case studies}{subsection.4.9}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Residual-spatial threshold sensitivity generated by the evidence-synthesis script. The exercise varies only the material residual Moran warning threshold and leaves all other downgrade rules unchanged.}}{18}{table.caption.17}\protected@file@percent }
+\newlabel{tab:grade_threshold_sensitivity}{{9}{18}{Residual-spatial threshold sensitivity generated by the evidence-synthesis script. The exercise varies only the material residual Moran warning threshold and leaves all other downgrade rules unchanged}{table.caption.17}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.10}GIS and notebook outputs}{18}{subsection.4.10}\protected@file@percent }
+\citation{chernozhukov2018dml,forastiere2021interference,papadogeorgou2022causal}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Discussion}{19}{section.5}\protected@file@percent }
+\newlabel{sec:discussion}{{5}{19}{Discussion}{section.5}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.1}What SCCA solves}{19}{subsection.5.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.2}Practical value for GIS workflows}{19}{subsection.5.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.3}How SCCA can be extended}{19}{subsection.5.3}\protected@file@percent }
+\citation{forastiere2021interference,papadogeorgou2022causal}
+\citation{aronow2017interference}
+\citation{openshaw1984maup,fotheringham1991modifiable}
+\@writefile{toc}{\contentsline {subsection}{\numberline {5.4}What SCCA does not solve}{20}{subsection.5.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {6}Conclusions}{20}{section.6}\protected@file@percent }
+\newlabel{sec:conclusions}{{6}{20}{Conclusions}{section.6}{}}
+\bibcite{abadie2006matchingse}{{1}{2006}{{Abadie and Imbens}}{{}}}
+\bibcite{angrist2009mostly}{{2}{2009}{{Angrist and Pischke}}{{}}}
+\bibcite{anselin1988spatial}{{3}{1988}{{Anselin}}{{}}}
+\bibcite{anselin2014modern}{{4}{2014}{{Anselin and Rey}}{{}}}
+\bibcite{aronow2017interference}{{5}{2017}{{Aronow and Samii}}{{}}}
+\bibcite{athey2019estimating}{{6}{2019}{{Athey and Imbens}}{{}}}
+\bibcite{austin2009smd}{{7}{2009}{{Austin}}{{}}}
+\bibcite{brunsdon2016quantitative}{{8}{2016}{{Brunsdon}}{{}}}
+\bibcite{chernozhukov2018dml}{{9}{2018}{{Chernozhukov et~al.}}{{}}}
+\bibcite{dupont2022spatial+}{{10}{2022}{{Dupont et~al.}}{{}}}
+\bibcite{forastiere2021interference}{{11}{2021}{{Forastiere et~al.}}{{}}}
+\bibcite{fotheringham1991modifiable}{{12}{1991}{{Fotheringham and Wong}}{{}}}
+\bibcite{giffin2023gpsinterference}{{13}{2023}{{Giffin et~al.}}{{}}}
+\bibcite{esri2026causalworks}{{14}{2026}{{Esri}}{{}}}
+\bibcite{fan1996local}{{15}{1996}{{Fan}}{{}}}
+\bibcite{gilbert2021spatialconfounding}{{16}{2021}{{Gilbert et~al.}}{{}}}
+\bibcite{hernan2020whatif}{{17}{2020}{{Hern\'an and Robins}}{{}}}
+\bibcite{hirano2004gps}{{18}{2004}{{Hirano and Imbens}}{{}}}
+\bibcite{hodges2010adding}{{19}{2010}{{Hodges and Reich}}{{}}}
+\bibcite{imbens2015causal}{{20}{2015}{{Imbens and Rubin}}{{}}}
+\bibcite{khan2022restricted}{{21}{2022}{{Khan and Calder}}{{}}}
+\bibcite{konkol2019computational}{{22}{2019}{{Konkol and Kray}}{{}}}
+\bibcite{lesage2009introduction}{{23}{2009}{{LeSage and Pace}}{{}}}
+\bibcite{manley2006maup}{{24}{2006}{{Manley et~al.}}{{}}}
+\bibcite{nuest2021reproducible}{{25}{2021}{{N\"ust and Pebesma}}{{}}}
+\bibcite{openshaw1984maup}{{26}{1984}{{Openshaw}}{{}}}
+\bibcite{paciorek2010importance}{{27}{2010}{{Paciorek}}{{}}}
+\bibcite{papadogeorgou2022causal}{{28}{2022}{{Papadogeorgou et~al.}}{{}}}
+\bibcite{pearl2009causality}{{29}{2009}{{Pearl}}{{}}}
+\bibcite{reich2021review}{{30}{2021}{{Reich et~al.}}{{}}}
+\bibcite{rosenbaum1983central}{{31}{1983}{{Rosenbaum and Rubin}}{{}}}
+\bibcite{schnell2020mitigating}{{32}{2020}{{Schnell and Papadogeorgou}}{{}}}
+\bibcite{stuart2010matching}{{33}{2010}{{Stuart}}{{}}}
+\bibcite{tec2023spatialdml}{{34}{2023}{{Tec et~al.}}{{}}}
+\bibcite{vanderweele2015explanation}{{35}{2015}{{VanderWeele}}{{}}}
+\bibcite{verbitskysavitz2012}{{36}{2012}{{Verbitsky-Savitz and Raudenbush}}{{}}}
+\bibcite{wu2022matching}{{37}{2022}{{Wu et~al.}}{{}}}
+\bibcite{zhao2020nonbinary}{{38}{2020}{{Zhao et~al.}}{{}}}
+\gdef \@abspage@last{24}

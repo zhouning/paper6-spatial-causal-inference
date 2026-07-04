@@ -1,6 +1,13 @@
 {
   "study": "county_social_capital_longevity_validation",
-  "claim": "ArcGIS SCI Plus organizes ArcGIS SCI-style ERF/trim/target outputs and adds open spatial causal-risk auditing.",
+  "claim": "ArcGIS SCI Plus implements the documented ArcGIS continuous-exposure REGRESSION + MATCHING + weighted-kernel ERF causal workflow and adds open spatial causal-risk auditing, scale checks, role audits, and residual spatial bias-bound reporting when graph inputs are available.",
+  "replacement_assessment": {
+    "arcgis_platform_replacement": false,
+    "causal_inference_task_replacement": "tested_algorithmic_replacement",
+    "supported_arcgis_mode": "Continuous exposure/outcome with REGRESSION propensity scores, MATCHING balance, ArcGIS-style quantile trimming, and weighted kernel ERF outputs.",
+    "supported_replacement_scope": "Tabular or feature-layer causal inference workflows that need transparent trimming, ERF tables, target-response lookup, spatial diagnostics, role/scale audits, and reproducible outputs.",
+    "not_replaced": "Untested ArcGIS Causal Inference parameter modes such as GRADIENT_BOOSTING, WEIGHTING, CV/MANUAL bandwidth selection, bootstrap confidence intervals, and private implementation details not specified in the public documentation."
+  },
   "arcgis_sci_parity": {
     "status": "ok",
     "input_rows": 3108,
@@ -12,23 +19,80 @@
     "upper_quantile": 38.06309620159998,
     "erf": {
       "status": "ok",
-      "range_effect": 6.84732145701021,
-      "monotonic_direction": "increasing"
+      "range_effect": 7.615507307252457,
+      "monotonic_direction": "increasing",
+      "n": 3044,
+      "n_grid": 200,
+      "bandwidth": 2.438985718451863,
+      "weight_sum": 76100.0,
+      "effective_sample_size": 118.72645391887237,
+      "response_min": 73.9085504998439,
+      "response_max": 81.8704596623947
     },
     "target_analysis": {
       "status": "ok",
       "target_response": 70.0,
-      "target_exposure": 1.831166453,
-      "target_prediction": 74.27512373046218,
-      "absolute_response_gap": 4.275123730462184,
-      "response_min": 74.27512373046218,
-      "response_max": 81.1224451874724,
+      "target_exposure": 7.6403797863869345,
+      "target_prediction": 73.9085504998439,
+      "absolute_response_gap": 3.908550499843898,
+      "response_min": 73.9085504998439,
+      "response_max": 81.8704596623947,
       "target_within_response_range": false,
       "tie_count": 1,
       "warnings": [
         "Target response is outside the ERF response range; selected nearest ERF point."
       ]
+    },
+    "algorithm": {
+      "arcgis_mode": "continuous_regression_matching_plugin_erf",
+      "matching": {
+        "ps_method": "REGRESSION",
+        "balancing_method": "MATCHING",
+        "balance_type": "MEAN",
+        "balance_threshold": 0.1,
+        "selected_num_bins": 25,
+        "selected_scale": 0.8,
+        "selected_mean_abs_weighted_correlation": 0.07203570746133495,
+        "selected_passes_threshold": true,
+        "weight_sum": 76100,
+        "nonzero_weight_n": 1753,
+        "candidate_count": 1
+      },
+      "balance": {
+        "balance_type": "MEAN",
+        "aggregate_original_correlation": 0.2307989349304083,
+        "aggregate_weighted_correlation": 0.07203570746133495,
+        "max_abs_weighted_correlation": 0.16658010868780768
+      },
+      "erf": {
+        "status": "ok",
+        "n": 3044,
+        "n_grid": 200,
+        "bandwidth": 2.438985718451863,
+        "weight_sum": 76100.0,
+        "effective_sample_size": 118.72645391887237,
+        "response_min": 73.9085504998439,
+        "response_max": 81.8704596623947
+      }
     }
+  },
+  "data_provenance": {
+    "status": "ok",
+    "file": "county_variable_provenance.csv",
+    "field_count": 19,
+    "source_groups": [
+      "ArcGIS Pro Enrich / Esri",
+      "CDC WONDER Underlying Cause of Death",
+      "County Health Rankings 2019 / ArcGIS Living Atlas",
+      "County geometry / identifiers",
+      "Esri training/demo package lineage"
+    ],
+    "unresolved_fields": [
+      "UnemployRate"
+    ],
+    "warnings": [
+      "UnemployRate has lineage-only external source evidence."
+    ]
   },
   "geo_causal_extensions": {
     "spatial_risk": {
@@ -49,6 +113,12 @@
       "fine_units": 3044,
       "outcome_units": 3044,
       "warnings": []
+    },
+    "bias_bound": {
+      "status": "unavailable",
+      "warnings": [
+        "Residual spatial bias-bound was not computed for this run."
+      ]
     }
   }
 }

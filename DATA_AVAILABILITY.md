@@ -58,6 +58,31 @@ metadata in `data/CountyData.shp.xml` identifies these sources and use terms:
   for marketing without Esri's express written consent. The metadata contact is
   `DataLibrary@esri.com`.
 
+A generated field-level source table is written by the county ArcGIS SCI Plus
+runner to
+paper/ijgis_submission_20260605/07_results/arcgis_sci_plus_county/county_variable_provenance.csv.
+It records each analysis field, role, display label, source group, upstream field
+or table, lineage evidence, and source-confidence flag; the same summary is
+also embedded in `arcgis_sci_plus_report.json` under `data_provenance`. The current field-level
+mapping is:
+
+| Field | Role | Source group | Upstream field or table | Confidence |
+| --- | --- | --- | --- | --- |
+| SocialAssoc | exposure | County Health Rankings 2019 / ArcGIS Living Atlas | 2019 County Health Rankings via ArcGIS Living Atlas | metadata explicit, grouped |
+| AveAgeDeath | outcome | CDC WONDER Underlying Cause of Death | CountyAveAgeOfDeath.AveAgeDeath | metadata explicit |
+| UnemployRate | confounder | Esri training/demo package lineage | CountyDataUnemployment.industry_UNEMPRT_CY | lineage only; external source unresolved |
+| pHHinPoverty | confounder | ArcGIS Pro Enrich / Esri | households_ACSHHBPOV_P | metadata explicit lineage |
+| pNoHealthInsur | confounder | ArcGIS Pro Enrich / Esri | CountyDataEnrich1.pNoHealthInsurance | metadata explicit lineage |
+| MentalHealth | confounder | County Health Rankings 2019 / ArcGIS Living Atlas | v042_rawvalue | metadata explicit lineage |
+| pAdultSmoking | confounder | County Health Rankings 2019 / ArcGIS Living Atlas | v009_rawvalue | metadata explicit lineage |
+| pAdultObesity | confounder | County Health Rankings 2019 / ArcGIS Living Atlas | v011_rawvalue | metadata explicit lineage |
+| FastFood | confounder | ArcGIS Pro Enrich / Esri | restaurants_MP29044a_B_P | metadata explicit lineage |
+| pInsufficientSleep | confounder | County Health Rankings 2019 / ArcGIS Living Atlas | v143_rawvalue | metadata explicit lineage |
+| pAlcohol | confounder | CDC WONDER Underlying Cause of Death | AlcoholDeathsByCounty.pAlcohol | metadata explicit |
+| pSuicideDeaths | confounder | CDC WONDER Underlying Cause of Death | SuicidesByCounty.pSuicideDeaths | metadata explicit |
+| AirPollution | confounder | County Health Rankings 2019 / ArcGIS Living Atlas | 2019 County Health Rankings via ArcGIS Living Atlas | metadata explicit, grouped |
+| FIPS, CountyCode, County, STATE_NAME, Shape_Length, Shape_Area | identifier, group, or spatial context | County geometry / identifiers | Esri county layer / USA Counties / geometry | metadata explicit |
+
 The author-provided local PowerPoint acknowledgement slide for the
 social-capital/longevity example also lists:
 

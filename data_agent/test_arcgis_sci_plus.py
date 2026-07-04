@@ -2,6 +2,7 @@ import pytest
 import pandas as pd
 
 from data_agent.scca.arcgis_sci_plus import (
+    arcgis_documented_causal_analysis,
     arcgis_quantile_trim,
     build_arcgis_sci_plus_report,
     solve_target_exposure,
@@ -158,6 +159,46 @@ def test_solve_target_exposure_breaks_ties_by_smallest_exposure_with_warning():
     assert any("tie" in warning for warning in result["warnings"])
 
 
+def test_arcgis_documented_causal_analysis_builds_matching_erf_and_balance():
+    frame = pd.DataFrame(
+        {
+            "exposure": [float(i) for i in range(3, 63)],
+            "outcome": [70.0 + 0.2 * i + 0.03 * (i % 5) for i in range(3, 63)],
+            "x1": [0.5 * i + (i % 4) for i in range(3, 63)],
+            "x2": [10.0 + (i % 7) for i in range(3, 63)],
+        }
+    )
+
+    result = arcgis_documented_causal_analysis(
+        frame,
+        exposure="exposure",
+        outcome="outcome",
+        confounders=["x1", "x2"],
+        balance_threshold=0.1,
+    )
+
+    assert result["status"] == "ok"
+    assert result["matching_summary"]["ps_method"] == "REGRESSION"
+    assert result["matching_summary"]["balancing_method"] == "MATCHING"
+    assert result["matching_summary"]["selected_num_bins"] >= 2
+    assert result["matching_summary"]["selected_scale"] in {
+        0.0,
+        0.2,
+        0.4,
+        0.6,
+        0.8,
+        1.0,
+    }
+    assert result["matching_summary"]["weight_sum"] == len(frame) * result["matching_summary"]["selected_num_bins"]
+    assert result["erf_summary"]["n_grid"] == 200
+    assert len(result["erf_curve"]) == 200
+    assert result["balance_summary"]["aggregate_weighted_correlation"] >= 0.0
+    assert {
+        "variable",
+        "original_correlation",
+        "weighted_correlation",
+    }.issubset(result["balance_table"].columns)
+
 def test_build_arcgis_sci_plus_report_combines_arcgis_and_extra_risk():
     report = build_arcgis_sci_plus_report(
         study="county_social_capital_longevity_validation",
@@ -167,10 +208,31 @@ def test_build_arcgis_sci_plus_report_combines_arcgis_and_extra_risk():
         spatial_risk={"residual_moran": 0.313, "neighbor_exposure_p": 0.001},
         role_risk={"post_treatment_warnings": []},
         scale_risk={"scale_status": "same_support"},
+        bias_bound={
+            "status": "ok",
+            "bias_bound": 0.08,
+            "bias_bound_ratio": 0.12,
+        },
+        data_provenance={
+            "status": "ok",
+            "file": "county_variable_provenance.csv",
+            "field_count": 18,
+            "unresolved_fields": ["UnemployRate"],
+        },
     )
 
     assert report["study"] == "county_social_capital_longevity_validation"
     assert report["arcgis_sci_parity"]["trimmed_rows"] == 3044
     assert report["geo_causal_extensions"]["spatial_risk"]["residual_moran"] == 0.313
+    assert report["geo_causal_extensions"]["bias_bound"]["bias_bound"] == 0.08
+    assert report["data_provenance"]["file"] == "county_variable_provenance.csv"
+    assert report["data_provenance"]["unresolved_fields"] == ["UnemployRate"]
+    assert report["replacement_assessment"]["arcgis_platform_replacement"] is False
+    assert report["replacement_assessment"]["causal_inference_task_replacement"] == "tested_algorithmic_replacement"
+    assert report["replacement_assessment"]["supported_arcgis_mode"] == (
+        "Continuous exposure/outcome with REGRESSION propensity scores, "
+        "MATCHING balance, ArcGIS-style quantile trimming, and weighted "
+        "kernel ERF outputs."
+    )
     assert "ArcGIS SCI Plus" in report["claim"]
-    assert "organizes ArcGIS SCI-style" in report["claim"]
+    assert "implements the documented ArcGIS continuous-exposure" in report["claim"]

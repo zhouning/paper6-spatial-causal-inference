@@ -1,0 +1,2 @@
+num_bins,scale,aggregate_weighted_correlation,passes_threshold,weight_sum,nonzero_weight_n
+25,0.8,0.07203570746133495,True,76100.0,1753

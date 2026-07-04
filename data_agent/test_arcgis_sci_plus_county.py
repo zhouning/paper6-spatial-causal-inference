@@ -43,6 +43,7 @@ def test_run_arcgis_sci_plus_county_writes_manifest(tmp_path):
 
     assert manifest["study"] == "county_social_capital_longevity_validation"
     assert manifest["arcgis_sci_plus_report"] == "arcgis_sci_plus_report.json"
+    assert manifest["source_workbook"] == workbook.name
     assert manifest["sheet_name"] == "CountyData"
     assert manifest["input_rows"] == 100
     assert manifest["input_columns"] == 17
@@ -53,6 +54,30 @@ def test_run_arcgis_sci_plus_county_writes_manifest(tmp_path):
         (output_dir / "arcgis_sci_plus_report.json").read_text(encoding="utf-8")
     )
     assert report["arcgis_sci_parity"]["removed_rows"] == 2
+    assert report["arcgis_sci_parity"]["algorithm"]["arcgis_mode"] == "continuous_regression_matching_plugin_erf"
+    assert report["arcgis_sci_parity"]["algorithm"]["matching"]["ps_method"] == "REGRESSION"
+    assert report["arcgis_sci_parity"]["erf"]["n_grid"] == 200
+    assert "arcgis_documented_matching_grid" in manifest["files"]
+    assert (output_dir / manifest["files"]["arcgis_documented_matching_grid"]).exists()
+    assert (output_dir / manifest["files"]["arcgis_documented_balance"]).exists()
+    assert (output_dir / manifest["files"]["arcgis_documented_analysis"]).exists()
+    assert "county_variable_provenance" in manifest["files"]
+    provenance = pd.read_csv(output_dir / manifest["files"]["county_variable_provenance"])
+    assert set(provenance["field"]) >= {
+        "SocialAssoc",
+        "AveAgeDeath",
+        "FastFood",
+        "UnemployRate",
+    }
+    source_by_field = provenance.set_index("field")["source_group"].to_dict()
+    assert source_by_field["SocialAssoc"] == "County Health Rankings 2019 / ArcGIS Living Atlas"
+    assert source_by_field["AveAgeDeath"] == "CDC WONDER Underlying Cause of Death"
+    assert source_by_field["FastFood"] == "ArcGIS Pro Enrich / Esri"
+    assert "lineage_only" in provenance.set_index("field").loc["UnemployRate", "source_confidence"]
+    assert report["data_provenance"]["status"] == "ok"
+    assert report["data_provenance"]["file"] == "county_variable_provenance.csv"
+    assert report["data_provenance"]["field_count"] >= 17
+    assert report["data_provenance"]["unresolved_fields"] == ["UnemployRate"]
     assert "geo_causal_extensions" in report
     spatial_risk = report["geo_causal_extensions"]["spatial_risk"]
     assert spatial_risk["status"] == "unavailable"

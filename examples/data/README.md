@@ -54,6 +54,14 @@ cause-of-death variables are derived from CDC WONDER Underlying Cause of Death
 data. Smoking, obesity, physical inactivity, social capital, and air pollution
 variables are from 2019 County Health Rankings through ArcGIS Living Atlas.
 
+The county ArcGIS SCI Plus runner also writes a field-level provenance table at
+paper/ijgis_submission_20260605/07_results/arcgis_sci_plus_county/county_variable_provenance.csv.
+That table maps each analysis field to its role, upstream field or table,
+lineage evidence, and confidence flag; the county report also embeds the same
+summary under `data_provenance`. UnemployRate is currently marked as lineage-only
+because the local metadata identifies the joined table and field but not a
+separate external producer citation.
+
 Use is governed by the Esri Master License and is restricted to training,
 demonstration, and educational purposes. The metadata states that the data
 cannot be sold or used for marketing without Esri's express written consent.

@@ -1,18 +1,24 @@
 {
   "study": "county_social_capital_longevity_validation",
   "status": "ok",
-  "source_workbook": "D:\\tmp\\paper6_county_social_capital.xlsx",
+  "source_workbook": "paper6_county_social_capital.xlsx",
   "source_sha256": "07766ff7e32899b538bba6b1b57eff351b67ad371a7db519895d177a3f871941",
   "sheet_name": "CountyData",
   "input_rows": 3108,
   "input_columns": 20,
-  "generated_at_utc": "2026-07-02T13:08:29.449704Z",
+  "generated_at_utc": "2026-07-04T09:20:03.245233Z",
   "arcgis_sci_plus_report": "arcgis_sci_plus_report.json",
   "files": {
     "manifest": "manifest.json",
     "arcgis_sci_plus_report": "arcgis_sci_plus_report.json",
     "effect_estimates": "effect_estimates.csv",
     "erf_curve": "erf_curve.csv",
-    "scale_summary": "scale_summary.json"
+    "scale_summary": "scale_summary.json",
+    "arcgis_documented_analysis": "arcgis_documented_analysis.csv",
+    "arcgis_documented_matching_grid": "arcgis_documented_matching_grid.csv",
+    "arcgis_documented_balance": "arcgis_documented_balance.csv",
+    "arcgis_documented_erf_curve": "arcgis_documented_erf_curve.csv",
+    "county_variable_provenance": "county_variable_provenance.csv",
+    "arcgis_native_parity_metrics": "arcgis_native_parity_metrics.json"
   }
 }
