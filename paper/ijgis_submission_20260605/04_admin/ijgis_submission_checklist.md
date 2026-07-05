@@ -4,6 +4,7 @@
 
 - [x] Main LaTeX source is in the clean IJGIS submission workspace.
 - [x] All currently referenced PDF figures are in `01_manuscript/figures/`.
+- [x] The same referenced PDF figures are mirrored in top-level `figures/` for separate figure upload.
 - [x] Cover letter draft is ready for editor-facing submission text.
 - [x] Title page and declarations draft are aligned with the main manuscript.
 - [x] Non-anonymized manuscript compiles from `01_manuscript/` into `06_build/`.
@@ -34,7 +35,7 @@
 
 - Manuscript, non-anonymized route: use `01_manuscript/01_manuscript_ijgis.tex` and `06_build/01_manuscript_ijgis.pdf`.
 - Manuscript, double-anonymous route: use `01_manuscript/01_manuscript_ijgis_anonymous.tex` and `06_build/01_manuscript_ijgis_anonymous.pdf`; keep title/declarations separate for editor-only form fields.
-- Figures: embedded in manuscript; upload separately only if the submission system asks.
+- Figures: embedded in the compiled manuscript; if the submission system asks for separate figure files, upload the PDF files from top-level `figures/`.
 - Supplement: do not upload the placeholder supplement plan. Upload `03_supplementary/supplementary_proofs_and_outputs.pdf` only if IJGIS requests supplementary material and the contents are final-reviewed.
 - Cover letter: use `02_cover_letter/cover_letter_ijgis_draft.md`.
 - Title/declarations: use `04_admin/title_page_declarations.md` as the source for form fields.

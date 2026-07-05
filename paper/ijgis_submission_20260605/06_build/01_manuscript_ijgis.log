@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.4.25)  5 JUL 2026 15:36
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.4.25)  5 JUL 2026 16:20
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -689,11 +689,11 @@ m-par-i-son,
 
 {d:/texlive/2026/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2] [3]
 [4]
-<./figures/fig_scca_dag.pdf, id=334, 428.92245pt x 262.7766pt>
+<./figures/fig_scca_dag.pdf, id=334, 549.25201pt x 357.52133pt>
 File: ./figures/fig_scca_dag.pdf Graphic file (type pdf)
 <use ./figures/fig_scca_dag.pdf>
 Package pdftex.def Info: ./figures/fig_scca_dag.pdf  used on input line 118.
-(pdftex.def)             Requested size: 310.4979pt x 190.22946pt.
+(pdftex.def)             Requested size: 310.4979pt x 202.10902pt.
  [5 <./figures/fig_scca_dag.pdf>] [6] [7] [8] [9] [10] [11]
 <./figures/fig_chongqing_loveplot.pdf, id=444, 474.05733pt x 258.04593pt>
 File: ./figures/fig_chongqing_loveplot.pdf Graphic file (type pdf)
@@ -812,7 +812,7 @@ fonts/type1/public/amsfonts/cm/cmsy9.pfb><d:/texlive/2026/texmf-dist/fonts/type
 amsfonts/cm/cmti9.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/c
 m/cmtt10.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt8.p
 fb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm7.pfb>
-Output written on ../06_build/01_manuscript_ijgis.pdf (24 pages, 572665 bytes).
+Output written on ../06_build/01_manuscript_ijgis.pdf (24 pages, 574898 bytes).
 
 PDF statistics:
  746 PDF objects out of 1000 (max. 8388607)

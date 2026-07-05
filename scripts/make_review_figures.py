@@ -16,9 +16,12 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-RES = ROOT / "paper" / "ijgis_submission_20260605" / "07_results"
-FIG = ROOT / "paper" / "ijgis_submission_20260605" / "01_manuscript" / "figures"
-FIG.mkdir(parents=True, exist_ok=True)
+PACKAGE = ROOT / "paper" / "ijgis_submission_20260605"
+RES = PACKAGE / "07_results"
+FIG = PACKAGE / "01_manuscript" / "figures"
+STANDALONE_FIG = PACKAGE / "figures"
+for _fig_dir in (FIG, STANDALONE_FIG):
+    _fig_dir.mkdir(parents=True, exist_ok=True)
 
 BLUE = "#2f5f8f"
 RED = "#b85b5b"
@@ -49,28 +52,29 @@ plt.rcParams.update({
 
 
 def save_pub(fig: plt.Figure, stem: str) -> None:
-    fig.savefig(FIG / f"{stem}.pdf", bbox_inches="tight")
-    fig.savefig(FIG / f"{stem}.png", bbox_inches="tight", dpi=300)
+    for fig_dir in (FIG, STANDALONE_FIG):
+        fig.savefig(fig_dir / f"{stem}.pdf", bbox_inches="tight")
+        fig.savefig(fig_dir / f"{stem}.png", bbox_inches="tight", dpi=300)
     plt.close(fig)
 
 
 def draw_dag() -> None:
     """Figure 1: causal-role logic without crossing arrows."""
-    fig, ax = plt.subplots(figsize=(7.4, 4.2))
+    fig, ax = plt.subplots(figsize=(7.5, 4.85))
     ax.set_xlim(0, 10)
-    ax.set_ylim(0, 6)
+    ax.set_ylim(0, 6.2)
     ax.axis("off")
 
     nodes = {
-        "context": (2.0, 4.6, "Observed spatial\ncontext C", "#fff3c4"),
-        "latent": (5.6, 4.8, "Latent spatial\nprocess U", "#f6d4d4"),
-        "treat": (2.6, 2.4, "Treatment T\n(high-rise share)", "#d9ead3"),
-        "outcome": (7.2, 2.4, "Outcome Y\n(summer LST)", "#d9ead3"),
-        "mediator": (5.0, 0.9, "Same-period vegetation\npossible mediator", "#ead8ed"),
+        "context": (1.7, 4.75, 2.25, 1.05, "Observed spatial\ncontext C", "#fff3c4"),
+        "latent": (5.4, 4.9, 2.2, 1.05, "Latent spatial\nprocess U", "#f6d4d4"),
+        "treat": (2.35, 2.65, 2.2, 1.05, "Treatment T\nhigh-rise share", "#d9ead3"),
+        "outcome": (7.55, 2.65, 2.15, 1.05, "Outcome Y\nsummer LST", "#d9ead3"),
+        "mediator": (4.95, 1.08, 2.65, 1.28, "Same-period\nvegetation M\ncandidate mediator", "#ead8ed"),
     }
 
-    def node(name: str, width: float = 1.9, height: float = 0.78) -> None:
-        x, y, label, color = nodes[name]
+    def node(name: str) -> None:
+        x, y, width, height, label, color = nodes[name]
         patch = FancyBboxPatch(
             (x - width / 2, y - height / 2),
             width,
@@ -81,10 +85,22 @@ def draw_dag() -> None:
             linewidth=0.8,
         )
         ax.add_patch(patch)
-        ax.text(x, y, label, ha="center", va="center", fontsize=8.2, color=TEXT)
+        ax.text(x, y, label, ha="center", va="center", fontsize=7.5, color=TEXT, linespacing=1.35)
 
     for name in nodes:
         node(name)
+
+    def anchor(name: str, side: str, offset: float = 0.0) -> tuple[float, float]:
+        x, y, width, height, *_ = nodes[name]
+        if side == "top":
+            return x + offset, y + height / 2
+        if side == "bottom":
+            return x + offset, y - height / 2
+        if side == "left":
+            return x - width / 2, y + offset
+        if side == "right":
+            return x + width / 2, y + offset
+        raise ValueError(f"Unknown anchor side: {side}")
 
     def arrow(start, end, *, color="#333333", dashed=False, rad=0.0) -> None:
         patch = FancyArrowPatch(
@@ -101,19 +117,23 @@ def draw_dag() -> None:
         )
         ax.add_patch(patch)
 
-    arrow((2.0, 4.2), (2.6, 2.8), color=GOLD)
-    arrow((2.6, 4.35), (7.0, 2.8), color=GOLD, rad=-0.12)
-    arrow((5.25, 4.45), (3.0, 2.8), color=GREY, dashed=True, rad=0.12)
-    arrow((5.95, 4.45), (7.0, 2.8), color=GREY, dashed=True, rad=-0.08)
-    arrow((3.45, 2.4), (6.35, 2.4), color="#333333")
-    arrow((3.2, 2.0), (4.45, 1.25), color=PURPLE, rad=0.08)
-    arrow((5.55, 1.25), (6.75, 2.0), color=PURPLE, rad=0.08)
+    arrow(anchor("context", "bottom", -0.05), anchor("treat", "top", -0.1), color=GOLD)
+    arrow(anchor("context", "right", -0.06), anchor("outcome", "top", -0.38), color=GOLD, rad=-0.20)
+    arrow(anchor("latent", "left", -0.20), anchor("treat", "top", 0.35), color=GREY, dashed=True, rad=0.13)
+    arrow(anchor("latent", "right", -0.22), anchor("outcome", "top", -0.02), color=GREY, dashed=True, rad=-0.08)
+    arrow(anchor("treat", "right"), anchor("outcome", "left"), color="#333333")
+    arrow(anchor("treat", "bottom", 0.38), anchor("mediator", "top", -0.65), color=PURPLE, rad=0.08)
+    arrow(anchor("mediator", "top", 0.65), anchor("outcome", "bottom", -0.42), color=PURPLE, rad=0.08)
 
-    ax.text(0.3, 0.22,
-            "Solid arrows: observed causal or candidate adjustment paths. Dashed arrows: unobserved spatial process.\n"
-            "Vegetation is drawn below the treatment because same-period surfaces may be mediators, not automatic controls.",
-            fontsize=7.2, color="#444444")
+    ax.text(
+        0.4,
+        0.18,
+        "Solid arrows: observed or candidate paths. Dashed arrows: unobserved spatial process.",
+        fontsize=7.0,
+        color="#444444",
+    )
     ax.set_title("SCCA candidate adjustment DAG for the Chongqing UHI case", pad=8)
+    fig.tight_layout(pad=0.45)
     save_pub(fig, "fig_scca_dag")
 
 
@@ -325,7 +345,7 @@ def main() -> None:
     draw_threshold_placebo()
     draw_residual_moran()
     draw_calibration_roc()
-    print("figures written to", FIG)
+    print("figures written to", FIG, "and", STANDALONE_FIG)
 
 
 if __name__ == "__main__":

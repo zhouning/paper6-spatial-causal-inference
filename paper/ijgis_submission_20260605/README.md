@@ -10,7 +10,8 @@ Created: 2026-06-05
 
 ## Folder Layout
 
-- `01_manuscript/` - Main LaTeX manuscript variants and all figures required by the current source.
+- `01_manuscript/` - Main LaTeX manuscript variants and compile-time figure copies required by the current source.
+- `figures/` - Standalone PDF/PNG figure files for journal systems that request separate figure uploads.
 - `02_cover_letter/` - IJGIS cover letter draft.
 - `03_supplementary/` - Supplementary-material plan. Populate this before upload if the revision adds supplement content.
 - `04_admin/` - Title page, declarations, and submission checklist.
@@ -21,7 +22,8 @@ Created: 2026-06-05
 
 - Non-anonymized manuscript source: `01_manuscript/01_manuscript_ijgis.tex`
 - Double-anonymous manuscript source: `01_manuscript/01_manuscript_ijgis_anonymous.tex`
-- Manuscript figures: `01_manuscript/figures/*.pdf`
+- Manuscript figure copies for LaTeX: `01_manuscript/figures/*.pdf`
+- Standalone upload figures: `figures/*.pdf` (`figures/*.png` copies are also included for visual checking)
 - Cover letter draft: `02_cover_letter/cover_letter_ijgis_draft.md`
 - Title/declarations draft: `04_admin/title_page_declarations.md`
 - Submission checklist: `04_admin/ijgis_submission_checklist.md`
