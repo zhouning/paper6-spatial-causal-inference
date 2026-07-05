@@ -9,6 +9,8 @@
 - [x] Title page and declarations draft are aligned with the main manuscript.
 - [x] Non-anonymized manuscript compiles from `01_manuscript/` into `06_build/`.
 - [x] Double-anonymous manuscript variant compiles from `01_manuscript/` into `06_build/`.
+- [x] Conservative 8,000-word readiness audit completed on 2026-07-05, treating the remembered IJGIS main-text-plus-references limit as binding until the live portal confirms exact wording: LaTeX source counts are 5,833 words excluding figure/table environments and 7,490 including them; `pdftotext` full-PDF token counts are 7,933 non-anonymous and 7,927 anonymous.
+- [x] Reference audit completed on 2026-07-05: both manuscript variants contain 38 `\bibitem` entries, all 38 are cited, no cited key is missing, Crossref/arXiv/Esri checks found no metadata mismatches, and book/manual-only items were retained after manual review.
 - [x] Non-anonymized data and code availability statement includes the public repository URL and restricted-data boundary.
 - [x] Double-anonymous manuscript variant withholds the public GitHub URL and author-identifying repository metadata.
 - [x] Funding, competing-interest, and AI-use statements are present in the main manuscript and admin file.

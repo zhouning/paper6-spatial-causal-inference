@@ -36,9 +36,9 @@
 \begin{abstract}
 Geographic observational studies often combine spatially structured treatments, outcomes, and environmental context. Standard causal estimators can be used in these studies, but their credibility depends on whether spatial context is a defensible adjustment source and on whether residual spatial structure is reported rather than hidden.
 
-We introduce Spatial Context Causal Adjustment (SCCA), a diagnostic audit workflow for constructing and diagnosing spatial-context adjustment sets. SCCA is not a new identification theorem. It standardises candidate context construction, adjustment-set comparison, common-support checks, post-adjustment balance, spatial block bootstrap, threshold placebo tests, residual spatial autocorrelation, spatial-lag and graph sensitivity, variable-role audits, residual spatial bias-bound reporting when graph inputs are available, and rule-based evidence grades. Residual Moran's $I$ and the bias-bound diagnostic are treated as warning boundaries that trigger evidence downgrading, not as identifying statistics. The default residual-Moran material threshold is calibrated in a 2{,}880-fit controlled design spanning SAR, CAR, distance-kernel, and non-stationary latent spatial processes.
+We introduce Spatial Context Causal Adjustment (SCCA), a diagnostic audit workflow for spatial-context adjustment sets. SCCA is not a new identification theorem. It standardises context construction, adjustment-set comparison, support, balance, spatial bootstrap, threshold placebos, residual spatial autocorrelation, graph sensitivity, variable-role audits, residual spatial bias-bound reporting where graph inputs exist, and rule-based evidence grades. Residual Moran's $I$ and the bias-bound diagnostic are warning boundaries, not identifying statistics. The default residual-Moran material threshold is calibrated in a 2{,}880-fit controlled design spanning SAR, CAR, distance-kernel, and non-stationary latent spatial processes.
 
-We evaluate SCCA with synthetic stress tests, a Chongqing urban heat case, a county GIS reproducibility check, and a synthetic positive control. In Chongqing, the treatment is building-level high-rise status but the outcome is MODIS summer LST on a $\sim$1\,km grid. The primary empirical quantity is therefore an outcome-scale pixel model: the slope relating pixel-mean high-rise share to pixel-mean LST was 0.546$^\circ$C per unit share (95\% CI [0.359, 0.734]), not a building-level ATT. The building-level matching ATT was 0.303$^\circ$C (95\% CI [0.220, 0.383]) and is retained only as a diagnostic approximation. Clustering on the shared outcome pixel widened the building-level OLS standard error by 41.5\%. The preferred pre-treatment matching design slightly missed the strict balance rule (maximum post-match SMD = 0.104), and the matched residual Moran's $I = 0.112$ ($p=0.01$) crossed the default 0.10 material threshold by 0.012. The grade is therefore bounded support under the default rule and remains a residual-spatial warning under higher thresholds. The calibration also shows that this warning is process-dependent: at $t=0.10$, true-positive rates are 0.194 for CAR, 0.529 for SAR, 0.994 for distance-kernel, and 1.000 for non-stationary latent fields. The county dataset is retained as a direct ArcGIS Causal Inference algorithm comparison and spatial-diagnostic check rather than a substantive validation case, and a synthetic positive control is graded core support.
+We evaluate SCCA with synthetic stress tests, a Chongqing urban heat case, a county GIS reproducibility check, and a synthetic positive control. In Chongqing, the treatment is building-level high-rise status but the outcome is MODIS summer LST on a $\sim$1\,km grid. The primary empirical quantity is therefore an outcome-scale pixel model: the slope relating pixel-mean high-rise share to pixel-mean LST was 0.546$^\circ$C per unit share (95\% CI [0.359, 0.734]), not a building-level ATT. The building-level matching ATT was 0.303$^\circ$C (95\% CI [0.220, 0.383]) and is retained only as a diagnostic approximation. Clustering on the shared outcome pixel widened the building-level OLS standard error by 41.5\%. The preferred pre-treatment matching design slightly missed the strict balance rule (maximum post-match SMD = 0.104), and the matched residual Moran's $I = 0.112$ ($p=0.01$) crossed the default 0.10 material threshold by 0.012. The grade is therefore bounded support under the default rule and remains a residual-spatial warning under higher thresholds. The calibration also shows that this warning is process-dependent: at $t=0.10$, true-positive rates are 0.194 for CAR, 0.529 for SAR, 0.994 for distance-kernel, and 1.000 for non-stationary latent fields. The county dataset provides ArcGIS Causal Inference algorithm comparison and spatial diagnostics rather than substantive validation; a synthetic positive control is graded core support.
 
 SCCA contributes a reproducible protocol for auditing evidence in geographic causal analysis. It does not remove unmeasured spatial confounding, solve interference, or make restricted data fully reproducible; it makes adjustment choices, spatial diagnostics, and claim boundaries inspectable across GIS-facing workflows.
 \end{abstract}
@@ -572,16 +572,16 @@ The Chongqing interpretation is therefore bounded by five visible limits: residu
 \label{sec:conclusions}
 % ============================================================================
 
-We presented Spatial Context Causal Adjustment, an open diagnostic workflow for geographic observational causal studies. SCCA treats spatial context as a candidate adjustment source and evaluates variants through support, balance, robustness, spatial diagnostics, variable-role audits, and reproducible evidence-grade rules. A 2{,}880-fit calibration showed that the residual-Moran downgrade is useful but process-dependent. Across synthetic stress tests, Chongqing, and a county notebook/GIS check, SCCA distinguished useful estimates from bounded and fragile designs.
+We presented Spatial Context Causal Adjustment, an open diagnostic workflow for geographic observational causal studies. SCCA evaluates spatial-context variants through support, balance, robustness, spatial diagnostics, variable-role audits, and evidence-grade rules. A 2{,}880-fit calibration showed that the residual-Moran downgrade is useful but process-dependent; the synthetic, Chongqing, and county checks distinguished useful estimates from bounded or fragile designs.
 
-The main empirical result is deliberately bounded. In Chongqing, the outcome-scale pixel model estimated a positive high-rise-share slope for summer LST (0.546$^\circ$C per unit share, 95\% CI [0.359, 0.734]); building-level matching (0.303$^\circ$C) is diagnostic because treatment is finer than MODIS outcome support. The preferred set slightly missed balance (maximum SMD = 0.104), residual Moran's $I = 0.112$ crossed the default rule by 0.012, and Sentinel surfaces were treated as possible post-treatment variables. The synthetic benchmark exposed estimator fragility, the positive control was certified as core support, and the county run showed documented ArcGIS Causal Inference algorithm parity with target-support and spatial downgrading. SCCA's value is not that it removes causal assumptions, but that it makes assumptions, diagnostics, and claim boundaries visible in GIS-facing workflows.
+The main empirical result is deliberately bounded. In Chongqing, the outcome-scale pixel model estimated a positive high-rise-share slope for summer LST (0.546$^\circ$C per unit share, 95\% CI [0.359, 0.734]); building-level matching (0.303$^\circ$C) is diagnostic because treatment is finer than MODIS support. The preferred set slightly missed balance, residual Moran's $I = 0.112$ crossed the default rule, and Sentinel surfaces may be post-treatment. SCCA makes assumptions, diagnostics, and claim boundaries visible in GIS-facing workflows.
 
 
 % ============================================================================
 \section*{Declaration of Competing Interest}
 % ============================================================================
 
-The author declares no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.
+The author declares no competing financial interests or personal relationships.
 
 \section*{Acknowledgements}
 % ============================================================================
@@ -591,19 +591,19 @@ The author thanks colleagues for early discussions of the SCCA workflow.
 \section*{Funding}
 % ============================================================================
 
-No external funding was used to support this work.
+No external funding was used.
 
 \section*{AI Use Statement}
 % ============================================================================
 
-The author used AI-assisted writing and coding tools for language editing, code drafting, internal consistency checks, and reviewer-style pre-submission audit. All analyses, generated outputs, interpretations, and final manuscript text were checked by the author, who remains responsible for the content of this work.
+The author used AI-assisted tools for language editing, code drafting, consistency checks, and pre-submission audit. The author checked all analyses, outputs, interpretations, and final text.
 
 \section*{Data and Code Availability}
 % ============================================================================
 
-For peer review, the code, manuscript source, synthetic generators, generated result tables, figures, diagnostic reports, and redistributable public/example data are available in the anonymized reproduction repository: \url{https://anonymous.4open.science/r/spatial-causal-inference-FDFE}. The repository supports exact reruns for the synthetic and county/example analyses and structural Chongqing reruns from approved local inputs. Raw Chongqing geospatial inputs and the building-level UHI sample are not publicly redistributed because they include precise geometries or coordinates, floor attributes, and derived environmental variables. The review repository includes aggregate-level Chongqing audit artifacts, including balance tables, diagnostic summaries, and matching sensitivity outputs, that do not redistribute raw geometries or building-level coordinates. The repository therefore does not claim full public reconstruction of the restricted Chongqing result. After peer review, the anonymized repository can be linked to the public archival repository if required by the journal.
+For peer review, code, manuscript source, generators, tables, figures, diagnostics, and redistributable public/example data are in the anonymized repository: \url{https://anonymous.4open.science/r/spatial-causal-inference-FDFE}. It supports exact synthetic and county/example reruns and structural Chongqing reruns from approved restricted inputs. Raw Chongqing geospatial inputs and the building-level UHI sample are not redistributed because they include precise geometries or coordinates, floor attributes, and derived environmental variables. The repository instead provides aggregate balance, diagnostic, and matching-sensitivity artifacts and does not claim full public reconstruction of the restricted Chongqing result. After peer review, it can be linked to the public archival repository if required.
 
-The county social-capital case uses third-party Esri training/demo data rather than author-generated data. Its metadata credit Esri; the U.S. Census Bureau; NOAA/NOS/NGS; CDC WONDER/NCHS; and 2019 County Health Rankings/Living Atlas data from the University of Wisconsin Population Health Institute and the Robert Wood Johnson Foundation. The generated field-level source table is summarized in the machine-readable SCI Plus \texttt{data\_provenance} block; one unemployment covariate remains marked as lineage-only where the package metadata gives the joined table and field but not a separate external citation. Use of the county example is governed by the Esri Master License and restricted to training, demonstration, and educational purposes. Revised evidence synthesis, rule tables, variable-role audit, estimand/sensitivity audit, method comparison, and public result summaries are included in the reproduction package.
+The county social-capital case uses third-party Esri training/demo data credited in metadata to Esri, the U.S. Census Bureau, NOAA/NOS/NGS, CDC WONDER/NCHS, and 2019 County Health Rankings/Living Atlas. Field-level provenance is in the SCI Plus \texttt{data\_provenance} block; one unemployment covariate remains lineage-only. Use follows the Esri Master License and is restricted to training, demonstration, and educational purposes. Evidence synthesis, rule tables, audits, method comparison, and public summaries are included.
 
 
 % ============================================================================
@@ -634,7 +634,7 @@ Athey, S. and Imbens, G.W., 2019. Machine Learning Methods That Economists Shoul
 Austin, P.C., 2009. Balance diagnostics for comparing the distribution of baseline covariates between treatment groups in propensity-score matched samples. Statistics in Medicine 28(25), 3083--3107.
 
 \bibitem[Brunsdon, 2016]{brunsdon2016quantitative}
-Brunsdon, C., 2016. Quantitative methods I: Reproducible research and quantitative geography. Progress in Human Geography 40(5), 687--696.
+Brunsdon, C., 2016. Quantitative methods I. Progress in Human Geography 40(5), 687--696. doi:10.1177/0309132515599625.
 
 \bibitem[Chernozhukov et~al., 2018]{chernozhukov2018dml}
 Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W. and Robins, J., 2018. Double/debiased machine learning for treatment and structural parameters. Econometrics Journal 21(1), C1--C68.
@@ -675,7 +675,7 @@ Imbens, G.W. and Rubin, D.B., 2015. Causal Inference for Statistics, Social, and
 Khan, K. and Calder, C.A., 2022. Restricted Spatial Regression Methods: Implications for Inference. Journal of the American Statistical Association 117(537), 482--494. doi:10.1080/01621459.2020.1788949.
 
 \bibitem[Konkol and Kray, 2019]{konkol2019computational}
-Konkol, M. and Kray, C., 2019. In-depth examination of spatiotemporal figures in open-access journals. International Journal of Digital Earth 12(4), 419--439.
+Konkol, M. and Kray, C., 2019. In-depth examination of spatiotemporal figures in open reproducible research. Cartography and Geographic Information Science 46(5), 412--427. doi:10.1080/15230406.2018.1512421.
 
 \bibitem[LeSage and Pace, 2009]{lesage2009introduction}
 LeSage, J.P. and Pace, R.K., 2009. Introduction to Spatial Econometrics. CRC Press.
@@ -719,8 +719,8 @@ VanderWeele, T.J., 2015. Explanation in Causal Inference: Methods for Mediation 
 \bibitem[Verbitsky-Savitz and Raudenbush, 2012]{verbitskysavitz2012}
 Verbitsky-Savitz, N. and Raudenbush, S.W., 2012. Causal inference under interference in spatial settings: A case study evaluating community policing program in Chicago. Epidemiologic Methods 1(1), 107--130.
 
-\bibitem[Wu et~al., 2022]{wu2022matching}
-Wu, X., Mealli, F., Kioumourtzoglou, M.-A., Dominici, F. and Braun, D., 2022. Matching on Generalized Propensity Scores with Continuous Exposures. Journal of the American Statistical Association. doi:10.1080/01621459.2022.2144737.
+\bibitem[Wu et~al., 2024]{wu2022matching}
+Wu, X., Mealli, F., Kioumourtzoglou, M.-A., Dominici, F. and Braun, D., 2024. Matching on Generalized Propensity Scores with Continuous Exposures. Journal of the American Statistical Association 119(545), 757--772. doi:10.1080/01621459.2022.2144737.
 \bibitem[Zhao et~al., 2020]{zhao2020nonbinary}
 Zhao, S., van Dyk, D.A. and Imai, K., 2020. Propensity score-based methods for causal inference in observational studies with non-binary treatments. Statistical Methods in Medical Research 29(3), 709--727. doi:10.1177/0962280219888745.
 
