@@ -155,7 +155,16 @@ def draw_loveplot() -> None:
     ax.scatter(full["post_smd"], y, marker="s", color=BLUE, s=28,
                label="After matching", zorder=4)
     ax.axvline(0.10, color="#333333", linestyle=(0, (4, 3)), lw=0.9)
-    ax.text(0.103, len(full) - 0.55, "0.10 rule", fontsize=7, va="top", color="#333333")
+    ax.text(
+        0.102,
+        0.35,
+        "0.10 SMD\nthreshold",
+        fontsize=6.8,
+        va="bottom",
+        ha="left",
+        color="#333333",
+        bbox=dict(boxstyle="round,pad=0.18", fc="white", ec="none", alpha=0.85),
+    )
     ax.set_yticks(y)
     ax.set_yticklabels(full["covariate"].str.replace("rs_", "", regex=False))
     ax.set_xlabel("Absolute standardized mean difference")
