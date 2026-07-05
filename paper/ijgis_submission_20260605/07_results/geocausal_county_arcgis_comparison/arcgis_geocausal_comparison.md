@@ -5,7 +5,7 @@ Generated: 2026-06-19
 ## Purpose
 
 This note compares the earlier ArcGIS Causal Inference Analysis interpretation
-extracted from the PPTX copy at `D:\tmp\paper6_arcgis_social_capital.pptx` with
+extracted from the PPTX copy at `<local ArcGIS export>
 the open-source GeoCausal SCCA run on the same county-level social-capital and
 longevity dataset.
 
@@ -14,9 +14,9 @@ does not revise the manuscript text.
 
 ## Inputs
 
-- ArcGIS result description: `D:\tmp\paper6_arcgis_social_capital.pptx`
-- Extracted ArcGIS slide text: `D:\tmp\paper6_arcgis_social_capital_slides.txt`
-- Source workbook copied for reproducibility: `D:\tmp\paper6_county_social_capital.xlsx`
+- ArcGIS result description: `<local ArcGIS export>
+- Extracted ArcGIS slide text: `<local ArcGIS export>
+- Source workbook copied for reproducibility: `<local ArcGIS export>
 - GeoCausal input CSV: `county_social_capital.csv`
 - GeoCausal configuration: `analysis.yaml`
 

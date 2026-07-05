@@ -242,9 +242,9 @@ git commit -m "Add SCCA robustness summary runner"
 - [ ] Run real robustness commands:
 
 ```powershell
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_snow8_robustness --csv-path "D:\北大MEM\01-课程学习\02-技术核心课\数据可视化技术及应用\snow\snow8\subdistricts.csv"
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_soho_robustness --csv-path "D:\北大MEM\01-课程学习\02-技术核心课\数据可视化技术及应用\snow\snow1\deaths_nd_by_house.csv"
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_county_social_capital_robustness --workbook-path "D:\北大MEM\01-课程学习\02-技术核心课\数据可视化技术及应用\CausalInferAnalysis\CausalInferAnalysis\CountyData_TableToExcel.xlsx"
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_snow8_robustness --csv-path "<restricted local source>"
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_soho_robustness --csv-path "<restricted local source>"
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_county_social_capital_robustness --workbook-path "<restricted local source>"
 D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_robustness_summary
 ```
 

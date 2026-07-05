@@ -1390,7 +1390,7 @@ Expected:
 Run:
 
 ```powershell
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_snow8 --csv-path "D:\北大MEM\01-课程学习\02-技术核心课\数据可视化技术及应用\snow\snow8\subdistricts.csv"
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_snow8 --csv-path "<restricted local source>"
 ```
 
 Expected:
@@ -1400,11 +1400,11 @@ Expected:
   "study": "south_london_cholera_supplier",
   "decision": "moderate_support",
   "files": {
-    "adjustment_table": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\scca_snow8\\adjustment_table.csv",
-    "effect_table": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\scca_snow8\\effect_table.csv",
-    "diagnostics": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\scca_snow8\\diagnostics.json",
-    "credibility_report": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\scca_snow8\\credibility_report.json",
-    "analysis_report": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results\\scca_snow8\\analysis_report.md"
+    "adjustment_table": "paper\\ijgis_submission_20260605\\07_results\\scca_snow8\\adjustment_table.csv",
+    "effect_table": "paper\\ijgis_submission_20260605\\07_results\\scca_snow8\\effect_table.csv",
+    "diagnostics": "paper\\ijgis_submission_20260605\\07_results\\scca_snow8\\diagnostics.json",
+    "credibility_report": "paper\\ijgis_submission_20260605\\07_results\\scca_snow8\\credibility_report.json",
+    "analysis_report": "paper\\ijgis_submission_20260605\\07_results\\scca_snow8\\analysis_report.md"
   }
 }
 ```
@@ -1412,7 +1412,7 @@ Expected:
 Also verify:
 
 ```powershell
-Test-Path -LiteralPath "D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results\scca_snow8\analysis_report.md"
+Test-Path -LiteralPath "paper\ijgis_submission_20260605\07_results\scca_snow8\analysis_report.md"
 ```
 
 Expected:
@@ -1443,7 +1443,7 @@ In `README.md`, under "Quick Start", add:
 Run the first Spatial Context Causal Adjustment (SCCA) redesign experiment on the South London Snow cholera data:
 
 ```powershell
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_snow8 --csv-path "D:\北大MEM\01-课程学习\02-技术核心课\数据可视化技术及应用\snow\snow8\subdistricts.csv"
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_snow8 --csv-path "<restricted local source>"
 ```
 
 The outputs are written to `paper/ijgis_submission_20260605/07_results/scca_snow8/`.
@@ -1482,7 +1482,7 @@ Expected:
 Run:
 
 ```powershell
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_snow8 --csv-path "D:\北大MEM\01-课程学习\02-技术核心课\数据可视化技术及应用\snow\snow8\subdistricts.csv"
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_snow8 --csv-path "<restricted local source>"
 ```
 
 Expected:
@@ -1497,7 +1497,7 @@ strong_support, moderate_support, weak_or_failed_support
 Run:
 
 ```powershell
-Get-Content -Raw -LiteralPath "D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results\scca_snow8\credibility_report.json"
+Get-Content -Raw -LiteralPath "paper\ijgis_submission_20260605\07_results\scca_snow8\credibility_report.json"
 ```
 
 Expected:

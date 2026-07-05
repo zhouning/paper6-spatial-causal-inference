@@ -577,7 +577,7 @@ git commit -m "Add SCCA county social capital runner"
 Run:
 
 ```powershell
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_county_social_capital --workbook-path "D:\北大MEM\01-课程学习\02-技术核心课\数据可视化技术及应用\CausalInferAnalysis\CausalInferAnalysis\CountyData_TableToExcel.xlsx"
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_county_social_capital --workbook-path "<restricted local source>"
 ```
 
 Expected:
@@ -592,7 +592,7 @@ strong_support, moderate_support, weak_or_failed_support
 Run:
 
 ```powershell
-Get-Content -Raw -LiteralPath "D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results\scca_county_social_capital\credibility_report.json"
+Get-Content -Raw -LiteralPath "paper\ijgis_submission_20260605\07_results\scca_county_social_capital\credibility_report.json"
 ```
 
 Expected:
@@ -609,7 +609,7 @@ Insert after the Soho SCCA command in `README.md`:
 Run the county social-capital SCCA external validation experiment:
 
 ```powershell
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_county_social_capital --workbook-path "D:\北大MEM\01-课程学习\02-技术核心课\数据可视化技术及应用\CausalInferAnalysis\CausalInferAnalysis\CountyData_TableToExcel.xlsx"
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_county_social_capital --workbook-path "<restricted local source>"
 ```
 
 The outputs are written to `paper/ijgis_submission_20260605/07_results/scca_county_social_capital/`. This case is an external continuous-exposure validation with state-level robustness, not a full county-adjacency spatial diagnostic.
@@ -689,8 +689,8 @@ Latest commit is the county output commit.
 Read and report:
 
 ```powershell
-Get-Content -Raw -LiteralPath "D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results\scca_county_social_capital\credibility_report.json"
-Get-Content -Raw -LiteralPath "D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results\scca_county_social_capital\manifest.json"
+Get-Content -Raw -LiteralPath "paper\ijgis_submission_20260605\07_results\scca_county_social_capital\credibility_report.json"
+Get-Content -Raw -LiteralPath "paper\ijgis_submission_20260605\07_results\scca_county_social_capital\manifest.json"
 ```
 
 Final response must include:

@@ -28,17 +28,17 @@
 ### 2.1 必需文件
 
 - Toolbox：
-  `D:\adk\paper6-spatial-causal-inference\arcgis_toolbox\GeoCausalSCCA.pyt`
+  `arcgis_toolbox\GeoCausalSCCA.pyt`
 - 示例 Excel：
-  `D:\tmp\paper6_county_social_capital.xlsx`
+  `<local ArcGIS export>
 
 ### 2.2 建议准备的 geodatabase
 
-- `D:\tmp\paper6_arcgis_demo.gdb`
+- `<local ArcGIS export>
 
 ### 2.3 推荐结果目录
 
-- `D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results`
+- `paper\ijgis_submission_20260605\07_results`
 
 ## 3. 在 ArcGIS Pro 中准备输入表
 
@@ -54,7 +54,7 @@
 
 建议路径：
 
-- `D:\tmp\paper6_arcgis_demo.gdb`
+- `<local ArcGIS export>
 
 ### 步骤 3：把 Excel 导入 geodatabase
 
@@ -65,11 +65,11 @@
 填写：
 
 - Input Excel File:
-  `D:\tmp\paper6_county_social_capital.xlsx`
+  `<local ArcGIS export>
 - Sheet:
   `CountyData$`
 - Output Table:
-  `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital`
+  `<local ArcGIS export>
 
 运行完成后，你应该在 geodatabase 里看到：
 
@@ -81,7 +81,7 @@
 
 在 Catalog 中添加：
 
-- `D:\adk\paper6-spatial-causal-inference\arcgis_toolbox`
+- `arcgis_toolbox`
 
 ### 步骤 5：打开工具
 
@@ -99,7 +99,7 @@
 
 | 参数 | 示例值 |
 | --- | --- |
-| Input Features or Table | `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital` |
+| Input Features or Table | `<local ArcGIS export>
 | Case Name | `county_social_capital_arcgis_demo` |
 | Unit ID Field | `FIPS` |
 | Exposure Field | `SocialAssoc` |
@@ -136,11 +136,11 @@
 
 | 参数 | 示例值 |
 | --- | --- |
-| Output Report Folder | `D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results` |
-| Output Analysis Joined Table | `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital_joined` |
-| Output ERF Table | `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital_erf` |
-| Output Target Exposure Table | `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital_target` |
-| Output Effect Estimates Table | `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital_effects` |
+| Output Report Folder | `paper\ijgis_submission_20260605\07_results` |
+| Output Analysis Joined Table | `<local ArcGIS export>
+| Output ERF Table | `<local ArcGIS export>
+| Output Target Exposure Table | `<local ArcGIS export>
+| Output Effect Estimates Table | `<local ArcGIS export>
 
 ## 6. 运行后先看哪里
 
@@ -158,11 +158,11 @@
 
 本示例应接近：
 
-- `D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results\county_social_capital_arcgis_demo`
+- `paper\ijgis_submission_20260605\07_results\county_social_capital_arcgis_demo`
 
 ### 步骤 11：检查 gdb 结果表
 
-在 `D:\tmp\paper6_arcgis_demo.gdb` 中查看：
+在 `<local ArcGIS export>
 
 - `county_social_capital_joined`
 - `county_social_capital_erf`

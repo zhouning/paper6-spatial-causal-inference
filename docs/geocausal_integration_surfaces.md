@@ -178,7 +178,7 @@ qgis_provider/geocausal_scca_algorithm.py
 On this macOS machine it is linked into the default QGIS profile at:
 
 ```text
-/Users/zhouning/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/geocausal_scca
+<local checkout> Support/QGIS/QGIS3/profiles/default/python/plugins/geocausal_scca
 ```
 
 ## Why This Matters

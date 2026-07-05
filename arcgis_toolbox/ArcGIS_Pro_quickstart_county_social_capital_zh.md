@@ -13,19 +13,19 @@
 参数：
 
 - Input Excel File:
-  `D:\tmp\paper6_county_social_capital.xlsx`
+  `<local ArcGIS export>
 - Sheet:
   `CountyData$`
 - Output Table:
-  `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital`
+  `<local ArcGIS export>
 
-如果 `D:\tmp\paper6_arcgis_demo.gdb` 不存在，先新建这个 file geodatabase。
+如果 `<local ArcGIS export>
 
 ## 2. 加载 toolbox
 
 在 Catalog 中添加 folder connection：
 
-- `D:\adk\paper6-spatial-causal-inference\arcgis_toolbox`
+- `arcgis_toolbox`
 
 打开：
 
@@ -36,7 +36,7 @@
 
 | 参数 | 填写值 |
 | --- | --- |
-| Input Features or Table | `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital` |
+| Input Features or Table | `<local ArcGIS export>
 | Case Name | `county_social_capital_arcgis_demo` |
 | Unit ID Field | `FIPS` |
 | Exposure Field | `SocialAssoc` |
@@ -53,17 +53,17 @@
 | Upper Exposure Quantile | `0.99` |
 | Target Outcome Values | `70` |
 | Bootstrap Replicates | `200` |
-| Output Report Folder | `D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results` |
-| Output Analysis Joined Table | `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital_joined` |
-| Output ERF Table | `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital_erf` |
-| Output Target Exposure Table | `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital_target` |
-| Output Effect Estimates Table | `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital_effects` |
+| Output Report Folder | `paper\ijgis_submission_20260605\07_results` |
+| Output Analysis Joined Table | `<local ArcGIS export>
+| Output ERF Table | `<local ArcGIS export>
+| Output Target Exposure Table | `<local ArcGIS export>
+| Output Effect Estimates Table | `<local ArcGIS export>
 
 ## 4. 运行后检查
 
 CSV/Markdown/JSON 主输出目录不是 `Output Report Folder` 根目录，而是：
 
-- `D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results\county_social_capital_arcgis_demo`
+- `paper\ijgis_submission_20260605\07_results\county_social_capital_arcgis_demo`
 
 应看到：
 
@@ -86,6 +86,6 @@ ArcGIS gdb 中应看到：
 
 优先打开：
 
-- `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital_joined`
+- `<local ArcGIS export>
 
 这张表是一行一个县，保留原始字段，并追加 `gc_` 开头的目标暴露结果字段，最适合在 ArcGIS Pro 里 join、制图和筛选。

@@ -12,7 +12,7 @@
   "chongqing_estimand_sensitivity_audit_md": "paper\\ijgis_submission_20260605\\07_results\\chongqing_estimand_sensitivity_audit.md",
   "grade_rules_json": "paper\\ijgis_submission_20260605\\07_results\\scca_evidence_grade_rules.json",
   "grade_rules_md": "paper\\ijgis_submission_20260605\\07_results\\scca_evidence_grade_rules.md",
-  "results_dir": "D:\\adk\\paper6-spatial-causal-inference\\paper\\ijgis_submission_20260605\\07_results",
+  "results_dir": "paper\\ijgis_submission_20260605\\07_results",
   "n_rows": 4,
   "n_threshold_sensitivity_rows": 6,
   "n_chongqing_variable_role_rows": 7,

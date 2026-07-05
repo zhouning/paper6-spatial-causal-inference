@@ -1,46 +1,39 @@
-# Title Page and Declarations Draft
+# IJGIS Title Page and Declarations
 
-## Title
+## Manuscript Title
 
 Spatial Context Causal Adjustment: A Diagnostic Workflow for Geographic Observational Studies
 
-## Authors
+## Author
 
-Ning Zhou  
-School of Software and Microelectronics, Peking University, Beijing 100871, China
+Ning Zhou
+ORCID: https://orcid.org/0009-0002-5647-7388
+SuperMap Software Co., Ltd., Beijing, China
 
-Xiang Jing  
-School of Software and Microelectronics, Peking University, Beijing 100871, China
-
-## Corresponding Author
-
-Xiang Jing  
-Email: jingxiang@pku.edu.cn
-
-## Suggested Keywords
+## Keywords
 
 spatial causal inference; spatial confounding; causal adjustment; evidence grading; remote sensing; GIS workflow
 
 ## Declaration of Competing Interest
 
-The authors declare that they have no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.
+The author declares that he has no known competing financial interests or personal relationships that could have appeared to influence the work reported in this paper.
 
 ## Data and Code Availability
 
-Remote-sensing and terrain covariates used in the Chongqing case are derived from public geospatial data sources. Source code, test data generators, generated result tables, diagnostic reports, and selected sample data needed for reproduction will be made available in an anonymized repository during review and in a public repository upon acceptance where licensing permits.
+For peer review, the code, manuscript source, synthetic generators, generated result tables, figures, diagnostic reports, and redistributable public/example data are available in the anonymized reproduction repository: https://anonymous.4open.science/r/spatial-causal-inference-FDFE. The repository supports exact reruns for synthetic and county/example analyses and structural Chongqing reruns from approved local inputs. Raw Chongqing geospatial inputs and the building-level UHI sample are not publicly redistributed because they include precise geometries or coordinates, floor attributes, and derived environmental variables. The county social-capital case uses third-party Esri training/demo data under the source-use restrictions documented in the repository.
 
 ## Funding
 
-No funding statement has been finalized. Confirm before submission.
+No external funding was used to support this work.
 
 ## Author Contributions
 
-Ning Zhou: Conceptualization, Methodology, Software, Validation, Writing - original draft.
-
-Xiang Jing: Supervision, Conceptualization, Methodology, Writing - review and editing.
+Ning Zhou: Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Data curation, Writing - original draft, Writing - review and editing, Visualization.
 
 ## AI Use Statement
 
-Draft text to verify before submission:
+The author used AI-assisted writing and coding tools for language editing, code drafting, internal consistency checks, and reviewer-style pre-submission audit. All analyses, generated outputs, interpretations, and final manuscript text were checked by the author, who remains responsible for the content of this work.
 
-The authors used AI-assisted writing and coding tools during manuscript preparation for language editing, code drafting, and internal review. All scientific claims, analyses, results, and final manuscript content were reviewed and approved by the authors.
+## Submission Route Note
+
+This package keeps both non-anonymized and double-anonymous manuscript variants. The official IJGIS author-instructions page was blocked by Cloudflare from this environment on 2026-07-05, so the review route must be confirmed in the live Taylor & Francis submission portal. If the portal requires double-anonymous review, upload the anonymized manuscript and use the anonymized 4open repository link for reviewer-facing code/data access.

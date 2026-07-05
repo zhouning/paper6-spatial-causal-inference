@@ -1,8 +1,8 @@
 # SCCA算法框架技术评审报告
 
 **评审对象**: Paper 6 - Spatial Context Causal Adjustment (SCCA)  
-**论文**: /Users/zhouning/paper6-spatial-causal-inference/paper/ijgis_submission_20260605/01_manuscript/01_manuscript_ijgis.tex  
-**代码**: /Users/zhouning/paper6-spatial-causal-inference/  
+**论文**: <local checkout>
+**代码**: <local checkout>
 **评审日期**: 2026-06-20  
 **评审人**: Claude (Opus 4.8)
 

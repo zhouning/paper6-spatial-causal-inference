@@ -4,7 +4,7 @@
 
 本文档说明如何在 ArcGIS Pro 中调用：
 
-- `D:\adk\paper6-spatial-causal-inference\arcgis_toolbox\GeoCausalSCCA.pyt`
+- `arcgis_toolbox\GeoCausalSCCA.pyt`
 
 并使用已经测试过的县域社会资本数据跑通一个完整示例。
 
@@ -15,15 +15,15 @@
 - ArcGIS Pro Python 环境：
   `D:\Users\zn198\AppData\Local\ESRI\conda\envs\arcgispro-py3-clone3`
 - Toolbox 文件：
-  `D:\adk\paper6-spatial-causal-inference\arcgis_toolbox\GeoCausalSCCA.pyt`
+  `arcgis_toolbox\GeoCausalSCCA.pyt`
 - 原始 Excel：
-  `D:\北大MEM\01-课程学习\02-技术核心课\数据可视化技术及应用\CausalInferAnalysis\CausalInferAnalysis\CountyData_TableToExcel.xlsx`
+  `<restricted local source>
 - 已复制并核验过的示例副本：
-  `D:\tmp\paper6_county_social_capital.xlsx`
+  `<local ArcGIS export>
 
 建议优先使用：
 
-- `D:\tmp\paper6_county_social_capital.xlsx`
+- `<local ArcGIS export>
 
 因为这是之前 ArcGIS 与 GeoCausal 对比实验实际使用过的副本。
 
@@ -82,7 +82,7 @@
 
 在 ArcGIS Pro 中新建 file geodatabase，例如：
 
-- `D:\tmp\paper6_arcgis_demo.gdb`
+- `<local ArcGIS export>
 
 ### 5.2 导入 Excel
 
@@ -93,15 +93,15 @@
 参数填写：
 
 - Input Excel File:
-  `D:\tmp\paper6_county_social_capital.xlsx`
+  `<local ArcGIS export>
 - Sheet:
   `CountyData$`
 - Output Table:
-  `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital`
+  `<local ArcGIS export>
 
 导入完成后，toolbox 输入统一使用：
 
-- `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital`
+- `<local ArcGIS export>
 
 ## 6. 第二步：加载 toolbox
 
@@ -109,7 +109,7 @@
 
 在 ArcGIS Pro 的 Catalog 中添加：
 
-- `D:\adk\paper6-spatial-causal-inference\arcgis_toolbox`
+- `arcgis_toolbox`
 
 ### 6.2 打开 toolbox
 
@@ -127,7 +127,7 @@
 
 | ArcGIS Pro 参数名 | 示例值 | 是否必填 | 说明 |
 | --- | --- | --- | --- |
-| Input Features or Table | `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital` | 是 | 推荐使用导入到 gdb 后的表 |
+| Input Features or Table | `<local ArcGIS export>
 | Case Name | `county_social_capital_arcgis_demo` | 是 | 本次运行名称 |
 | Unit ID Field | `FIPS` | 否 | 县级唯一标识，建议填写 |
 | Exposure Field | `SocialAssoc` | 是 | 社会资本指标 |
@@ -144,11 +144,11 @@
 | Upper Exposure Quantile | `0.99` | 否 | 对齐 ArcGIS 对比实验 |
 | Target Outcome Values | `70` | 否 | 生成目标暴露结果 |
 | Bootstrap Replicates | `200` | 否 | 与对比实验一致 |
-| Output Report Folder | `D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results` | 是 | 主输出根目录，必须是已存在的普通文件夹 |
-| Output Analysis Joined Table | `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital_joined` | 否 | 一行一个县，适合 join 与制图 |
-| Output ERF Table | `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital_erf` | 否 | ERF 曲线表 |
-| Output Target Exposure Table | `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital_target` | 否 | 长表格式目标结果 |
-| Output Effect Estimates Table | `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital_effects` | 否 | 主效应表 |
+| Output Report Folder | `paper\ijgis_submission_20260605\07_results` | 是 | 主输出根目录，必须是已存在的普通文件夹 |
+| Output Analysis Joined Table | `<local ArcGIS export>
+| Output ERF Table | `<local ArcGIS export>
+| Output Target Exposure Table | `<local ArcGIS export>
+| Output Effect Estimates Table | `<local ArcGIS export>
 
 ## 8. 参数填写说明
 
@@ -156,7 +156,7 @@
 
 填：
 
-- `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital`
+- `<local ArcGIS export>
 
 不建议第一次直接选 Excel。
 
@@ -172,7 +172,7 @@
 
 也就是本示例最终结果目录会是：
 
-- `D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results\arcgis_toolbox_demo\county_social_capital_arcgis_demo`
+- `paper\ijgis_submission_20260605\07_results\arcgis_toolbox_demo\county_social_capital_arcgis_demo`
 
 不是直接写在 `arcgis_toolbox_demo` 根目录。
 
@@ -212,7 +212,7 @@
 
 这里必须填普通文件夹，例如：
 
-- `D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results`
+- `paper\ijgis_submission_20260605\07_results`
 
 不要填：
 
@@ -225,11 +225,11 @@
 如果参数为：
 
 - Case Name = `county_social_capital_arcgis_demo`
-- Output Report Folder = `D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results`
+- Output Report Folder = `paper\ijgis_submission_20260605\07_results`
 
 那么真正的运行目录是：
 
-- `D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results\county_social_capital_arcgis_demo`
+- `paper\ijgis_submission_20260605\07_results\county_social_capital_arcgis_demo`
 
 该目录下应能看到：
 
@@ -320,7 +320,7 @@
 
 详细对比记录见：
 
-- `D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results\geocausal_county_arcgis_comparison\arcgis_geocausal_comparison.md`
+- `paper\ijgis_submission_20260605\07_results\geocausal_county_arcgis_comparison\arcgis_geocausal_comparison.md`
 
 ## 13. 常见问题
 

@@ -1,6 +1,6 @@
 # Required Experiments Before IJGIS Submission
 
-This file translates the IJGIS-style review into concrete experiments. The manuscript should not be submitted with strong GeoFM or causal-effect claims until the high-priority experiments below are completed.
+This file records an earlier IJGIS-style experiment plan. It is retained for provenance, but it is no longer the direct submission gate for the current bounded manuscript. The current manuscript removed strong GeoFM, LLM, and world-model claims from the central contribution, reports Chongqing as a bounded outcome-scale case, treats synthetic scenarios as estimator stress tests, and uses the county example as ArcGIS/GIS reproducibility evidence rather than independent substantive causal validation.
 
 ## One-Sentence Revised Argument
 

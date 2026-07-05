@@ -2,9 +2,9 @@
   "study": "south_london_cholera_supplier",
   "decision": "moderate_support",
   "metadata": {
-    "source_csv": "D:\\北大MEM\\01-课程学习\\02-技术核心课\\数据可视化技术及应用\\snow\\snow8\\subdistricts.csv",
+    "source_csv": "<restricted local source>",
     "source_sha256": "6ff18b96dd9b48dcfe70873067dff0da2e479dd4172f75e64ce31ca0e9809c66",
-    "command": "run_snow8_scca(csv_path=D:\\北大MEM\\01-课程学习\\02-技术核心课\\数据可视化技术及应用\\snow\\snow8\\subdistricts.csv, output_dir=D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-snow8-implementation\\paper\\ijgis_submission_20260605\\07_results\\scca_snow8)",
+    "command": "run_snow8_scca(csv_path=<restricted local source>, output_dir=.worktrees\\scca-snow8-implementation\\paper\\ijgis_submission_20260605\\07_results\\scca_snow8)",
     "code_commit": "6e5131bb37c6e5d93c23926e9032d82039c55b04",
     "code_commit_role": "source_commit_used_to_generate_outputs",
     "git_dirty": false,

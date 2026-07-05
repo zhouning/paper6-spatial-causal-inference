@@ -2,9 +2,9 @@
   "study": "soho_broad_street_pump_mechanism",
   "decision": "moderate_support",
   "metadata": {
-    "source_csv": "D:\\北大MEM\\01-课程学习\\02-技术核心课\\数据可视化技术及应用\\snow\\snow1\\deaths_nd_by_house.csv",
+    "source_csv": "<restricted local source>",
     "source_sha256": "1767706cd333276e9530eec7a8454203470a5a3aa13b9e812410727e10a38b86",
-    "command": "run_soho_scca(csv_path=D:\\北大MEM\\01-课程学习\\02-技术核心课\\数据可视化技术及应用\\snow\\snow1\\deaths_nd_by_house.csv, output_dir=D:\\adk\\paper6-spatial-causal-inference\\.worktrees\\scca-soho-mechanism\\paper\\ijgis_submission_20260605\\07_results\\scca_soho)",
+    "command": "run_soho_scca(csv_path=<restricted local source>, output_dir=.worktrees\\scca-soho-mechanism\\paper\\ijgis_submission_20260605\\07_results\\scca_soho)",
     "code_commit": "ee78fecff21b6df8db2d93b248483ced55da0a5a",
     "code_commit_role": "source_commit_used_to_generate_outputs",
     "git_dirty": false,

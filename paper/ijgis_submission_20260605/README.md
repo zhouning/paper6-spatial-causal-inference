@@ -10,7 +10,7 @@ Created: 2026-06-05
 
 ## Folder Layout
 
-- `01_manuscript/` - Main LaTeX manuscript and all figures required by the current source.
+- `01_manuscript/` - Main LaTeX manuscript variants and all figures required by the current source.
 - `02_cover_letter/` - IJGIS cover letter draft.
 - `03_supplementary/` - Supplementary-material plan. Populate this before upload if the revision adds supplement content.
 - `04_admin/` - Title page, declarations, and submission checklist.
@@ -19,11 +19,13 @@ Created: 2026-06-05
 
 ## Current Upload Candidates
 
-- Manuscript source: `01_manuscript/01_manuscript_ijgis.tex`
+- Non-anonymized manuscript source: `01_manuscript/01_manuscript_ijgis.tex`
+- Double-anonymous manuscript source: `01_manuscript/01_manuscript_ijgis_anonymous.tex`
 - Manuscript figures: `01_manuscript/figures/*.pdf`
 - Cover letter draft: `02_cover_letter/cover_letter_ijgis_draft.md`
 - Title/declarations draft: `04_admin/title_page_declarations.md`
 - Submission checklist: `04_admin/ijgis_submission_checklist.md`
+- Anonymous-review verification note: `04_admin/taylor_francis_anonymous_review_verification.md`
 
 ## Compile
 
@@ -42,8 +44,11 @@ To keep build artifacts outside the source folder, this package uses `06_build/`
 
 ```powershell
 pdflatex '-interaction=nonstopmode' '-output-directory=../06_build' 01_manuscript_ijgis.tex
+pdflatex '-interaction=nonstopmode' '-output-directory=../06_build' 01_manuscript_ijgis_anonymous.tex
 ```
 
 ## Before Submission
 
-The current manuscript is organized for IJGIS but should not be treated as submission-ready until the checklist in `04_admin/ijgis_submission_checklist.md` is resolved. The main scientific boundary is now explicit: Chongqing is the main empirical case, the synthetic benchmark is an estimator stress test, and the county social-capital run is a GIS/notebook reproducibility and spatial-diagnostic check rather than a second substantive theory test.
+This package now keeps both submission routes available. Use the non-anonymized manuscript if the live Taylor & Francis/IJGIS workflow does not require double-anonymous review. Use the anonymized manuscript if the portal or file-upload instructions indicate double-anonymous review.
+
+The main scientific boundary is explicit: Chongqing is the main empirical case, the synthetic benchmark is an estimator stress test, and the county social-capital run is an ArcGIS/GIS reproducibility and spatial-diagnostic check rather than a second substantive theory test. Ning Zhou is the sole author, with SuperMap Software Co., Ltd. as the affiliation. The ORCID is recorded in the non-anonymized manuscript and title-page draft. Taylor & Francis Author Services confirms that double-anonymous submissions must remove identifying information, but the IJGIS-specific author-instructions page was blocked by Cloudflare from this environment on 2026-07-05. See `04_admin/taylor_francis_anonymous_review_verification.md` for the source record, then confirm the live IJGIS route in the submission portal before choosing the upload file.

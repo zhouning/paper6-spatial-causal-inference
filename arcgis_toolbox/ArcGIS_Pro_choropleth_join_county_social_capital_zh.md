@@ -4,7 +4,7 @@
 
 前提是你已经完成了 GeoCausal toolbox 运行，并且其 `Output Report Folder` 使用的是一个已存在的普通文件夹，例如：
 
-- `D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results`
+- `paper\ijgis_submission_20260605\07_results`
 
 并得到了：
 
@@ -32,7 +32,7 @@ GeoCausal toolbox 本身输出的是：
 
 推荐使用：
 
-- `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital_joined`
+- `<local ArcGIS export>
 
 ### 2.2 另一个县界 polygon 图层
 
@@ -168,7 +168,7 @@ str(!FIPS!).zfill(5)
 - Input Join Field:
   `FIPS` 或 `FIPS5` 或 `GEOID`
 - Join Table:
-  `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital_joined`
+  `<local ArcGIS export>
 - Join Table Field:
   `FIPS`
 
@@ -253,7 +253,7 @@ Field 选择：
 
 输出到新的 `.gdb` 要素类，例如：
 
-- `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital_map_ready`
+- `<local ArcGIS export>
 
 这样之后开图、调符号、做布局都更稳。
 

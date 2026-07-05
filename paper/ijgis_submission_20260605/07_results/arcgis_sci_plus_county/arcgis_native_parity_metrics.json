@@ -1,5 +1,5 @@
 {
-  "native_arcgis_source": "D:\\tmp\\paper6_arcgis_builtin_causal_20260627\\csv_final\\county_arcgis_builtin_erf.csv",
+  "native_arcgis_source": "<local ArcGIS export>",
   "open_documented_source": "arcgis_documented_erf_curve.csv",
   "arcgis_version": "3.7",
   "tested_mode": "REGRESSION propensity scores + MATCHING balance + PLUG_IN bandwidth + NO_CI",

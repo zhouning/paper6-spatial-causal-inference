@@ -15,8 +15,8 @@ No Paper 6 case-study field names or dataset paths belong in this provider.
 For the local QGIS profile, link this directory into the QGIS plugin folder:
 
 ```bash
-ln -s /Users/zhouning/paper6-spatial-causal-inference/qgis_provider \
-  "/Users/zhouning/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/geocausal_scca"
+ln -s <local checkout> \
+  "<local checkout> Support/QGIS/QGIS3/profiles/default/python/plugins/geocausal_scca"
 ```
 
 This has already been done on this machine.

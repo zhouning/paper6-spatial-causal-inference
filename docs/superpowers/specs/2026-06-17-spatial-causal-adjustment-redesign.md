@@ -26,7 +26,7 @@ The paper's core contribution becomes a spatial-context causal adjustment workfl
 
 Source:
 
-- `D:\北大MEM\01-课程学习\02-技术核心课\数据可视化技术及应用\snow\snow8\subdistricts.csv`
+- `<restricted local source>
 
 Observed fields:
 
@@ -80,7 +80,7 @@ Candidate designs:
 
 Source:
 
-- `D:\北大MEM\01-课程学习\02-技术核心课\数据可视化技术及应用\CausalInferAnalysis\CausalInferAnalysis\CountyData_TableToExcel.xlsx`
+- `<restricted local source>
 
 Observed fields:
 

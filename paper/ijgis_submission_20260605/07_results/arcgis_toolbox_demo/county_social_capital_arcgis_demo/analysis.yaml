@@ -1,6 +1,6 @@
 case_name: county_social_capital_arcgis_demo
 input:
-  path: D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results\arcgis_toolbox_demo\county_social_capital_arcgis_demo\input.csv
+  path: paper\ijgis_submission_20260605\07_results\arcgis_toolbox_demo\county_social_capital_arcgis_demo\input.csv
 variables:
   exposure: SocialAssoc
   outcome: AveAgeDeath
@@ -18,7 +18,7 @@ variables:
   - pSuicideDeaths
   - AirPollution
 output:
-  directory: D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results\arcgis_toolbox_demo\county_social_capital_arcgis_demo
+  directory: paper\ijgis_submission_20260605\07_results\arcgis_toolbox_demo\county_social_capital_arcgis_demo
 context:
   columns:
   - Shape_Length

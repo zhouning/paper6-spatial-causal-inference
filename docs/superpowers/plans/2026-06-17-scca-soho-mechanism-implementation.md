@@ -201,7 +201,7 @@ git commit -m "Add SCCA Soho experiment runner"
 Run:
 
 ```powershell
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_soho --csv-path "D:\北大MEM\01-课程学习\02-技术核心课\数据可视化技术及应用\snow\snow1\deaths_nd_by_house.csv"
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_soho --csv-path "<restricted local source>"
 ```
 
 Expected: manifest JSON with allowed `decision`.
@@ -214,7 +214,7 @@ Add after the snow8 SCCA command:
 Run the Soho Broad Street pump SCCA mechanism experiment:
 
 ```powershell
-D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_soho --csv-path "D:\北大MEM\01-课程学习\02-技术核心课\数据可视化技术及应用\snow\snow1\deaths_nd_by_house.csv"
+D:\adk\.venv\Scripts\python.exe -m data_agent.experiments.run_scca_soho --csv-path "<restricted local source>"
 ```
 
 The outputs are written to `paper/ijgis_submission_20260605/07_results/scca_soho/`.

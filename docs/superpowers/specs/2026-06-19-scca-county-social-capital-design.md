@@ -22,7 +22,7 @@ The county case should be described as non-geometric or weakly spatial unless co
 
 Source:
 
-- `D:\北大MEM\01-课程学习\02-技术核心课\数据可视化技术及应用\CausalInferAnalysis\CausalInferAnalysis\CountyData_TableToExcel.xlsx`
+- `<restricted local source>
 
 Observed workbook structure:
 

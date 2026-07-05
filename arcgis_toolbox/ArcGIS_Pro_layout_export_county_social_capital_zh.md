@@ -12,12 +12,12 @@
 
 示例输出目录：
 
-- 结果目录：`D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results\arcgis_toolbox_demo\county_social_capital_arcgis_demo`
-- 连接后的 CSV：`D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results\arcgis_toolbox_demo\county_social_capital_arcgis_demo\analysis_joined.csv`
+- 结果目录：`paper\ijgis_submission_20260605\07_results\arcgis_toolbox_demo\county_social_capital_arcgis_demo`
+- 连接后的 CSV：`paper\ijgis_submission_20260605\07_results\arcgis_toolbox_demo\county_social_capital_arcgis_demo\analysis_joined.csv`
 
 如果你已经按上一篇连接手册操作过，示例导出的县级面图层可以是：
 
-- `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital_joined`
+- `<local ArcGIS export>
 
 说明：县级边界面数据不是本仓库自带数据，你需要自行准备带有 `FIPS`、`FIPS5` 或 `GEOID` 等县级编码字段的边界图层。
 
@@ -186,10 +186,10 @@
 如果你想直接复现一个最简流程，可按下面路径操作：
 
 1. 运行工具，得到：
-   - `D:\adk\paper6-spatial-causal-inference\paper\ijgis_submission_20260605\07_results\arcgis_toolbox_demo\county_social_capital_arcgis_demo\analysis_joined.csv`
+   - `paper\ijgis_submission_20260605\07_results\arcgis_toolbox_demo\county_social_capital_arcgis_demo\analysis_joined.csv`
 2. 将该表与县级边界面图层按 `FIPS` 或 `GEOID` 连接。
 3. 导出连接后的面图层，例如：
-   - `D:\tmp\paper6_arcgis_demo.gdb\county_social_capital_joined`
+   - `<local ArcGIS export>
 4. 对 `gc_target_70_exposure_change` 做 `Graduated Colors` 分级设色图。
 5. 插入 `Layout`，添加图例并导出 `PDF` 或 `PNG`。
 

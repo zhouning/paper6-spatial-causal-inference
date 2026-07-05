@@ -109,9 +109,9 @@ def build_english():
     doc = make_doc()
 
     add_title(doc, "Geospatial World Modeling via Frozen Foundation Model\nEmbeddings and Lightweight Latent Dynamics")
-    add_authors(doc, "Ning Zhou and Xiang Jing*")
-    add_affil(doc, "School of Software and Microelectronics, Peking University, Beijing 100871, China")
-    add_affil(doc, "*Corresponding author. Email: jingxiang@pku.edu.cn")
+    add_authors(doc, "Ning Zhou")
+    add_affil(doc, "SuperMap Software Co., Ltd., Beijing, China")
+    add_affil(doc, "")
     add_affil(doc, "Target journal: International Journal of Geographical Information Science (IJGIS)")
 
     add_heading(doc, "Abstract")
@@ -275,7 +275,7 @@ def build_chinese():
     add_title(doc, "基于冻结基础模型嵌入与轻量潜空间动力学的\n地理空间世界模型")
     add_authors(doc, "周宁，景翔*")
     add_affil(doc, "北京大学软件与微电子学院，北京 100871")
-    add_affil(doc, "*通讯作者。电子邮件: jingxiang@pku.edu.cn")
+    add_affil(doc, "")
     add_affil(doc, "目标期刊: International Journal of Geographical Information Science (IJGIS)")
 
     add_heading(doc, "摘要")
