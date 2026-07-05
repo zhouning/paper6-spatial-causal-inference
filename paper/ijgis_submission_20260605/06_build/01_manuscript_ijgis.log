@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.4.25)  5 JUL 2026 17:49
+This is pdfTeX, Version 3.141592653-2.6-1.40.29 (TeX Live 2026) (preloaded format=pdflatex 2026.4.25)  5 JUL 2026 18:21
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -731,31 +731,31 @@ truc-tural
  []
 
 [21]
-Underfull \hbox (badness 10000) in paragraph at lines 655--656
+Underfull \hbox (badness 10000) in paragraph at lines 652--653
 \OT1/cmr/m/n/10 ta-tion. Avail-able at: https://pro.arcgis.com/en/pro-app/lates
 t/tool-
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 655--656
+Underfull \hbox (badness 10000) in paragraph at lines 652--653
 \OT1/cmr/m/n/10 reference/spatial-statistics/how-causal-inference-analysis-work
 s.htm (ac-
  []
 
 [22] [23]
-Underfull \hbox (badness 1642) in paragraph at lines 725--726
+Underfull \hbox (badness 1642) in paragraph at lines 722--723
 []\OT1/cmr/m/n/10 Zhao, S., van Dyk, D.A. and Imai, K., 2020. Propen-sity score
 -based
  []
 
 
-Underfull \hbox (badness 1253) in paragraph at lines 725--726
+Underfull \hbox (badness 1253) in paragraph at lines 722--723
 \OT1/cmr/m/n/10 meth-ods for causal in-fer-ence in ob-ser-va-tional stud-ies wi
 th non-binary
  []
 
 
-Underfull \hbox (badness 2512) in paragraph at lines 725--726
+Underfull \hbox (badness 2512) in paragraph at lines 722--723
 \OT1/cmr/m/n/10 treat-ments. Sta-tis-ti-cal Meth-ods in Med-i-cal Re-search 29(
 3), 709--727.
  []
@@ -769,8 +769,8 @@ Package rerunfilecheck Info: File `01_manuscript_ijgis.out' has not changed.
 (rerunfilecheck)             Checksum: 33BBECC9704732CF5237A73422E0F6F6;7336.
  ) 
 Here is how much of TeX's memory you used:
- 23288 strings out of 468830
- 435940 string characters out of 5454207
+ 23287 strings out of 468830
+ 435929 string characters out of 5454207
  847340 words of memory out of 5000000
  51667 multiletter control sequences out of 15000+600000
  640021 words of font info for 88 fonts, out of 8000000 for 9000
@@ -798,11 +798,11 @@ fonts/type1/public/amsfonts/cm/cmsy9.pfb><d:/texlive/2026/texmf-dist/fonts/type
 amsfonts/cm/cmti9.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/c
 m/cmtt10.pfb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt8.p
 fb><d:/texlive/2026/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm7.pfb>
-Output written on ../06_build/01_manuscript_ijgis.pdf (24 pages, 572318 bytes).
+Output written on ../06_build/01_manuscript_ijgis.pdf (24 pages, 572296 bytes).
 
 PDF statistics:
- 746 PDF objects out of 1000 (max. 8388607)
- 627 compressed objects within 7 object streams
- 135 named destinations out of 1000 (max. 500000)
+ 745 PDF objects out of 1000 (max. 8388607)
+ 626 compressed objects within 7 object streams
+ 134 named destinations out of 1000 (max. 500000)
  318 words of extra memory for PDF output out of 10000 (max. 10000000)
 
